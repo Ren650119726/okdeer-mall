@@ -55,11 +55,11 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsThirdCode;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoParams;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
+import com.okdeer.mall.activity.coupons.enums.ActivityCouponsTermType;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsCategoryMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsLimitCategoryMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
-import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsOrderRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRandCodeMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRelationStoreMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsThirdCodeMapper;
@@ -937,6 +937,15 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	@Override
 	public List<ActivityCoupons> selectByActivityId(String id) throws Exception {
 		List<ActivityCoupons> result = activityCouponsMapper.selectByActivityId(id);
+		//如果是按天类型的，把开始时间与结束时间也计算一下
+		if(CollectionUtils.isNotEmpty(result)){
+			for (ActivityCoupons activityCoupons : result) {
+				if(activityCoupons.getTermType() == ActivityCouponsTermType.BY_DAY){
+					activityCoupons.setStartTime(activityCouponsReceiveStrategy.getEffectTime(activityCoupons));
+					activityCoupons.setEndTime(activityCouponsReceiveStrategy.getExpireTime(activityCoupons));
+				}
+			}
+		}
 		return result;
 	}
 
@@ -1103,6 +1112,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 				checkActivityCouponsRule(activityCoupons, activityCouponParamDto);
 				updateCouponsAndAddCouponsRecord(activityCoupons, activityCouponParamDto);
 			} catch (Exception e) {
+				logger.error("领取带金卷出错",e);
 				if (activityCouponParamDto.isContinueTakeOther()) {
 					continue;
 				}else{
@@ -1127,6 +1137,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			// 用户还没有注册，添加预领取记录
 			ActivityCouponsRecordBefore activityCouponsRecordBefore = BeanMapper.map(activityCouponsRecord,
 					ActivityCouponsRecordBefore.class);
+			activityCouponsRecordBefore.setCollectUser(activityCouponParamDto.getMobile());
 			activityCouponsRecordBeforeService.add(activityCouponsRecordBefore);
 		}
 	}
@@ -1182,7 +1193,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		activityCouponsRecord.setCouponsCollectId(activityCoupons.getActivityId());
 		activityCouponsRecord.setCollectUserId(activityCouponParamDto.getUserId());
 		activityCouponsRecord.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
-		activityCouponsRecord.setOrderId(activityCouponParamDto.getOrderId());
+//		activityCouponsRecord.setOrderId(activityCouponParamDto.getOrderId());
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
 		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0, 0, 0);

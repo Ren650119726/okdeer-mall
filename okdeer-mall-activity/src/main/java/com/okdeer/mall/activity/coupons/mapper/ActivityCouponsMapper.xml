@@ -579,10 +579,10 @@
 		</set>
 		<where>
 			<if test="usedNum != null">
-				AND used_num + #{usedNum,jdbcType=INTEGER} &gt; 0
+				<![CDATA[AND used_num + #{usedNum,jdbcType=INTEGER} >= 0]]>
 			</if>
 			<if test="remainNum != null">
-				AND	remain_num + #{remainNum,jdbcType=INTEGER} &gt; 0
+				<![CDATA[AND	remain_num + #{remainNum,jdbcType=INTEGER} >= 0]]>
 			</if>
 			AND id = #{id,jdbcType=VARCHAR}
 		</where>
