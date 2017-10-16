@@ -34,7 +34,6 @@ import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.service.TradeOrderRefundsListener;
 
-
 @Service("refundmentProcess")
 public class RefundmentProcess implements TradeOrderRefundsListener {
 
@@ -57,12 +56,12 @@ public class RefundmentProcess implements TradeOrderRefundsListener {
 		// do nothing
 		Assert.notNull(tradeOrderRefundContext.getTradeOrder());
 		if (tradeOrderRefundContext.getTradeOrder().getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
-			//到店消费订单、充值订单创建退款单后立马退钱給用户
+			// 到店消费订单、充值订单创建退款单后立马退钱給用户
 			sellerRefund(tradeOrderRefundContext);
-		}else if(tradeOrderRefundContext.getTradeOrder().getType() == OrderTypeEnum.PHONE_PAY_ORDER
-				|| tradeOrderRefundContext.getTradeOrder().getType() == OrderTypeEnum.TRAFFIC_PAY_ORDER){
+		} else if (tradeOrderRefundContext.getTradeOrder().getType() == OrderTypeEnum.PHONE_PAY_ORDER
+				|| tradeOrderRefundContext.getTradeOrder().getType() == OrderTypeEnum.TRAFFIC_PAY_ORDER) {
 			if (isOldWayBack(tradeOrderRefundContext.getTradeOrderRefunds().getPaymentMethod())) {
-				//退还用户金额
+				// 退还用户金额
 				this.refundUserAmount(tradeOrderRefundContext);
 			}
 		}
@@ -78,12 +77,12 @@ public class RefundmentProcess implements TradeOrderRefundsListener {
 	public void afterOrderRefundsChanged(TradeOrderRefundContextBo tradeOrderRefundContext) throws MallApiException {
 		Assert.notNull(tradeOrderRefundContext.getTradeOrder(), "订单信息不能为空");
 		Assert.notNull(tradeOrderRefundContext.getTradeOrderRefunds(), "退款单信息不能为空");
-		
+
 		if (PayWayEnum.PAY_ONLINE != tradeOrderRefundContext.getTradeOrder().getPayWay()) {
 			// 非线上支付
 			return;
 		}
-		
+
 		switch (tradeOrderRefundContext.getTradeOrderRefunds().getRefundsStatus()) {
 			case YSC_REFUND:
 				// 运营商退款
@@ -96,6 +95,7 @@ public class RefundmentProcess implements TradeOrderRefundsListener {
 				sellerRefund(tradeOrderRefundContext);
 				break;
 			case CUSTOMER_SERVICE_CANCEL_INTERVENE:
+			case BUYER_REPEAL_REFUND:
 				// 取消客服借介入，解冻商家冻结金额
 				unfreezeSellerAmount(tradeOrderRefundContext);
 				break;
@@ -103,7 +103,7 @@ public class RefundmentProcess implements TradeOrderRefundsListener {
 				break;
 		}
 	}
-	
+
 	/**
 	 * @Description: 商家退款
 	 * @param tradeOrderRefundContext
@@ -115,7 +115,7 @@ public class RefundmentProcess implements TradeOrderRefundsListener {
 		TradeOrderRefunds tradeOrderRefunds = tradeOrderRefundContext.getTradeOrderRefunds();
 		if (isOldWayBack(tradeOrderRefunds.getPaymentMethod())) {
 			this.updateSellerWallet(tradeOrderRefundContext);
-			//退还用户金额
+			// 退还用户金额
 			this.refundUserAmount(tradeOrderRefundContext);
 		} else {
 			// 余额退款
@@ -148,7 +148,7 @@ public class RefundmentProcess implements TradeOrderRefundsListener {
 		String sendJson = buildBalancePayTrade(tradeOrderRefundContext);
 		sendMqMsg(PayMessageConstant.TOPIC_BALANCE_PAY_TRADE, PayMessageConstant.TAG_PAY_TRADE_MALL, sendJson);
 	}
-	
+
 	/**
 	 * @Description: 解冻商家金额
 	 * @param tradeOrderRefundContext
@@ -164,11 +164,10 @@ public class RefundmentProcess implements TradeOrderRefundsListener {
 			throw new MallApiException(e);
 		}
 	}
-	
-	private void sendMqMsg(String topic,String tag,String content) throws MallApiException {
+
+	private void sendMqMsg(String topic, String tag, String content) throws MallApiException {
 		try {
-			Message msg = new Message(topic, tag,
-					content.getBytes(Charsets.UTF_8));
+			Message msg = new Message(topic, tag, content.getBytes(Charsets.UTF_8));
 			SendResult sendResult = rocketMQProducer.send(msg);
 			if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
 				throw new MallApiException("发送消息到云钱包失败，错误原因：" + sendResult.getSendStatus());
@@ -182,7 +181,7 @@ public class RefundmentProcess implements TradeOrderRefundsListener {
 	/**
 	 * 构建支付对象
 	 */
-	private String buildBalancePayTrade(TradeOrderRefundContextBo tradeOrderRefundContext)  {
+	private String buildBalancePayTrade(TradeOrderRefundContextBo tradeOrderRefundContext) {
 		TradeOrder order = tradeOrderRefundContext.getTradeOrder();
 		TradeOrderRefunds orderRefunds = tradeOrderRefundContext.getTradeOrderRefunds();
 		Assert.hasText(tradeOrderRefundContext.getSotreUserId());
@@ -212,15 +211,15 @@ public class RefundmentProcess implements TradeOrderRefundsListener {
 		// 判断是否有平台优惠
 		BigDecimal platformFavour = orderRefunds.getTotalPreferentialPrice()
 				.subtract(orderRefunds.getStorePreferential());
-		
-		if (platformFavour.compareTo(BigDecimal.valueOf(0.00))  > 0) {
+
+		if (platformFavour.compareTo(BigDecimal.valueOf(0.00)) > 0) {
 			// 如果平台优惠>0.则标识有平台优惠
 			payTradeVo.setPrefeAmount(platformFavour);
 			payTradeVo.setActivitier("1");
 		}
-		if(orderRefunds.getRefundsStatus() == RefundsStatusEnum.YSC_REFUND){
-			//平台退款，需要扣除佣金
-			PayTradeExt payTradeExt = buildCommissionInfo(order,orderRefunds);
+		if (orderRefunds.getRefundsStatus() == RefundsStatusEnum.YSC_REFUND) {
+			// 平台退款，需要扣除佣金
+			PayTradeExt payTradeExt = buildCommissionInfo(order, orderRefunds);
 			payTradeVo.setExt(JsonMapper.nonDefaultMapper().toJson(payTradeExt));
 		}
 		// 接受返回消息的tag
@@ -278,18 +277,18 @@ public class RefundmentProcess implements TradeOrderRefundsListener {
 		return refundType;
 	}
 
-	private String buildBalanceFinish(TradeOrderRefundContextBo tradeOrderRefundContext)  {
+	private String buildBalanceFinish(TradeOrderRefundContextBo tradeOrderRefundContext) {
 		TradeOrder order = tradeOrderRefundContext.getTradeOrder();
 		TradeOrderRefunds orderRefunds = tradeOrderRefundContext.getTradeOrderRefunds();
 		Assert.notNull(order);
 		Assert.notNull(orderRefunds);
-		Assert.hasText(tradeOrderRefundContext.getSotreUserId(),"店铺老板用户id不能为空");
+		Assert.hasText(tradeOrderRefundContext.getSotreUserId(), "店铺老板用户id不能为空");
 		// 是否店铺优惠
 		BigDecimal totalAmount = orderRefunds.getTotalAmount();
 		// 平台优惠金额
 		BigDecimal preferentialPrice = orderRefunds.getTotalPreferentialPrice()
 				.subtract(orderRefunds.getStorePreferential());
-		PayTradeExt payTradeExt = buildCommissionInfo(order,orderRefunds);
+		PayTradeExt payTradeExt = buildCommissionInfo(order, orderRefunds);
 		BalancePayTradeDto payTradeVo = new BalancePayTradeDto();
 		payTradeVo.setAmount(totalAmount);
 		payTradeVo.setIncomeUserId(tradeOrderRefundContext.getSotreUserId());

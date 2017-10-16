@@ -187,7 +187,7 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 		splitItemList(tradeOrderRefundsItems, order.getId());
 
 		// 订单项list部分
-		List<OnlineOrderItem> ooiList = new ArrayList<OnlineOrderItem>();
+		List<OnlineOrderItem> ooiList = new ArrayList<>();
 		if (CollectionUtils.isNotEmpty(tradeOrderRefundsItems)) {
 			int i = 1;
 			for (TradeOrderRefundsItem item : tradeOrderRefundsItems) {
@@ -236,8 +236,8 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 		TradeOrder tradeOrder = tradeOrderContext.getTradeOrder();
 		if (tradeOrder == null) {
 			tradeOrder = tradeOrderService.selectById(tradeOrderContext.getTradeOrderRefunds().getOrderId());
+			tradeOrderContext.setTradeOrder(tradeOrder);
 		}
-		tradeOrderContext.setTradeOrder(tradeOrder);
 		return tradeOrder;
 	}
 
@@ -253,7 +253,7 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 		}
 
 		// 需要标准库商品id
-		List<String> goodsStoreSkuIdList = new ArrayList<String>();
+		List<String> goodsStoreSkuIdList = new ArrayList<>();
 		for (TradeOrderRefundsItem item : tradeOrderRefundsItemList) {
 			goodsStoreSkuIdList.add(item.getStoreSkuId());
 		}
@@ -359,11 +359,6 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 					splitItem = new TradeOrderRefundsItem();
 					splitItem.setId(UuidUtils.getUuid());
 					splitItem.setRefundsId(item.getRefundsId());
-					/*
-					 * splitItem.setQuantity(comboDetail.getQuantity()*item.getQuantity());
-					 * splitItem.setUnitPrice(comboDetail.getUnitPrice());
-					 * splitItem.setPreferentialPrice(BigDecimal.ZERO); splitItem.setStorePreferential(BigDecimal.ZERO);
-					 */
 					// 单价即线上价格
 					splitItem.setUnitPrice(comboDetail.getOnlinePrice());
 					splitItem.setQuantity(comboDetail.getQuantity() * item.getQuantity());
@@ -415,7 +410,7 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 	public void afterOrderRefundsChanged(TradeOrderRefundContextBo tradeOrderRefundContext) throws MallApiException {
 		synchToJxc(tradeOrderRefundContext);
 	}
-	
+
 	/**
 	 * @Description: 同步至零售
 	 * @param tradeOrderRefundContext
@@ -427,7 +422,12 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 		TradeOrderContext tradeOrderContext = new TradeOrderContext();
 		tradeOrderContext.setTradeOrder(tradeOrderRefundContext.getTradeOrder());
 		tradeOrderContext.setTradeOrderRefunds(tradeOrderRefundContext.getTradeOrderRefunds());
-		
+		if (tradeOrderRefundContext.getTradeOrderPay() != null) {
+			tradeOrderContext.setTradeOrderPay(tradeOrderRefundContext.getTradeOrderPay());
+		}
+		if (tradeOrderRefundContext.getTradeOrderRefundsItemList() != null) {
+			tradeOrderContext.setOrderRefundsItemList(tradeOrderRefundContext.getTradeOrderRefundsItemList());
+		}
 		try {
 			tradeOrderStatusChange(tradeOrderContext);
 		} catch (Exception e) {
