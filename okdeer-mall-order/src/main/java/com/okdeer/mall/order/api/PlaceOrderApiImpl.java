@@ -24,6 +24,7 @@ import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.dto.ActivityMessageParamDto;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
+import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
@@ -36,14 +37,19 @@ import com.okdeer.mall.order.bo.AppAdapter;
 import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.AppStoreDto;
+import com.okdeer.mall.order.dto.GroupJoinUserDto;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
+import com.okdeer.mall.order.entity.TradeOrderGroupRelation;
+import com.okdeer.mall.order.enums.GroupJoinTypeEnum;
 import com.okdeer.mall.order.enums.OrderOptTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandlerChain;
+import com.okdeer.mall.order.mapper.TradeOrderGroupRelationMapper;
 import com.okdeer.mall.order.service.PlaceOrderApi;
 import com.okdeer.mall.order.service.TradeorderProcessLister;
+import com.okdeer.mall.system.service.SysBuyerUserService;
 import com.okdeer.mall.system.utils.ConvertUtil;
 import com.okdeer.mall.util.RedisLock;
 
@@ -105,6 +111,9 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	@Resource
 	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
 	
+	@Resource
+	private SysBuyerUserService sysBuyerUserService;
+	
 	/**
 	 * mq注入
 	 */
@@ -117,6 +126,9 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	@Autowired
 	@Qualifier(value="jxcSynTradeorderProcessLister")
 	private TradeorderProcessLister tradeorderProcessLister;
+	
+	@Resource
+	private TradeOrderGroupRelationMapper tradeOrderGroupRelationMapper;
 
 	@Override
 	public Response<PlaceOrderDto> confirmOrder(Request<PlaceOrderParamDto> req) throws Exception {
@@ -214,6 +226,29 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 			// 低价活动已关闭，给出响应的提示语
 			resp.setMessage(ResultCodeEnum.LOW_IS_CLOSED.getDesc());
 		}
+		// Begin V2.6.3 added by maojj 2017-10-13
+		if(paramDto.getOrderType() == PlaceOrderTypeEnum.GROUP_ORDER
+				&& paramDto.getGroupJoinType() == GroupJoinTypeEnum.GROUP_JOIN
+				&& paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT){
+			// 如果是团购订单确认且是参团用户，则返回已参团用户信息
+			List<TradeOrderGroupRelation> groupRelList = tradeOrderGroupRelationMapper.findByGroupOrderId(paramDto.getGroupOrderId());
+			List<GroupJoinUserDto> joinUserList = Lists.newArrayList();
+			groupRelList.forEach(groupRel -> {
+				try {
+					SysBuyerUser buyerUser = sysBuyerUserService.findByPrimaryKey(groupRel.getUserId());
+					GroupJoinUserDto joinUser = new GroupJoinUserDto();
+					joinUser.setNickName(ConvertUtil.format(buyerUser.getNickName()));
+					joinUser.setPicUrl(ConvertUtil.format(buyerUser.getPicUrl()));
+					joinUser.setJoinType(String.valueOf(groupRel.getType().getCode()));
+					joinUserList.add(joinUser);
+				} catch (Exception e) {
+				    logger.error("查询用户信息失败：",e);
+				}
+			});
+			resp.getData().setJoinUserList(joinUserList);
+			resp.getData().setAbsendNum(resp.getData().getAbsendNum() - groupRelList.size());
+		}
+		// End V2.6.3 added by maojj 2017-10-13
 		resp.getData().setCurrentTime(System.currentTimeMillis());
 	}
 

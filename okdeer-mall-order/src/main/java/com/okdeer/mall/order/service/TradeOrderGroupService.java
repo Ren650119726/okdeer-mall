@@ -4,5 +4,7 @@ import com.okdeer.base.service.IBaseService;
 
 
 public interface TradeOrderGroupService extends IBaseService {
+	
+	
 
 }

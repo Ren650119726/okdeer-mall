@@ -114,6 +114,7 @@ public class PlaceGroupOrderServiceImpl implements RequestHandler<PlaceOrderPara
 		orderGroupRel.setId(UuidUtils.getUuid());
 		orderGroupRel.setGroupOrderId(paramDto.getGroupOrderId());
 		orderGroupRel.setOrderId(orderId);
+		orderGroupRel.setUserId(paramDto.getUserId());
 		orderGroupRel.setType(GroupJoinTypeEnum.GROUP_JOIN);
 		orderGroupRel.setStatus(GroupJoinStatusEnum.WAIT_JOIN);
 		tradeOrderGroupRelationMapper.add(orderGroupRel);

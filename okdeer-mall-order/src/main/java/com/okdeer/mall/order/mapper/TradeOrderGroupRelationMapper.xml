@@ -6,6 +6,7 @@
         <result column="order_id" property="orderId" jdbcType="VARCHAR" />
         <result column="group_order_id" property="groupOrderId" jdbcType="VARCHAR" />
         <result column="group_order_id_his" property="groupOrderIdHis" jdbcType="VARCHAR" />
+	<result column="user_id" property="userId" jdbcType="VARCHAR" />
         <result column="type" property="type" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.GroupJoinTypeEnum"/>
         <result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.GroupJoinStatusEnum"/>
     </resultMap>

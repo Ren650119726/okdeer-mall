@@ -1237,7 +1237,7 @@ public interface TradeOrderMapper {
 	 * @author maojj
 	 * @date 2017年10月12日
 	 */
-	void updateOrderType(@Param("orderIdList")List<String> orderIdList);
+	void updateOrderType(@Param("orderIdList")List<String> orderIdList,@Param("updateTime")Date updateTime);
 	
 	/**
 	 * @Description: 根据订单id查询订单列表
