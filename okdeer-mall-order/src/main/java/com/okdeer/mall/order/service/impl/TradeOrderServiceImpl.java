@@ -79,6 +79,7 @@ import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.IStoreInfoExtServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.PsmsAgent;
+import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.archive.system.service.IPsmsAgentServiceApi;
 import com.okdeer.archive.system.service.SysOrganiApi;
@@ -157,6 +158,7 @@ import com.okdeer.mall.order.builder.StockAdjustVoBuilder;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.dto.FmsTradeOrderForRefundParamDto;
+import com.okdeer.mall.order.dto.GroupJoinUserDto;
 import com.okdeer.mall.order.dto.TradeOrderCountParamDto;
 import com.okdeer.mall.order.dto.TradeOrderExtSnapshotParamDto;
 import com.okdeer.mall.order.dto.TradeOrderParamDto;
@@ -166,6 +168,8 @@ import com.okdeer.mall.order.entity.TradeOrderComboSnapshot;
 import com.okdeer.mall.order.entity.TradeOrderComplain;
 import com.okdeer.mall.order.entity.TradeOrderComplainImage;
 import com.okdeer.mall.order.entity.TradeOrderExtSnapshot;
+import com.okdeer.mall.order.entity.TradeOrderGroup;
+import com.okdeer.mall.order.entity.TradeOrderGroupRelation;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
@@ -202,6 +206,8 @@ import com.okdeer.mall.order.mapper.TradeOrderCommentMapper;
 import com.okdeer.mall.order.mapper.TradeOrderComplainImageMapper;
 import com.okdeer.mall.order.mapper.TradeOrderComplainMapper;
 import com.okdeer.mall.order.mapper.TradeOrderExtSnapshotMapper;
+import com.okdeer.mall.order.mapper.TradeOrderGroupMapper;
+import com.okdeer.mall.order.mapper.TradeOrderGroupRelationMapper;
 import com.okdeer.mall.order.mapper.TradeOrderInvoiceMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
@@ -252,6 +258,7 @@ import com.okdeer.mall.system.mapper.SysUserInvitationRecordMapper;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mall.system.mq.StockMQProducer;
 import com.okdeer.mall.system.service.InvitationCodeServiceApi;
+import com.okdeer.mall.system.service.SysBuyerUserService;
 import com.okdeer.mall.system.utils.ConvertUtil;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
@@ -572,6 +579,15 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
     @Reference(check = false, version = "1.0.0")
     private IPayAccountServiceApi payAccountApi;
+    
+    @Resource
+	private TradeOrderGroupRelationMapper tradeOrderGroupRelationMapper;
+    
+    @Resource
+    private TradeOrderGroupMapper tradeOrderGroupMapper;
+    
+    @Resource
+	private SysBuyerUserService sysBuyerUserService;
 
     // Begin Bug:13700 added by maojj 2016-10-10
     /**
@@ -4049,12 +4065,44 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     			setOrderItemExtJxc(json, orderId);
     		}
     		//如果为会员卡订单 end tuzhd 2017-09-06
-            
+        
+    		// Begin V2.6.3 added by maojj 2017-10-13
+    		if(orders.getType() == OrderTypeEnum.GROUP_ORDER && orders.getStatus() == OrderStatusEnum.DROPSHIPPING){
+    			// 如果是已付款的团购订单
+    			setGroupInfo(json,orderId);
+    		}
+    		// End V2.6.3 added by maojj 2017-10-13
         } catch (Exception e) {
             logger.error("商品详细查询异常", e);
             throw new ServiceException();
         }
         return json;
+    }
+    
+    private void setGroupInfo(JSONObject json,String orderId){
+    	// 查询团购订单关联关系
+    	TradeOrderGroupRelation groupRel = tradeOrderGroupRelationMapper.findByOrderId(orderId);
+    	// 查询团购订单信息
+    	TradeOrderGroup orderGroup = tradeOrderGroupMapper.findById(groupRel.getGroupOrderId());
+    	// 根据团购订单查询已经入团的关联关系
+    	List<TradeOrderGroupRelation> groupRelList = tradeOrderGroupRelationMapper.findByGroupOrderId(groupRel.getGroupOrderId());
+    	List<GroupJoinUserDto> joinUserList = Lists.newArrayList();
+    	groupRelList.forEach(item -> {
+			try {
+				SysBuyerUser buyerUser = sysBuyerUserService.findByPrimaryKey(item.getUserId());
+				GroupJoinUserDto joinUser = new GroupJoinUserDto();
+				joinUser.setNickName(ConvertUtil.format(buyerUser.getNickName()));
+				joinUser.setPicUrl(ConvertUtil.format(buyerUser.getPicUrl()));
+				joinUser.setJoinType(String.valueOf(item.getType().getCode()));
+				joinUserList.add(joinUser);
+			} catch (Exception e) {
+			    logger.error("查询用户信息失败：",item);
+			}
+		});
+    	
+    	json.put("groupExpireTime", orderGroup.getExpireTime().getTime() - System.currentTimeMillis());
+    	json.put("absentNum", orderGroup.getGroupCount() - joinUserList.size());
+    	json.put("joinUserList", JSONArray.fromObject(joinUserList));
     }
     
     /**

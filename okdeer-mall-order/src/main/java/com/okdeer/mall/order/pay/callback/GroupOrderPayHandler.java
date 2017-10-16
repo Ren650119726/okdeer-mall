@@ -202,6 +202,7 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 		orderGroupRel.setId(UuidUtils.getUuid());
 		orderGroupRel.setGroupOrderId(groupOrderId);
 		orderGroupRel.setOrderId(tradeOrder.getId());
+		orderGroupRel.setUserId(tradeOrder.getUserId());
 		orderGroupRel.setType(joinType);
 		orderGroupRel.setStatus(GroupJoinStatusEnum.JOIN_SUCCESS);
 		tradeOrderGroupRelationMapper.add(orderGroupRel);
@@ -320,9 +321,10 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 	 * @date 2017年10月12日
 	 */
 	private void groupSuccess(TradeOrderGroup orderGroup) {
+		Date currentDate = new Date();
 		// 修改团单状态为已成团
 		orderGroup.setStatus(GroupOrderStatusEnum.GROUP_SUCCESS);
-		orderGroup.setEndTime(new Date());
+		orderGroup.setEndTime(currentDate);
 		tradeOrderGroupMapper.update(orderGroup);
 		// 修改所有关联的订单类型为已寄送订单
 		// 查询已入团的团单关联关系
@@ -330,7 +332,7 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 				.findByGroupOrderId(orderGroup.getId());
 		List<String> orderIdList = orderGroupRelList.stream().map(e -> e.getOrderId()).collect(Collectors.toList());
 		// 修改所有订单类型为寄送服务订单
-		tradeOrderMapper.updateOrderType(orderIdList);
+		tradeOrderMapper.updateOrderType(orderIdList,currentDate);
 		// 更新库存
 		try {
 			StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.buildForGroupOrder(orderGroup);

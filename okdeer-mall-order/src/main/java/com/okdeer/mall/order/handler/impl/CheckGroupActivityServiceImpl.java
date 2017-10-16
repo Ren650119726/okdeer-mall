@@ -25,9 +25,13 @@ import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
+import com.okdeer.mall.order.entity.TradeOrderGroup;
 import com.okdeer.mall.order.enums.GroupJoinTypeEnum;
+import com.okdeer.mall.order.enums.GroupOrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
+import com.okdeer.mall.order.mapper.TradeOrderGroupMapper;
+import com.okdeer.mall.order.mapper.TradeOrderGroupRelationMapper;
 import com.okdeer.mall.system.service.SysBuyerFirstOrderRecordService;
 
 /**
@@ -55,6 +59,12 @@ public class CheckGroupActivityServiceImpl implements RequestHandler<PlaceOrderP
 	
 	@Resource
 	private SysBuyerFirstOrderRecordService sysBuyerFirstOrderRecordService;
+	
+	@Resource
+	private TradeOrderGroupMapper tradeOrderGroupMapper;
+	
+	@Resource
+	private TradeOrderGroupRelationMapper tradeOrderGroupRelationMapper;
 
 	/**
 	 * 活动商品用户日限购
@@ -98,6 +108,11 @@ public class CheckGroupActivityServiceImpl implements RequestHandler<PlaceOrderP
 		// 如果参团类型为加入则需要检查团购用户限制
 		if(isOutOfLimitUserType(paramDto,activityGroup)){
 			resp.setResult(ResultCodeEnum.GROUP_OPEN_NOT_SUPPORT);
+			return;
+		}
+		// 检查是否可以入团
+		if(!isJoinGroupEnabled(paramDto,resp.getData())){
+			resp.setResult(ResultCodeEnum.GROUP_IS_ENOUGH);
 			return;
 		}
 		// 查询团购商品信息
@@ -152,6 +167,21 @@ public class CheckGroupActivityServiceImpl implements RequestHandler<PlaceOrderP
 		}
 		// 限制新用户，判断当前用户是否为新用户.如果存在首单记录，则超出限制，否则不超出
 		return sysBuyerFirstOrderRecordService.isExistsOrderRecord(paramDto.getUserId());
+	}
+	
+	
+	private boolean isJoinGroupEnabled(PlaceOrderParamDto paramDto,PlaceOrderDto respDto){
+		if(paramDto.getGroupJoinType() == GroupJoinTypeEnum.GROUP_OPEN){
+			return true;
+		}
+		// 如果是参团，查看参团订单的信息
+		TradeOrderGroup orderGroup = tradeOrderGroupMapper.findById(paramDto.getGroupOrderId());
+		if (orderGroup.getStatus() != GroupOrderStatusEnum.UN_GROUP) {
+			return false;
+		}
+		respDto.setGroupExpireTime(orderGroup.getExpireTime().getTime() - System.currentTimeMillis());
+		respDto.setAbsendNum(orderGroup.getGroupCount());
+		return true;
 	}
 
 	/**

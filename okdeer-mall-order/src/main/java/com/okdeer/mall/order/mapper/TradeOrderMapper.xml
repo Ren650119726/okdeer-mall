@@ -6405,9 +6405,11 @@
 	<!-- End V2.4.1 added by maojj 2017-06-19 -->
 	
 	<!-- Begin V2.6.3 added by maojj 2017-10-12 -->
-	<update id="updateOrderType" parameterType="list">
+	<update id="updateOrderType" parameterType="map">
 		UPDATE trade_order
-		SET type = 7
+		SET type = 7,
+			accept_time = #{update_time,jdbcType=TIMESTAMP},
+			update_time = #{update_time,jdbcType=TIMESTAMP}
 		WHERE id IN 
 		<foreach collection="orderIdList" item="orderId" separator="," open="(" close=")">
 			#{orderId}
