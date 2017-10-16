@@ -419,6 +419,10 @@ public class JxcSynTradeorderRefundProcessLister implements TradeorderRefundProc
 	 * @date 2017年10月13日
 	 */
 	private void synchToJxc(TradeOrderRefundContextBo tradeOrderRefundContext) throws MallApiException {
+		if (tradeOrderRefundContext.getTradeOrder().getType() != OrderTypeEnum.PHYSICAL_ORDER) {
+			//不是实物订单，直接过滤
+			return;
+		}
 		TradeOrderContext tradeOrderContext = new TradeOrderContext();
 		tradeOrderContext.setTradeOrder(tradeOrderRefundContext.getTradeOrder());
 		tradeOrderContext.setTradeOrderRefunds(tradeOrderRefundContext.getTradeOrderRefunds());
