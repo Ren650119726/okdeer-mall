@@ -12,8 +12,11 @@ import com.okdeer.mall.order.bo.TradeOrderRefundContextBo;
 import com.okdeer.mall.order.dto.TradeOrderApplyRefundParamDto;
 import com.okdeer.mall.order.dto.TradeOrderApplyRefundResultDto;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
+import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
+import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderRefundProcessService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderService;
@@ -22,6 +25,9 @@ public abstract class AbstractTradeOrderRefundsService implements TradeOrderRefu
 
 	@Autowired
 	protected TradeOrderService tradeOrderService;
+	
+	@Autowired
+	protected TradeOrderPayService tradeOrderPayService;
 
 	@Autowired
 	protected TradeOrderRefundsMapper tradeOrderRefundsMapper;
@@ -55,6 +61,10 @@ public abstract class AbstractTradeOrderRefundsService implements TradeOrderRefu
 			// 校验不通过，则返回错误信息
 			if (!checkResult) {
 				return response;
+			}
+			if(tradeOrderRefundContext.getTradeOrderPay() == null && tradeOrder.getPayWay() == PayWayEnum.PAY_ONLINE){
+				TradeOrderPay tradeOrderPay = tradeOrderPayService.selectByOrderId(tradeOrder.getId());
+				tradeOrderRefundContext.setTradeOrderPay(tradeOrderPay);
 			}
 			// 创建退款单
 			tradeOrderRefundProcessService.createRefundInfo(tradeOrderApplyRefundParamDto, tradeOrderRefundContext);
