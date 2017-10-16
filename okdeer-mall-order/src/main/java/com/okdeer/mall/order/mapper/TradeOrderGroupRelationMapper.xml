@@ -12,7 +12,7 @@
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, order_id, group_order_id, group_order_id_his, type, status
+        id, order_id, group_order_id, group_order_id_his, user_id, type, status
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="string" >
@@ -36,6 +36,9 @@
             <if test="groupOrderIdHis != null" >
                 group_order_id_his,
             </if>
+            <if test="userId != null" >
+                user_id,
+            </if>
             <if test="type != null" >
                 type,
             </if>
@@ -56,6 +59,9 @@
             <if test="groupOrderIdHis != null" >
                 #{groupOrderIdHis,jdbcType=VARCHAR},
             </if>
+            <if test="userId != null" >
+                #{userId,jdbcType=VARCHAR},
+            </if>
             <if test="type != null" >
                 #{type,jdbcType=TINYINT},
             </if>
@@ -73,6 +79,9 @@
             </if>
             <if test="groupOrderIdHis != null" >
                 group_order_id_his = #{groupOrderIdHis,jdbcType=VARCHAR},
+            </if>
+            <if test="userId != null" >
+                user_id = #{userId,jdbcType=VARCHAR},
             </if>
             <if test="type != null" >
                 type = #{type,jdbcType=TINYINT},
