@@ -10,6 +10,7 @@ public class PageQueryUtils {
 	private static final int pageSize = 100;
 	
 	public static <T> List<T> pageQueryByIds(List<String> ids, PageCallBack<T> pageCallBack) {
+		System.out.println("哈哈哈哈哈");
 		List<T> resultList = Lists.newArrayList();
 		resultList.addAll(pageQueryByIds(ids, pageCallBack,pageSize));
 		return resultList;

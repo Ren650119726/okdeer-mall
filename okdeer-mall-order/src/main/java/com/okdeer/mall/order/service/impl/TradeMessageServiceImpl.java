@@ -8,7 +8,6 @@
 
 package com.okdeer.mall.order.service.impl;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,11 +23,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.Assert;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
-import com.alibaba.rocketmq.common.message.Message;
-import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.enums.IsAppointment;
@@ -41,7 +39,6 @@ import com.okdeer.archive.system.entity.SysMsg;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.archive.system.entity.SysUserLoginLog;
 import com.okdeer.archive.system.pos.service.PosShiftExchangeServiceApi;
-import com.okdeer.archive.system.pos.vo.PosShiftExchangeVo;
 import com.okdeer.archive.system.service.SysUserLoginLogServiceApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.enums.WhetherEnum;
@@ -52,11 +49,14 @@ import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
+import com.okdeer.common.exception.MallApiException;
 import com.okdeer.common.utils.JsonDateUtil;
-import com.okdeer.common.utils.VersionUtils;
 import com.okdeer.mall.common.enums.IsRead;
 import com.okdeer.mall.common.enums.MsgType;
+import com.okdeer.mall.common.utils.RobotUserUtil;
+import com.okdeer.mall.order.bo.TradeOrderRefundContextBo;
 import com.okdeer.mall.order.constant.text.OrderMsgConstant;
+import com.okdeer.mall.order.dto.TradeOrderApplyRefundParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
@@ -68,6 +68,7 @@ import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
+import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.enums.SendMsgType;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.service.TradeMessageService;
@@ -75,6 +76,7 @@ import com.okdeer.mall.order.service.TradeMessageServiceApi;
 import com.okdeer.mall.order.service.TradeOrderComplainService;
 import com.okdeer.mall.order.service.TradeOrderItemDetailService;
 import com.okdeer.mall.order.service.TradeOrderItemService;
+import com.okdeer.mall.order.service.TradeOrderRefundsListener;
 import com.okdeer.mall.order.vo.PushMsgVo;
 import com.okdeer.mall.order.vo.PushUserVo;
 import com.okdeer.mall.order.vo.SendMsgParamVo;
@@ -106,13 +108,13 @@ import com.okdeer.mcm.service.ISmsService;
  *    V2.3.0			20170419				wangf01			新增推送语音提示文件名
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeMessageServiceApi")
-public class TradeMessageServiceImpl implements TradeMessageService, TradeMessageServiceApi {
+public class TradeMessageServiceImpl implements TradeMessageService, TradeMessageServiceApi, TradeOrderRefundsListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(TradeMessageServiceImpl.class);
 
 	/**短信发送成功码*/
 	private static final String SUCCESS_STATUS = "0";
-	
+
 	private static final String TOPIC = "topic_mcm_msg";
 
 	/**
@@ -126,11 +128,10 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	 */
 	@Value("${mcm.sys.token}")
 	private String msgToken;
-	
+
 	@Autowired
 	private RocketMQProducer rocketMQProducer;
 
-	
 	@Autowired
 	private TradeMessageProperties tradeMessageProperties;
 
@@ -148,7 +149,6 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	 * 默认:震动+可清除
 	 */
 	private static final Integer DEFAULTNOTIFICATIONBASICSTYLE2 = 3;
-	
 
 	@Reference(version = "1.0.0", check = false)
 	private ISmsService smsService;
@@ -197,11 +197,12 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 
 	@Autowired
 	private TradeOrderComplainService tradeOrderComplainService;
-	
-	// Begin 商业系统POS推送对接  added by maojj 2016-12-19
+
+	// Begin 商业系统POS推送对接 added by maojj 2016-12-19
 	@Reference(version = "1.0.0", check = false)
 	private SysUserLoginLogServiceApi sysUserLoginLogApi;
 	
+	private java.text.DecimalFormat df = new java.text.DecimalFormat("0.00");
 
 	private void sendMessage(Object entity) throws Exception {
 		rocketMQProducer.sendMessage(new MQMessage<String>(TOPIC, JsonMapper.nonDefaultMapper().toJson(entity)));
@@ -290,8 +291,6 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		sysMsgMapper.insertSelective(sysMsg);
 	}
 
-
-
 	/**
 	 * 商品版App消息推送 --商家版APP</p>
 	 * 
@@ -302,89 +301,90 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	 */
 	@Override
 	public void sendSellerAppMessage(SendMsgParamVo sendMsgParamVo, SendMsgType sendMsgType) throws Exception {
-		//查询店铺的用户信息
-	    List<SysUser> sysUserList = sysUserMapper.selectUserByStoreId(sendMsgParamVo.getStoreId());
-	    if(CollectionUtils.isEmpty(sysUserList)){
-	    	return;
-	    }
-	    //内容消息推送用户列表
-	    List<PushUserVo> oriMsgUserList = new ArrayList<PushUserVo>();
-        sysUserList.forEach(sysUser -> {
-            WhetherEnum whetherEnum = sysUser.getIsAccept();
-            if(whetherEnum == WhetherEnum.not) {
-                return;
-            }
-            //查看当前登录的设备APP版本
-            List<SysUserLoginLog> sysUserLoginLogs = this.sysUserLoginLogApi.findAllByUserId(sysUser.getId(), 1, null, null);
-            if(sysUserLoginLogs != null && !sysUserLoginLogs.isEmpty()) {
-                sysUserLoginLogs.forEach(sysUserLoginLog -> {
-                    PushUserVo pushUser = createPushUserVo(sysUser,sendMsgType);
-                    //APP跳转原生页面，发送内容消息
-                    oriMsgUserList.add(pushUser);
-                });
-            }
-        });  
-	    
-	    //发送内容消息
-		if(CollectionUtils.isNotEmpty(oriMsgUserList)) {
-		    PushMsgVo pushOriMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType);
-		    pushOriMsgVo.setUserList(oriMsgUserList);
+		// 查询店铺的用户信息
+		List<SysUser> sysUserList = sysUserMapper.selectUserByStoreId(sendMsgParamVo.getStoreId());
+		if (CollectionUtils.isEmpty(sysUserList)) {
+			return;
+		}
+		// 内容消息推送用户列表
+		List<PushUserVo> oriMsgUserList = new ArrayList<PushUserVo>();
+		sysUserList.forEach(sysUser -> {
+			WhetherEnum whetherEnum = sysUser.getIsAccept();
+			if (whetherEnum == WhetherEnum.not) {
+				return;
+			}
+			// 查看当前登录的设备APP版本
+			List<SysUserLoginLog> sysUserLoginLogs = this.sysUserLoginLogApi.findAllByUserId(sysUser.getId(), 1, null,
+					null);
+			if (sysUserLoginLogs != null && !sysUserLoginLogs.isEmpty()) {
+				sysUserLoginLogs.forEach(sysUserLoginLog -> {
+					PushUserVo pushUser = createPushUserVo(sysUser, sendMsgType);
+					// APP跳转原生页面，发送内容消息
+					oriMsgUserList.add(pushUser);
+				});
+			}
+		});
+
+		// 发送内容消息
+		if (CollectionUtils.isNotEmpty(oriMsgUserList)) {
+			PushMsgVo pushOriMsgVo = createPushMsgVo(sendMsgParamVo, sendMsgType);
+			pushOriMsgVo.setUserList(oriMsgUserList);
 			sendMessage(pushOriMsgVo);
 		}
 	}
-	
+
 	/**
 	 * 构建消息推送用户VO
 	 * @param sysUser
 	 * @return
 	 */
 	private PushUserVo createPushUserVo(SysUser sysUser, SendMsgType sendMsgType) {
-	    PushUserVo pushUser = new PushUserVo();
-	    pushUser.setUserId(sysUser.getId());
-        pushUser.setMobile(sysUser.getPhone());
-        pushUser.setMsgType(MsgConstant.MsgType.THROUGH);
-        // begin V2.3.0 新增语音播放文件名 add by wangf01 20170419
+		PushUserVo pushUser = new PushUserVo();
+		pushUser.setUserId(sysUser.getId());
+		pushUser.setMobile(sysUser.getPhone());
+		pushUser.setMsgType(MsgConstant.MsgType.THROUGH);
+		// begin V2.3.0 新增语音播放文件名 add by wangf01 20170419
 		pushUser.setSoundStyle("order.wav");
-		//判断是否是申请退款||卖家同意退款后，如果是，则提示默认声音，针对IOS
+		// 判断是否是申请退款||卖家同意退款后，如果是，则提示默认声音，针对IOS
 		if (sendMsgType == SendMsgType.applyReturn || sendMsgType == SendMsgType.returnShipments
 				|| sendMsgType == SendMsgType.complainOrder) {
 			pushUser.setSoundStyle("default");
 		}
-		if(sendMsgType == SendMsgType.lzgGathering){
+		if (sendMsgType == SendMsgType.lzgGathering) {
 			pushUser.setSoundStyle("");
 		}
 		// end add by wangf01 20170419
-        
-        try {
-            pushUser.setNotificationBuilderId(Integer.valueOf(tradeMessageProperties.notificationBuilderId));
-         // 消息信息提示
-            if (WhetherEnum.whether.equals(sysUser.getIsAccept())) {
-                // 有声音
-                pushUser.setIsexitsSound(0);
-                pushUser.setNotificationBasicStyle(Integer.valueOf(tradeMessageProperties.notificationBasicStyle1));
-            } else {
-                // 无声音
-                pushUser.setNotificationBasicStyle(Integer.valueOf(tradeMessageProperties.notificationBasicStyle2));
-                pushUser.setIsexitsSound(1);
-            }
-        } catch (Exception e) {
-            // 没有配置zookeeper，取默认的
-            pushUser.setNotificationBuilderId(DEFAULTNOTIFICATIONBUILDERID);
-            // 消息信息提示
-            if (WhetherEnum.whether.equals(sysUser.getIsAccept())) {
-                // 有声音
-                pushUser.setIsexitsSound(0);
-                pushUser.setNotificationBasicStyle(DEFAULTNOTIFICATIONBASICSTYLE1);
-            } else {
-                // 无声音
-                pushUser.setNotificationBasicStyle(DEFAULTNOTIFICATIONBASICSTYLE2);
-                pushUser.setIsexitsSound(1);
-            }
-        }
-        
-        return pushUser;
-	}	
-	
+
+		try {
+			pushUser.setNotificationBuilderId(Integer.valueOf(tradeMessageProperties.notificationBuilderId));
+			// 消息信息提示
+			if (WhetherEnum.whether.equals(sysUser.getIsAccept())) {
+				// 有声音
+				pushUser.setIsexitsSound(0);
+				pushUser.setNotificationBasicStyle(Integer.valueOf(tradeMessageProperties.notificationBasicStyle1));
+			} else {
+				// 无声音
+				pushUser.setNotificationBasicStyle(Integer.valueOf(tradeMessageProperties.notificationBasicStyle2));
+				pushUser.setIsexitsSound(1);
+			}
+		} catch (Exception e) {
+			// 没有配置zookeeper，取默认的
+			pushUser.setNotificationBuilderId(DEFAULTNOTIFICATIONBUILDERID);
+			// 消息信息提示
+			if (WhetherEnum.whether.equals(sysUser.getIsAccept())) {
+				// 有声音
+				pushUser.setIsexitsSound(0);
+				pushUser.setNotificationBasicStyle(DEFAULTNOTIFICATIONBASICSTYLE1);
+			} else {
+				// 无声音
+				pushUser.setNotificationBasicStyle(DEFAULTNOTIFICATIONBASICSTYLE2);
+				pushUser.setIsexitsSound(1);
+			}
+		}
+
+		return pushUser;
+	}
+
 	/**
 	 * 
 	 * @param sendMsgParamVo
@@ -393,75 +393,75 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	 * @return
 	 */
 	private PushMsgVo createPushMsgVo(SendMsgParamVo sendMsgParamVo, SendMsgType sendMsgType) {
-		
-        // 推送消息标题
-        String msgTitle = null;
-        String serviceFkId = null;
-        // 业务消息标识
-        String msgTypeCustom = null;
-        String linkUrl = tradeMessageProperties.orderDetailLink + "/" + sendMsgParamVo.getOrderId();
-        switch (sendMsgType) {
-            // 下单消息
-            case createOrder:
-                msgTitle = "您有一条新订单需要处理";
-                msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_BUY;
-                serviceFkId = sendMsgParamVo.getOrderId();
-                break;
-            // 申请退款消息
-            case applyReturn:
-                msgTitle = "您有一条新的售后申请";
-                linkUrl = tradeMessageProperties.orderRefundsDetailLink + "/" + sendMsgParamVo.getRefundsId();
-                msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_RETURN;
-                serviceFkId = sendMsgParamVo.getRefundsId();
-                break;
-            // 卖家同意退款后，买家退货(物流形式)给卖家
-            case returnShipments:
-                msgTitle = "您有一条新的售后申请";
-                linkUrl = tradeMessageProperties.orderRefundsDetailLink + "/" + sendMsgParamVo.getRefundsId();
-                serviceFkId = sendMsgParamVo.getRefundsId();
-                msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_RETURN;
-                break;
-            // 投诉单
-            case complainOrder:
-                msgTitle = "您有一条投诉单";
-                msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_COMPLAIN;
-                serviceFkId = sendMsgParamVo.getOrderId();
-                break;
-             // 鹿掌柜收款
-            case lzgGathering:
-                msgTitle = "鹿掌柜到账"+JsonDateUtil.priceConvertToString(sendMsgParamVo.getLzgAmount())+"元";
-                msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_LZGGATHERING;
-                serviceFkId = sendMsgParamVo.getOrderId();
-                break;
-            default:
-                break;
-        }
-        PushMsgVo pushMsgVo = new PushMsgVo();
-        pushMsgVo.setMsgTypeCustom(msgTypeCustom);
-        pushMsgVo.setServiceFkId(serviceFkId);
-        //2.1.0之前的版本发送h5链接
-        pushMsgVo.setMsgDetailType(MsgConstant.MsgDetailType.CONTENT);
-        pushMsgVo.setMsgNotifyContent(msgTitle);
-        //add by zhangkeneng v2.6.0 鹿掌柜收款需要单独设置
-        if(sendMsgType == SendMsgType.lzgGathering){
-        	pushMsgVo.setMsgDetailType(0);
-        	pushMsgVo.setMsgDetailLinkUrl("鹿掌柜到账"+JsonDateUtil.priceConvertToString(sendMsgParamVo.getLzgAmount())+"元");
-        }
-        
-        pushMsgVo.setSysCode(msgSysCode);
-        pushMsgVo.setToken(msgToken);
-        pushMsgVo.setSendUserId(sendMsgParamVo.getUserId());       
-        pushMsgVo.setServiceTypes(new Integer[] { 2 });
-        // 2:商家APP,3POS机
-        pushMsgVo.setAppType(2);
-        pushMsgVo.setIsUseTemplate(0);
-        pushMsgVo.setMsgType(MsgConstant.MsgType.THROUGH);
-        // 设置是否定时发送
-        pushMsgVo.setIsTiming(0);
-        
-        return pushMsgVo;
-	}
 
+		// 推送消息标题
+		String msgTitle = null;
+		String serviceFkId = null;
+		// 业务消息标识
+		String msgTypeCustom = null;
+		String linkUrl = tradeMessageProperties.orderDetailLink + "/" + sendMsgParamVo.getOrderId();
+		switch (sendMsgType) {
+			// 下单消息
+			case createOrder:
+				msgTitle = "您有一条新订单需要处理";
+				msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_BUY;
+				serviceFkId = sendMsgParamVo.getOrderId();
+				break;
+			// 申请退款消息
+			case applyReturn:
+				msgTitle = "您有一条新的售后申请";
+				linkUrl = tradeMessageProperties.orderRefundsDetailLink + "/" + sendMsgParamVo.getRefundsId();
+				msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_RETURN;
+				serviceFkId = sendMsgParamVo.getRefundsId();
+				break;
+			// 卖家同意退款后，买家退货(物流形式)给卖家
+			case returnShipments:
+				msgTitle = "您有一条新的售后申请";
+				linkUrl = tradeMessageProperties.orderRefundsDetailLink + "/" + sendMsgParamVo.getRefundsId();
+				serviceFkId = sendMsgParamVo.getRefundsId();
+				msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_RETURN;
+				break;
+			// 投诉单
+			case complainOrder:
+				msgTitle = "您有一条投诉单";
+				msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_COMPLAIN;
+				serviceFkId = sendMsgParamVo.getOrderId();
+				break;
+			// 鹿掌柜收款
+			case lzgGathering:
+				msgTitle = "鹿掌柜到账" + JsonDateUtil.priceConvertToString(sendMsgParamVo.getLzgAmount()) + "元";
+				msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_LZGGATHERING;
+				serviceFkId = sendMsgParamVo.getOrderId();
+				break;
+			default:
+				break;
+		}
+		PushMsgVo pushMsgVo = new PushMsgVo();
+		pushMsgVo.setMsgTypeCustom(msgTypeCustom);
+		pushMsgVo.setServiceFkId(serviceFkId);
+		// 2.1.0之前的版本发送h5链接
+		pushMsgVo.setMsgDetailType(MsgConstant.MsgDetailType.CONTENT);
+		pushMsgVo.setMsgNotifyContent(msgTitle);
+		// add by zhangkeneng v2.6.0 鹿掌柜收款需要单独设置
+		if (sendMsgType == SendMsgType.lzgGathering) {
+			pushMsgVo.setMsgDetailType(0);
+			pushMsgVo.setMsgDetailLinkUrl(
+					"鹿掌柜到账" + JsonDateUtil.priceConvertToString(sendMsgParamVo.getLzgAmount()) + "元");
+		}
+
+		pushMsgVo.setSysCode(msgSysCode);
+		pushMsgVo.setToken(msgToken);
+		pushMsgVo.setSendUserId(sendMsgParamVo.getUserId());
+		pushMsgVo.setServiceTypes(new Integer[] { 2 });
+		// 2:商家APP,3POS机
+		pushMsgVo.setAppType(2);
+		pushMsgVo.setIsUseTemplate(0);
+		pushMsgVo.setMsgType(MsgConstant.MsgType.THROUGH);
+		// 设置是否定时发送
+		pushMsgVo.setIsTiming(0);
+
+		return pushMsgVo;
+	}
 
 	/**
 	 * 点击发货时发送短信
@@ -507,32 +507,32 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 			if (StoreTypeEnum.SERVICE_STORE.equals(storeInfo.getType())) {
 				// Begin V2.5 added by maojj 2017-07-17
 				// 如果是用户取消则不发送短信
-				if(order.getCancelType() == OrderCancelType.CANCEL_BY_BUYER){
+				if (order.getCancelType() == OrderCancelType.CANCEL_BY_BUYER) {
 					return;
 				}
 				// End V2.5 added by maojj 2017-07-17
 				if (PayWayEnum.PAY_ONLINE == order.getPayWay()) {
 					TradeOrderPay payment = order.getTradeOrderPay();
 					if (PayTypeEnum.ALIPAY == payment.getPayType() || PayTypeEnum.WXPAY == payment.getPayType()) {
-						
-						//add by zengjz 判断是有违约金 2016-11-25
+
+						// add by zengjz 判断是有违约金 2016-11-25
 						if (WhetherEnum.whether == order.getIsBreach()) {
 							this.sendSms(mobile, tradeMessageProperties.smsServiceStoreCancelStyle4, params);
 						} else {
 							this.sendSms(mobile, tradeMessageProperties.smsServiceStoreCancelStyle1, params);
 						}
-						//end by zengjz 判断是有违约金 2016-11-25
-						
+						// end by zengjz 判断是有违约金 2016-11-25
+
 					} else if (PayTypeEnum.WALLET == payment.getPayType()
 							|| PayTypeEnum.JDPAY == payment.getPayType()) {
-						
-						//add by zengjz 判断是有违约金 2016-11-25
+
+						// add by zengjz 判断是有违约金 2016-11-25
 						if (WhetherEnum.whether == order.getIsBreach()) {
 							this.sendSms(mobile, tradeMessageProperties.smsServiceStoreCancelStyle5, params);
 						} else {
 							this.sendSms(mobile, tradeMessageProperties.smsServiceStoreCancelStyle2, params);
 						}
-						//end by zengjz 判断是有违约金 2016-11-25
+						// end by zengjz 判断是有违约金 2016-11-25
 
 					} // Begin 重构4.1 add by wusw 20160720
 				} else if (PayWayEnum.OFFLINE_CONFIRM_AND_PAY == order.getPayWay()) {
@@ -559,7 +559,8 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 			params.put("#1", order.getOrderNo());
 			// Begin V2.5 added by maojj 2017-07-13
 			// 拒收不退运费。退款金额=实付金额+运费优惠-运费
-			params.put("#2", order.getActualAmount().add(order.getRealFarePreferential()).subtract(order.getFare()).toString());
+			params.put("#2",
+					order.getActualAmount().add(order.getRealFarePreferential()).subtract(order.getFare()).toString());
 			// End V2.5 added by maojj 2017-07-13
 			params.put("#3", order.getReason());
 			// 查询用户电话号码
@@ -827,6 +828,126 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		} else {
 			logger.error("订单号：[" + order.getOrderNo() + "]的用户ID:[" + order.getUserId() + "]手机号码为空");
 		}
+
+	}
+
+	@Override
+	public void beforeTradeOrderRefundsCrteate(TradeOrderApplyRefundParamDto tradeOrderApplyRefundParamDto,
+			TradeOrderRefundContextBo tradeOrderRefundContext) throws MallApiException {
+		// do nothing
+	}
+
+	@Override
+	public void afterTradeOrderRefundsCrteated(TradeOrderRefundContextBo tradeOrderRefundContext)
+			throws MallApiException {
+		Assert.notNull(tradeOrderRefundContext.getTradeOrderRefunds(), "退款单信息不能为空");
+		// 保持退款信息
+		SysMsg refundMsg = createRefundMsg(tradeOrderRefundContext.getTradeOrderRefunds());
+		sysMsgMapper.insertSelective(refundMsg);
+
+		// 推送消息给商家版APP
+		SendMsgParamVo sendMsgParamVo = new SendMsgParamVo(tradeOrderRefundContext.getTradeOrderRefunds());
+		try {
+			this.sendSellerAppMessage(sendMsgParamVo, SendMsgType.applyReturn);
+		} catch (Exception e) {
+			throw new MallApiException("发送消息到商家中心失败");
+		}
+
+	}
+
+	@Override
+	public void beforeTradeOrderRefundsChanged(TradeOrderRefundContextBo tradeOrderRefundContext)
+			throws MallApiException {
+		// do nothing
+	}
+
+	@Override
+	public void afterOrderRefundsChanged(TradeOrderRefundContextBo tradeOrderRefundContext) throws MallApiException {
+		TradeOrderRefunds tradeOrderRefunds = tradeOrderRefundContext.getTradeOrderRefunds();
+		TradeOrder tradeOrder = tradeOrderRefundContext.getTradeOrder();
+		RefundsStatusEnum refundsStatusEnum = tradeOrderRefunds.getRefundsStatus();
+		switch (refundsStatusEnum) {
+			case YSC_REFUND:
+			case FORCE_SELLER_REFUND:
+			case SELLER_REFUNDING:
+				// 卖家同意退款后发送短信
+				this.sendSmsByAgreePay(tradeOrderRefunds, tradeOrder.getPayWay());
+				break;
+			case REFUND_SUCCESS:
+			case YSC_REFUND_SUCCESS:
+			case FORCE_SELLER_REFUND_SUCCESS:
+				// 退款成功后发送短信
+				refundAmountSuccess(tradeOrderRefundContext);
+				break;
+			case WAIT_SELLER_REFUND:
+				SendMsgParamVo sendMsgParamVo = new SendMsgParamVo(tradeOrderRefunds);
+				// 推送消息
+				try {
+					this.sendSellerAppMessage(sendMsgParamVo, SendMsgType.returnShipments);
+				} catch (Exception e) {
+					throw new MallApiException("发送消息到商家app出错",e);
+				} 
+				break;
+			default:
+				break;
+		}
 		
+	}
+
+	private void refundAmountSuccess(TradeOrderRefundContextBo tradeOrderRefundContext) {
+		TradeOrderRefunds tradeOrderRefunds = tradeOrderRefundContext.getTradeOrderRefunds();
+		// 增加短信的发送
+		Map<String, String> param = Maps.newHashMap();
+		// 订单 编号
+		param.put("#1", tradeOrderRefunds.getRefundNo());
+		// 退款金额
+		param.put("#2",df.format(tradeOrderRefunds.getTotalAmount()));
+		// 支付方式
+		param.put("#3", convertPayType(tradeOrderRefunds.getPaymentMethod()));
+		this.sendSms(sysBuyerUserService.selectMemberMobile(tradeOrderRefunds.getUserId()),
+				tradeMessageProperties.smsPayRefundSuccess, param);
+
+	}
+
+	/**
+	 * 保存系统消息
+	 */
+	private SysMsg createRefundMsg(TradeOrderRefunds orderRefunds) {
+		SysMsg sysMsg = new SysMsg();
+		sysMsg.setId(UuidUtils.getUuid());
+		sysMsg.setTitle("退款通知");
+		// 消息内容
+		String sysMsgContent = "您有一条来自用户【#1】的退款申请需要处理，订单号【#2】";
+		sysMsg.setContext(sysMsgContent.replace("#1", getUserPhone(orderRefunds.getUserId())).replace("#2",
+				orderRefunds.getOrderNo()));
+		sysMsg.setCreateTime(new Date());
+		sysMsg.setDisabled(Disabled.valid);
+		// 消息发送人Id
+		sysMsg.setFromUserId(RobotUserUtil.getRobotUser().getId());
+		// 是否已读：0未读，1已读
+		sysMsg.setIsRead(IsRead.UNREAD);
+		// 消息超链接
+		sysMsg.setLink("");
+		sysMsg.setStoreId(orderRefunds.getStoreId());
+		sysMsg.setTargetId(orderRefunds.getId());
+		// 消息类型：0提现通知，1下单通知，2退款申请，4退款准备超时未处理 5补货通知 6用户投诉通知7运营商下发公告
+		sysMsg.setType(MsgType.REFUND_APPLY_MSG);
+		return sysMsg;
+	}
+
+	public String getUserPhone(String buyerUserId) {
+		return sysBuyerUserService.selectMemberMobile(buyerUserId);
+	}
+	
+	private String convertPayType(PayTypeEnum payType){
+		String payTypeDesc = "支付宝/微信/余额";
+		if(PayTypeEnum.ALIPAY == payType){
+			payTypeDesc = "支付宝";
+		}else if(PayTypeEnum.WXPAY == payType){
+			payTypeDesc = "微信";
+		}else if(PayTypeEnum.WALLET == payType){
+			return "余额";
+		}
+		return payTypeDesc;
 	}
 }

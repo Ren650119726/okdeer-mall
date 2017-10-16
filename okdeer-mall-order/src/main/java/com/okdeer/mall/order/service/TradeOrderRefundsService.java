@@ -1,10 +1,15 @@
+
 package com.okdeer.mall.order.service;
 
 import java.util.List;
 import java.util.Map;
 
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.common.exception.MallApiException;
+import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.order.dto.OrderRefundQueryParamDto;
+import com.okdeer.mall.order.dto.TradeOrderApplyRefundParamDto;
+import com.okdeer.mall.order.dto.TradeOrderApplyRefundResultDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsLogistics;
@@ -34,10 +39,6 @@ import com.okdeer.mall.order.vo.TradeOrderRefundsVo;
  */
 public interface TradeOrderRefundsService {
 
-	/**
-	 * 买家申请退货
-	 */
-	void insertRefunds(TradeOrderRefunds orderRefunds) throws Exception;
 
 	/**
 	 * 插入退款单
@@ -63,8 +64,6 @@ public interface TradeOrderRefundsService {
 	 * 用户修改退单申请
 	 */
 	void alterRefunds(TradeOrderRefunds orderRefunds, TradeOrderRefundsCertificateVo certificate);
-
-
 
 	/**
 	 * 卖家同意退款申请
@@ -185,9 +184,8 @@ public interface TradeOrderRefundsService {
 	/**
 	 * 分页查询
 	 */
-	PageUtils<TradeOrderRefundsVo> findPageByFinance(OrderRefundQueryParamDto orderRefundQueryParamDto, int pageNumber, int pageSize)
-			throws Exception;
-
+	PageUtils<TradeOrderRefundsVo> findPageByFinance(OrderRefundQueryParamDto orderRefundQueryParamDto, int pageNumber,
+			int pageSize) throws Exception;
 
 	/**
 	 * 根据订单id，统计退款金额
@@ -242,8 +240,8 @@ public interface TradeOrderRefundsService {
 	 * @param storeId 店铺ID
 	 */
 	List<TradeOrderRefundsStatusVo> getOrderRefundsCount(String storeId);
-	
-	//start added by luosm 20160927 V1.1.0
+
+	// start added by luosm 20160927 V1.1.0
 	/***
 	 * 
 	 * @Description: 查询服务店到店消费退款单状态下对应的退款单数量
@@ -253,7 +251,7 @@ public interface TradeOrderRefundsService {
 	 * @date 2016年9月27日
 	 */
 	List<TradeOrderRefundsStatusVo> selectServiceOrderRefundsCount(String storeId);
-	//end added by luosm 20160927 V1.1.0
+	// end added by luosm 20160927 V1.1.0
 
 	/**
 	 * 微信版App查询退货/退款单列表
@@ -285,12 +283,11 @@ public interface TradeOrderRefundsService {
 	 * @return
 	 */
 	// Begin V1.1.0 add by wusw 20160928
-	Long selectRefundsCount(String storeId,OrderTypeEnum type);
+	Long selectRefundsCount(String storeId, OrderTypeEnum type);
 	// End V1.1.0 add by wusw 20160928
 
 	List<TradeOrderRefunds> getTradeOrderRefundsByOrderItemId(String orderItemId);
 
-	TradeOrderRefunds getTradeOrderRefundsByOrderNo(String orderNo);
 
 	/**
 	 * 客服处理更新订单状态
@@ -356,17 +353,11 @@ public interface TradeOrderRefundsService {
 
 	// End 重构4.1 add by wusw 20160722
 
-	/**
-	 * 插入充值订单退款单
-	 * @param tradeOrder
-	 * @throws Exception
-	 */
-	void insertRechargeRefunds(TradeOrder tradeOrder) throws Exception;
 
 	// Begin v1.1.0 add by zengjz 20160917 统计订单退款金额、数量
 	Map<String, Object> statisRefundsByParams(OrderRefundQueryParamDto orderRefundQueryParamDto) throws Exception;
 	// End v1.1.0 add by zengjz 20160917 统计订单退款金额、数量
-	
+
 	/**
 	 * @Description: 财务后台退款成功后处理
 	 * @param orderRefunds
@@ -375,6 +366,19 @@ public interface TradeOrderRefundsService {
 	 * @date 2017年1月16日
 	 */
 	void refundSuccess(TradeOrderRefunds orderRefunds) throws Exception;
-	
+
 	List<TradeOrderRefunds> selectByOrderIds(List<String> orderIds) throws Exception;
+
+	/**
+	 * @Description: 处理退款申请
+	 * @param tradeOrderApplyRefundParamDto 申请退款参数
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年10月12日
+	 */
+	Response<TradeOrderApplyRefundResultDto> processApplyRefund(TradeOrderApplyRefundParamDto tradeOrderApplyRefundParamDto)
+			throws MallApiException;
+	
+	
+	void insertRechargeRefunds(TradeOrder tradeOrder) throws Exception;
 }

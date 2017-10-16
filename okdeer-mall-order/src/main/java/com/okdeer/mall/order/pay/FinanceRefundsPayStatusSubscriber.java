@@ -145,43 +145,16 @@ public class FinanceRefundsPayStatusSubscriber extends AbstractRocketMQSubscribe
 				logger.warn("退款单支付状态同步未找到退款单，交易流水号：", result.getRefundNo());
 				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 			}
-
 			// 更新订单状态
 			if (orderRefunds.getRefundsStatus() == RefundsStatusEnum.SELLER_REFUNDING) {
 				logger.info("=============卖家退款中，修改退款的订单的状态=============");
 				orderRefunds.setRefundsStatus(RefundsStatusEnum.REFUND_SUCCESS);
-				
-				//退款成功向用户发送通知消息
-//		        this.sendMessageService.tradeSendMessage(null, orderRefunds);
-				
 			} else if (orderRefunds.getRefundsStatus() == RefundsStatusEnum.YSC_REFUND) {
 				orderRefunds.setRefundsStatus(RefundsStatusEnum.YSC_REFUND_SUCCESS);
 			} else if (orderRefunds.getRefundsStatus() == RefundsStatusEnum.FORCE_SELLER_REFUND) {
 				orderRefunds.setRefundsStatus(RefundsStatusEnum.FORCE_SELLER_REFUND_SUCCESS);
 			}
-			orderRefunds.setRefundMoneyTime(new Date());
-			
 			tradeOrderRefundsService.refundSuccess(orderRefunds);
-			
-			// Begin V2.4 added by maojj 2017-05-23
-			// 增加短信的发送
-			Map<String, String> param = Maps.newHashMap();
-			// 订单 编号
-			param.put("#1", orderRefunds.getRefundNo());
-			// 退款金额
-			param.put("#2", result.getRefundAmount());
-			// 支付方式
-			param.put("#3", convertPayType(result.getPayType()));
-			tradeMessageService.sendSms(sysBuyerUserService.selectMemberMobile(orderRefunds.getUserId()), smsPayRefundSuccess, param);
-			// End V2.4 added by maojj 2017-05-23
-			
-			TradeOrder tradeOrder = tradeOrderService.selectById(orderRefunds.getOrderId());
-			//add by  zhangkeneng  和左文明对接丢消息
-			TradeOrderContext tradeOrderContext = new TradeOrderContext();
-			tradeOrderContext.setTradeOrder(tradeOrder);
-			tradeOrderContext.setTradeOrderRefunds(orderRefunds);
-			tradeorderRefundProcessLister.tradeOrderStatusChange(tradeOrderContext);
-			
 			logger.info("=============修改退款的订单的状态成功=============");
 		} catch (Exception e) {
 			logger.error("退款单支付状态同步消息处理失败", e);
