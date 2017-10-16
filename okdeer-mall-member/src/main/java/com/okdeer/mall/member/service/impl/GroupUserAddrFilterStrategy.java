@@ -1,6 +1,4 @@
-package com.okdeer.mall.member.mapper;
-
-import static org.junit.Assert.assertNotNull;
+package com.okdeer.mall.member.service.impl;
 
 import java.util.List;
 import java.util.Map;
@@ -33,7 +31,7 @@ public class GroupUserAddrFilterStrategy implements AddressFilterStrategy {
 	public boolean isOutRange(MemberConsigneeAddress addrInfo,
 			UserAddressFilterCondition filterCondition) {
 		ActivityDiscount actInfo = filterCondition.getActivityInfo();
-		assertNotNull("团购活动信息不能为空", actInfo);
+//		assertNotNull("团购活动信息不能为空", actInfo);
 		// 选择是否参加，0：可以参加，1：不可以参加
 		WhetherEnum limitRangeType = actInfo.getLimitRangeType();
 		if (actInfo.getLimitRange() == AreaType.national) {
@@ -41,7 +39,7 @@ public class GroupUserAddrFilterStrategy implements AddressFilterStrategy {
 			return false;
 		}
 		Map<ActivityBusinessType, List<String>> areaLimitCondition = filterCondition.getAreaLimitCondition();
-		assertNotNull("区域限制条件不能为空", areaLimitCondition);
+//		assertNotNull("区域限制条件不能为空", areaLimitCondition);
 		ActivityBusinessType limitType = null;
 		List<String> areaIdList = null;
 		for (Map.Entry<ActivityBusinessType, List<String>> entry : areaLimitCondition.entrySet()) {
