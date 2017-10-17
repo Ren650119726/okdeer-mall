@@ -123,7 +123,8 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		ActivityTypeEnum activityType = paramDto.getActivityType();
 		StoreSkuParserBo parserBo = (StoreSkuParserBo)paramDto.get("parserBo");
 		// 刷新请求商品列表
-		if(paramDto.getChannel() != OrderResourceEnum.MEMCARD){
+		if(paramDto.getChannel() != OrderResourceEnum.MEMCARD && 
+				paramDto.getChannel() != OrderResourceEnum.WECHAT_MIN){
 			parserBo.refreshReqSkuList(paramDto);
 		}
 		boolean isValid = true;

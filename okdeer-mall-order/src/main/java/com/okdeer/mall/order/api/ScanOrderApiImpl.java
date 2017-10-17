@@ -38,6 +38,7 @@ import com.okdeer.jxc.pos.vo.SelfPrepayVo;
 import com.okdeer.jxc.sale.goods.entity.PosGoods;
 import com.okdeer.jxc.sale.goods.qo.GoodsInfoQo;
 import com.okdeer.jxc.sale.goods.service.PosGoodsService;
+import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.utils.TradeNumUtil;
@@ -130,7 +131,7 @@ public class ScanOrderApiImpl implements ScanOrderApi {
     	RespSelfJson resp = selfPayOrderServiceApi.settlementOrder(prepayDto);
     	//验证返回结果
     	ScanOrderDto orderDetail = new ScanOrderDto();
-		if(Integer.valueOf(resp.get(RespSelfJson.KEY_CODE).toString()) == 127){
+		if(Integer.valueOf(resp.get(RespSelfJson.KEY_CODE).toString()) != 0){
 			orderDetail.setCode(Integer.valueOf(resp.get(RespSelfJson.KEY_CODE).toString()));
 			return orderDetail;
 		}
@@ -151,10 +152,14 @@ public class ScanOrderApiImpl implements ScanOrderApi {
 	@Override
 	public Response<PlaceOrderDto> submitOrder(Request<PlaceOrderParamDto> reqDto, Response<PlaceOrderDto> resp,
 			RequestParams requestParams) throws Exception {
-	
+		PlaceOrderParamDto orderParamDto = reqDto.getData();
     	//共用实物订单代金券校验
 		StoreSkuParserBo bo = new StoreSkuParserBo(Lists.newArrayList());
-		reqDto.getData().getCacheMap().put("parserBo", bo);
+		orderParamDto.getCacheMap().put("parserBo", bo);
+		orderParamDto.setChannel(String.valueOf(OrderResourceEnum.WECHAT_MIN.ordinal()));
+		if(orderParamDto.getActivityType() == null){
+			reqDto.getData().setActivityType(String.valueOf(ActivityTypeEnum.NO_ACTIVITY.ordinal()));
+		}
 		//检查代金券
     	checkFavourService.process(reqDto, resp);
     	if(!resp.isSuccess()){
@@ -175,12 +180,10 @@ public class ScanOrderApiImpl implements ScanOrderApi {
 
 		//保存扫描购订单信息
 		orderDetail.setRecordId(reqDto.getData().getRecordId());
-		String branchId = reqDto.getData().getStoreId();
-		scanOrderService.saveScanOrder(orderDetail, branchId,requestParams);
+		scanOrderService.saveScanOrder(orderDetail, orderDetail.getBranchId(),requestParams);
 		//填充返回信息
-		Response<PlaceOrderDto> respones = new Response<PlaceOrderDto>();
-		fillResponse(respones,orderDetail);
-		return respones;
+		fillResponse(resp,orderDetail);
+		return resp;
 	}
 	
 	/**
@@ -192,8 +195,10 @@ public class ScanOrderApiImpl implements ScanOrderApi {
 	private SelfOrderVo builderParams(PlaceOrderParamDto orderParam,BigDecimal platDiscountsAmount) {
 		SelfOrderVo scanOrderParam = new SelfOrderVo();
 		scanOrderParam.setOrderId(orderParam.getOrderId());		
-		scanOrderParam.setPinAmount(new BigDecimal(orderParam.getPinMoney()));
-		scanOrderParam.setPlatDiscountsAmount(platDiscountsAmount);
+		BigDecimal pinAmount = orderParam.getPinMoney() == null ? BigDecimal.ZERO
+				: new BigDecimal(orderParam.getPinMoney());
+		scanOrderParam.setPinAmount(pinAmount);
+		scanOrderParam.setPlatDiscountAmount(platDiscountsAmount);
 		return scanOrderParam;
 	}
 
@@ -205,23 +210,25 @@ public class ScanOrderApiImpl implements ScanOrderApi {
 	 * @date 2017年10月16日
 	 */
 	private void fillResponse(Response<PlaceOrderDto> resp,ScanOrderDto orderDetail) {
-		resp.getData().setOrderId(orderDetail.getOrderId());
-		resp.getData().setOrderNo(orderDetail.getOrderNo());
+		PlaceOrderDto placeOrderDto = new PlaceOrderDto();
+		placeOrderDto.setOrderId(orderDetail.getOrderId());
+		placeOrderDto.setOrderNo(orderDetail.getOrderNo());
 
-		resp.getData().setTradeNum(orderDetail.getTradeNum());
-		resp.getData().setOrderPrice(JsonDateUtil.priceConvertToString(orderDetail.getPaymentAmount(), 2, 3));
-		resp.getData().setLimitTime(TIME_OUT_MINUTES * 60);
-		resp.getData().setCurrentTime(System.currentTimeMillis());
-		resp.getData().setPaymentMode(0);
-		resp.getData().setIsReachPrice(1);
+		placeOrderDto.setTradeNum(orderDetail.getTradeNum());
+		placeOrderDto.setOrderPrice(JsonDateUtil.priceConvertToString(orderDetail.getPaymentAmount(), 2, 3));
+		placeOrderDto.setLimitTime(TIME_OUT_MINUTES * 60);
+		placeOrderDto.setCurrentTime(System.currentTimeMillis());
+		placeOrderDto.setPaymentMode(0);
+		placeOrderDto.setIsReachPrice(1);
 		// 平台优惠
-		resp.getData().setFavour(JsonDateUtil.priceConvertToString(orderDetail.getPlatPreferentialAmount(), 2, 3));
-		resp.getData().setUsablePinMoney(JsonDateUtil.priceConvertToString(orderDetail.getPinMoneyAmount(), 2, 3));
+		placeOrderDto.setFavour(JsonDateUtil.priceConvertToString(orderDetail.getPlatDiscountAmount(), 2, 3));
+		placeOrderDto.setUsablePinMoney(JsonDateUtil.priceConvertToString(orderDetail.getPinMoneyAmount(), 2, 3));
 		// 店铺优惠金额
-		resp.getData().setStoreFavour(JsonDateUtil.priceConvertToString(orderDetail.getDiscountAmount(), 2, 3));
-		resp.getData().setOrderResource(OrderResourceEnum.SWEEP.ordinal());
-		resp.getData().setOrderPrice(JsonDateUtil.priceConvertToString(orderDetail.getSaleAmount(),2, 3));
-		resp.getData().setCurrentTime(System.currentTimeMillis());
+		placeOrderDto.setStoreFavour(JsonDateUtil.priceConvertToString(orderDetail.getDiscountAmount(), 2, 3));
+		placeOrderDto.setOrderResource(OrderResourceEnum.SWEEP.ordinal());
+		placeOrderDto.setOrderPrice(JsonDateUtil.priceConvertToString(orderDetail.getSaleAmount(),2, 3));
+		placeOrderDto.setCurrentTime(System.currentTimeMillis());
+		resp.setData(placeOrderDto);
 		resp.setResult(ResultCodeEnum.SUCCESS);
 	}
 

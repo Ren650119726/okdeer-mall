@@ -2235,6 +2235,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     public Integer updateOrderStatus(TradeOrder tradeOrder) throws ServiceException {
         //add by mengsj begin 扫码购另外处理 and tuzd 会员卡扫码付 
         if (tradeOrder.getOrderResource() == OrderResourceEnum.SWEEP || 
+        		tradeOrder.getOrderResource() == OrderResourceEnum.WECHAT_MIN ||
         		tradeOrder.getOrderResource() == OrderResourceEnum.MEMCARD) {
         	//释放所有代金卷
         	activityCouponsRecordService.releaseConpons(tradeOrder);

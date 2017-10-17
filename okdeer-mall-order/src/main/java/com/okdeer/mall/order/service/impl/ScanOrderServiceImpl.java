@@ -122,9 +122,19 @@ public class ScanOrderServiceImpl implements ScanOrderService {
 		persity.setStoreId(vo.getBranchId());
 		//实付金额
 		persity.setActualAmount(vo.getSaleAmount());
-		//优惠金额	
-		persity.setPreferentialPrice(vo.getDiscountAmount());
-		persity.setStorePreferential(vo.getDiscountAmount());
+		//优惠金额
+		BigDecimal prefer = vo.getPlatDiscountAmount() != null ? vo.getPlatDiscountAmount():BigDecimal.ZERO;
+//		BigDecimal prefer = BigDecimal.ZERO;
+		BigDecimal discount = vo.getDiscountAmount() != null ? vo.getDiscountAmount():BigDecimal.ZERO;
+		BigDecimal pinMoney = vo.getPinMoneyAmount()!=null?vo.getPinMoneyAmount():BigDecimal.ZERO;
+		//店铺优惠
+		persity.setStorePreferential(discount);
+		//总优惠
+		persity.setPreferentialPrice(discount.add(prefer));
+		//零花钱优惠
+		persity.setPinMoney(pinMoney);
+		//平台优惠字段
+		persity.setPlatformPreferential(prefer.add(pinMoney));
 		persity.setCreateTime(new Date());
 		persity.setUpdateTime(persity.getCreateTime());
 		//设置显示
@@ -172,17 +182,15 @@ public class ScanOrderServiceImpl implements ScanOrderService {
 		//保存订单
 		tradeOrderService.insertTradeOrder(persity);
 		
+		//更新优惠券信息
 		if(vo.getActivityType() == ActivityTypeEnum.VONCHER){
-			//更新优惠券信息
 			this.updateActivityCoupons(vo.getOrderId(), vo.getRecordId(),vo.getCouponsId(), requestParams.getMachineCode());
 		}
 		// 保存零花钱记录
-		if (vo.getPinMoneyAmount().compareTo(BigDecimal.ZERO) > 0) {
-			//保存零花钱记录
+		if (persity.getPinMoney().compareTo(BigDecimal.ZERO) > 0) {
 			tradePinMoneyUseService.orderOccupy(vo.getUserId(), vo.getOrderId(), persity.getTotalAmount(),
-					vo.getPinMoneyAmount());
+					persity.getPinMoney());
 		}
-		
 		//支付0元直接改为支付完成
 		if(persity.getActualAmount().compareTo(BigDecimal.ZERO) == 0){
 			tradeOrderPayApi.wlletPay(BigDecimal.ZERO.toString(), persity);
