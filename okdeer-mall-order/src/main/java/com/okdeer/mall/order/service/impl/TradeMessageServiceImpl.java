@@ -749,6 +749,11 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 				params.put("#4", servicePhone);
 			}
 
+		}else if(tradeOrder.getType() == OrderTypeEnum.SERVICE_EXPRESS_ORDER){
+			// 如果是寄送服务订单标示团购订单拼团成功
+			smsTempate = tradeMessageProperties.smsGroupSuccessStyle;
+			// 订单编号
+			params.put("#1", tradeOrder.getOrderNo());
 		}
 		// 如果没有短信模板，直接返回
 		if (StringUtils.isBlank(smsTempate)) {
