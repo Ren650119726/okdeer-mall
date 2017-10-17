@@ -11,8 +11,6 @@ package com.okdeer.mall.order.timer;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
-
 import javax.annotation.Resource;
 
 import org.slf4j.Logger;
@@ -51,6 +49,7 @@ import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.vo.TradeOrderCommentVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsCertificateVo;
+import com.okdeer.mall.util.RedisLock;
 import com.okdeer.base.common.constant.LoggerConstants;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.enums.WhetherEnum;
@@ -160,6 +159,9 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 	
 	@Resource
 	private TradeOrderGroupRelationService tradeOrderGroupRelationService;
+	
+	@Resource
+	private RedisLock redisLock;
 	// End V2.6.3 added by maojj 2017-10-17
 	
 	
@@ -789,41 +791,46 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 		long currentTime = System.currentTimeMillis();
 		TimeoutMessage timeoutMsg = JsonMapper.nonEmptyMapper().fromJson(content, TimeoutMessage.class);
 		// 根据团购订单id查询团购订单
+		String lockKey = String.format("GROUP:%s", timeoutMsg.getKey());
 		try {
-			TradeOrderGroup orderGroup =  tradeOrderGroupService.findById(timeoutMsg.getKey());
-			if (orderGroup == null) {
-				logger.warn(timeoutMsg.getKey() + "：团购订单不存在");
-				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+			if (redisLock.tryLock(lockKey, 10)) {
+				TradeOrderGroup orderGroup =  tradeOrderGroupService.findById(timeoutMsg.getKey());
+				if (orderGroup == null) {
+					logger.warn(timeoutMsg.getKey() + "：团购订单不存在");
+					return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+				}
+				if(orderGroup.getExpireTime().getTime() - currentTime > MIN_INTERVAL){
+					// 如果团购订单过期时间-当前时间>最小时间间隔，则发送推迟执行消息，知道超时时间达到再进行消费
+					tradeOrderTimer.sendAfreshTimerMessage(tag, timeoutMsg, orderGroup.getExpireTime().getTime());
+					return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+				}
+				if(orderGroup.getStatus() != GroupOrderStatusEnum.UN_GROUP){
+					// 如果状态已经发生变更，则不做处理
+					return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+				}
+				// 修改团单状态为成团过期取消
+				orderGroup.setStatus(GroupOrderStatusEnum.GROUP_EXPIRT);
+				orderGroup.setEndTime(new Date());
+				orderGroup.setRemark("拼团过期超时");
+				tradeOrderGroupService.update(orderGroup);
+				// 查询所有已经入团的团购订单
+				List<TradeOrderGroupRelation> orderGroupRelList = tradeOrderGroupRelationService.findByGroupOrderId(orderGroup.getId());
+				// 对所有入团订单走订单取消流程
+				List<CancelOrderParamDto> cancelOrderList = Lists.newArrayList();
+				orderGroupRelList.forEach(groupRel -> {
+					CancelOrderParamDto cancelParamDto = new CancelOrderParamDto();
+					cancelParamDto.setOrderId(groupRel.getOrderId());
+					cancelParamDto.setReason("拼团失败");
+					cancelParamDto.setCancelType(OrderCancelType.CANCEL_BY_SYSTEM);
+					cancelOrderList.add(cancelParamDto);
+				});
+				cancelOrderList.forEach(cancelOrder -> cancelOrderApi.cancelOrder(cancelOrder));
 			}
-			if(orderGroup.getExpireTime().getTime() - currentTime > MIN_INTERVAL){
-				// 如果团购订单过期时间-当前时间>最小时间间隔，则发送推迟执行消息，知道超时时间达到再进行消费
-				tradeOrderTimer.sendAfreshTimerMessage(tag, timeoutMsg, orderGroup.getExpireTime().getTime());
-				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-			}
-			if(orderGroup.getStatus() != GroupOrderStatusEnum.UN_GROUP){
-				// 如果状态已经发生变更，则不做处理
-				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-			}
-			// 修改团单状态为成团过期取消
-			orderGroup.setStatus(GroupOrderStatusEnum.GROUP_EXPIRT);
-			orderGroup.setEndTime(new Date());
-			orderGroup.setRemark("拼团过期超时");
-			tradeOrderGroupService.update(orderGroup);
-			// 查询所有已经入团的团购订单
-			List<TradeOrderGroupRelation> orderGroupRelList = tradeOrderGroupRelationService.findByGroupOrderId(orderGroup.getId());
-			// 对所有入团订单走订单取消流程
-			List<CancelOrderParamDto> cancelOrderList = Lists.newArrayList();
-			orderGroupRelList.forEach(groupRel -> {
-				CancelOrderParamDto cancelParamDto = new CancelOrderParamDto();
-				cancelParamDto.setOrderId(groupRel.getOrderId());
-				cancelParamDto.setReason("拼团失败");
-				cancelParamDto.setCancelType(OrderCancelType.CANCEL_BY_SYSTEM);
-				cancelOrderList.add(cancelParamDto);
-			});
-			cancelOrderList.forEach(cancelOrder -> cancelOrderApi.cancelOrder(cancelOrder));
 		} catch (Exception e) {
 			logger.error("{}团购订单过期失败：{}",timeoutMsg.getKey(),e);
 			return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+		} finally{
+			redisLock.unLock(lockKey);
 		}
 		return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 	}

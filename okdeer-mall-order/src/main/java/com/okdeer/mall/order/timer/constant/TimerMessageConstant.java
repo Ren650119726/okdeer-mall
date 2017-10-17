@@ -101,9 +101,9 @@ public interface TimerMessageConstant {
         tag_take_goods_timeout(3 * 24 * 60 * 60L),
 
         /**
-         * 收货超时处理(团购) 7天
+         * 收货超时处理(团购) 10天
          */
-        tag_confirm_group_timeout(7 * 24 * 60 * 60L),
+        tag_confirm_group_timeout(10 * 24 * 60 * 60L),
 
         //begin by wangf01 2016.07.21
         /**
