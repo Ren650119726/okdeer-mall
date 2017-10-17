@@ -672,12 +672,13 @@ class SysBuyerUserServiceImpl extends BaseCrudServiceImpl implements SysBuyerUse
 		SysBuyerUserDto sysBuyerUserDto = new SysBuyerUserDto();
 		sysBuyerUserDto.setLoginName(mobilePhone);
 		sysBuyerUserDto.setPhone(mobilePhone);
-		
-		if (StringUtils.isNotBlank(clientType) && "0".equals(clientType)) {
-			sysBuyerUserDto.setDataSource(String.valueOf(OrderResourceEnum.YSCAPP.ordinal()));
-		} else if (StringUtils.isNotBlank(clientType) && "3".equals(clientType)) {
-			sysBuyerUserDto.setDataSource(String.valueOf(OrderResourceEnum.CVSAPP.ordinal()));
-		}
+//		if (StringUtils.isNotBlank(clientType) && "0".equals(clientType)) {
+//			sysBuyerUserDto.setDataSource(String.valueOf(OrderResourceEnum.YSCAPP.ordinal()));
+//		} else if (StringUtils.isNotBlank(clientType) && "3".equals(clientType)) {
+//			sysBuyerUserDto.setDataSource(String.valueOf(OrderResourceEnum.CVSAPP.ordinal()));
+//		}else{
+//		}
+		sysBuyerUserDto.setDataSource(clientType);
 		//新增用户及关系
 		return this.addSysBuyerSync410(sysBuyerUserDto, null, null);
 	}

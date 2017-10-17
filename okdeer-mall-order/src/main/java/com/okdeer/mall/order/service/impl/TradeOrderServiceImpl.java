@@ -230,6 +230,7 @@ import com.okdeer.mall.order.service.TradeOrderRefundsServiceApi;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
+import com.okdeer.mall.order.service.TradePinMoneyUseService;
 import com.okdeer.mall.order.service.TradeorderProcessLister;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.PageQueryUtils;
@@ -653,8 +654,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * 会员卡零售调用api
 	 */
 	@Reference(version = "1.0.0", check = false)
-	HykPayOrderServiceApi hykPayOrderServiceApi;
+	private HykPayOrderServiceApi hykPayOrderServiceApi;
   	//End v2.6.1 tuzhd 2017-09-06
+	
+	@Autowired
+	private TradePinMoneyUseService tradePinMoneyUseService;
 
     //begin add wangf01 2017-08-10
     
@@ -2232,9 +2236,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         if (tradeOrder.getOrderResource() == OrderResourceEnum.SWEEP || 
         		tradeOrder.getOrderResource() == OrderResourceEnum.MEMCARD) {
         	//释放所有代金卷
+        	activityCouponsRecordService.releaseConpons(tradeOrder);
+        	//释放零花钱
+        	tradePinMoneyUseService.releaseOrderOccupy(tradeOrder.getId());
+        	//调用零售取消订单（会员卡订单）
         	if(tradeOrder.getOrderResource() == OrderResourceEnum.MEMCARD && 
         			tradeOrder.getStatus() == OrderStatusEnum.CANCELED){
-        		activityCouponsRecordService.releaseConpons(tradeOrder);
         		try{
         			//新版会员卡支付通知零售取消订单
         			hykPayOrderServiceApi.cancelOrder(tradeOrder.getId(), null);

@@ -1,12 +1,9 @@
 package com.okdeer.mall.order.handler.impl;
 
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
@@ -30,21 +27,15 @@ import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.base.common.enums.CommonResultCodeEnum;
 import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
-import com.okdeer.base.framework.mq.RocketMQProducer;
-import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.base.redis.IRedisTemplateWrapper;
 import com.okdeer.common.utils.JsonDateUtil;
 import com.okdeer.jxc.bill.service.HykPayOrderServiceApi;
 import com.okdeer.mall.activity.bo.FavourParamBO;
-import com.okdeer.mall.activity.coupons.bo.ActivityCouponsBo;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
-import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.discount.entity.PreferentialVo;
-import com.okdeer.mall.activity.mq.constants.ActivityCouponsTopic;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.enums.UseClientType;
@@ -66,6 +57,7 @@ import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.handler.MemberCardOrderService;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.GetPreferentialService;
+import com.okdeer.mall.order.service.ScanOrderService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradePinMoneyObtainService;
@@ -106,8 +98,6 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
      */
     @Reference(version = "1.0.0", check = false)
     private GoodsStoreSkuServiceApi goodsStoreSkuApi;
-    @Resource
-    private ActivityCouponsRecordMapper activityCouponsRecordMapper;
     
    /**
 	 * 优惠信息校验
@@ -116,8 +106,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	RequestHandler<PlaceOrderParamDto, PlaceOrderDto>  checkFavourService;
 	
 	@Autowired
-	private RocketMQProducer rocketMQProducer;
-	
+	private ScanOrderService scanOrderService;
 	/**
      * 导入tradeOrder服务接口
      */
@@ -143,6 +132,13 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	
 	@Autowired
 	private TradePinMoneyUseService tradePinMoneyUseService;
+	
+ 	/**
+ 	 * 优惠信息校验
+ 	 */
+ 	@Resource
+ 	RequestHandler<PlaceOrderParamDto, PlaceOrderDto>  checkPinMoneyService;
+    
 	
 	/**
 	 * 会员卡订单缓存后缀
@@ -275,6 +271,11 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 	    	//共用实物订单代金券校验
 	    	checkFavourService.process(req, resp);
 	    	//如果检查结果为false 且为代金券类型
+	    	if(!resp.isSuccess()){
+	    		return resp;
+	    	}
+	    	//检查零花钱
+	    	checkPinMoneyService.process(req, resp);
 	    	if(!resp.isSuccess()){
 	    		return resp;
 	    	}
@@ -414,7 +415,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		
 		if(vo.getActiviType() == ActivityTypeEnum.VONCHER){
 			//更新优惠券信息
-			updateActivityCoupons(vo.getOrderId(), vo.getRecordId(), vo.getCouponsId(), vo.getDeviceId());
+			scanOrderService.updateActivityCoupons(vo.getOrderId(), vo.getRecordId(), vo.getCouponsId(), vo.getDeviceId());
 		}
 		// 保存零花钱记录
 		if (vo.getPinMoneyAmount().compareTo(BigDecimal.ZERO) > 0) {
@@ -640,37 +641,5 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
     	}
     	return newCard;
     }
-	
-    
-    /**
-	 * @Description: 更新代金券
-	 * @param tradeOrder 交易订单
-	 * @param req 请求对象
-	 * @return void  
-	 * @author maojj
-	 * @date 2016年7月14日
-	 */
-	private void updateActivityCoupons(String orderId,String recordId,String couponsId,String deviceId) throws Exception {
-		Map<String, Object> params = new HashMap<>();
-		params.put("orderId", orderId);
-		params.put("id", recordId);
-		params.put("deviceId", deviceId);
-		params.put("recDate", DateUtils.getDate());
-		// 更新代金券状态
-		int updateResult = activityCouponsRecordMapper.updateActivityCouponsStatus(params);
-		if (updateResult == 0) {
-			throw new ServiceException("代金券已使用或者已过期");
-		}
-		// 发送消息修改代金券使用数量
-		ActivityCouponsBo couponsBo = new ActivityCouponsBo(couponsId, Integer.valueOf(1));
-		MQMessage<?> anMessage = new MQMessage<>(ActivityCouponsTopic.TOPIC_COUPONS_COUNT, (Serializable) couponsBo);
-		// key:订单id：代金券id
-		anMessage.setKey(String.format("%s:%s", orderId,couponsId));
-		try {
-			rocketMQProducer.sendMessage(anMessage);
-		} catch (Exception e) {
-			logger.error("发送代金券使用消息时发生异常，{}",e);
-		}
-	}
 
 }
