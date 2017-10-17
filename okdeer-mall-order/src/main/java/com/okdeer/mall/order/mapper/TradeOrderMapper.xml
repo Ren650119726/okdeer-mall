@@ -6281,7 +6281,11 @@
 		</if>
 		<!-- 订单类型 -->
 		<if test="type != null and type != ''">
-			AND tr.type = #{type,jdbcType=TINYINT}
+			AND tr.type IN
+			<foreach collection="type" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item}
+			</foreach>
 		</if>
 		<!-- Begin V2.3.0 added by luosm 20170522 -->
 		<if test="null != startCreateTime">
