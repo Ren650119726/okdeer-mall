@@ -681,6 +681,7 @@
 		<result column="breach_money" property="breachMoney" jdbcType="DECIMAL" />
 		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
 		<result column="pick_up_time" property="pickUpTime" jdbcType="VARCHAR" />
+		<result column="store_preferential" property="storePreferential" jdbcType="DECIMAL" />
 	</resultMap>
 	<!--end xuzq 20170321 2.2.0 订单查询map -->
 	<sql id="Base_Column_List">
@@ -6280,7 +6281,11 @@
 		</if>
 		<!-- 订单类型 -->
 		<if test="type != null and type != ''">
-			AND tr.type = #{type,jdbcType=TINYINT}
+			AND tr.type IN
+			<foreach collection="type" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item}
+			</foreach>
 		</if>
 		<!-- Begin V2.3.0 added by luosm 20170522 -->
 		<if test="null != startCreateTime">
@@ -6328,6 +6333,7 @@
 		tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.pick_up_type,
 		tr.preferential_price,tr.fare,tr.status,tr.delivery_time,tr.type,
 		tr.create_time,tr.activity_type,tr.activity_id,tr.update_time,
+		tr.store_preferential,
 		(select sum(ti.quantity) from trade_order_item as ti where ti.order_id
 		= tr.id) as goods_count,
 		(select count(id) from trade_order_item as ti where ti.order_id = tr.id) as
