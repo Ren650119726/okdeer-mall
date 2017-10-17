@@ -24,6 +24,7 @@ import com.okdeer.mall.order.enums.AppOrderTypeEnum;
 import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.system.utils.ConvertUtil;
 
 /**
@@ -194,7 +195,12 @@ public class UserOrderDtoLoader {
 			itemDto.setQuantity(orderItem.getQuantity()==null ? 0 : orderItem.getQuantity().intValue());
 			itemDto.setQuantityStr(orderItem.getQuantity()==null ? 
 					ConvertUtil.format(orderItem.getWeight()) : String.valueOf(orderItem.getQuantity()));
-			itemDto.setUnitPrice(ConvertUtil.format(orderItem.getUnitPrice()));
+			if(orderDto.getType() == AppOrderTypeEnum.GROUP_ORDER){
+				// 如果团购订单类型，商品价格显示为实际支付的价格。团购只能单件购买
+				itemDto.setUnitPrice(ConvertUtil.format(orderItem.getActualAmount()));
+			}else{
+				itemDto.setUnitPrice(ConvertUtil.format(orderItem.getUnitPrice()));
+			}
 			itemDto.setUnit(orderItem.getUnit());
 			itemDto.setRechargePhone(orderItem.getRechargeMobile());
 			
