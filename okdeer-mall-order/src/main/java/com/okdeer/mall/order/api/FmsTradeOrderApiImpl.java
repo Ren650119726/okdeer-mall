@@ -270,6 +270,8 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 					String addressExt = logistics.getAddress() == null ? "" : logistics.getAddress();
 					// 收货地址
 					fmsTradeOrderDto.setAddress(area + addressExt);
+					fmsTradeOrderDto.setLogisticsCompanyName(logistics.getLogisticsCompanyName());
+					fmsTradeOrderDto.setLogisticsNo(logistics.getLogisticsNo());
 				}
 
 				StoreInfoDto storeInfoDto = storeAddressMap.get(fmsTradeOrderDto.getStoreId());
@@ -279,7 +281,6 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 					fmsTradeOrderDto.setCityName(address == null ? "" : address.getName());
 					fmsTradeOrderDto.setAddress(storeInfoDto.getAddress());
 				}
-
 			}
 		} catch (ServiceException e1) {
 			throw new MallApiException(e1);
@@ -300,7 +301,7 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 		boolean isDliver = fmsTradeOrderDto.getType() == OrderTypeEnum.PHYSICAL_ORDER
 				&& fmsTradeOrderDto.getPickUpType() == PickUpTypeEnum.DELIVERY_DOOR;
 		// 上门服务订单
-		boolean isServiceStoreOrder = fmsTradeOrderDto.getType() == OrderTypeEnum.SERVICE_STORE_ORDER;
+		boolean isServiceStoreOrder = fmsTradeOrderDto.getType() == OrderTypeEnum.SERVICE_STORE_ORDER || fmsTradeOrderDto.getType() == OrderTypeEnum.SERVICE_EXPRESS_ORDER;
 		return isDliver || isServiceStoreOrder;
 	}
 
