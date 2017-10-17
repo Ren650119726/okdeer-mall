@@ -1,3 +1,4 @@
+
 package com.okdeer.mall.order.service.impl;
 
 import static com.okdeer.mall.order.constant.RefundsTraceConstant.REFUND_APPLY_REMARK;
@@ -49,46 +50,46 @@ import com.okdeer.mall.order.vo.RefundsTraceVo;
  *		Bug:13658		2016年10月10日				maojj		查询退款轨迹时返回参数增加isDone。默认均为1	
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeOrderRefundsTraceServiceApi")
-public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTraceService,TradeOrderRefundsTraceServiceApi{
+public class TradeOrderRefundsTraceServiceImpl
+		implements TradeOrderRefundsTraceService, TradeOrderRefundsTraceServiceApi {
 
 	/**
 	 * TradeOrderRefundsTrace 数据访问接口
 	 */
 	@Autowired
 	private TradeOrderRefundsTraceMapper tradeOrderRefundsTraceMapper;
-	
+
 	@Autowired
 	private TradeOrderRefundsMapper tradeOrderRefundsMapper;
-	
-	
+
 	@Override
-	public void saveRefundTrace(TradeOrderRefunds refundsOrder){
+	public void saveRefundTrace(TradeOrderRefunds refundsOrder) {
 		// 友门鹿退款成功和待友门鹿退款合成一种轨迹，所以友门鹿退款成功不做任何处理
-		if(refundsOrder.getRefundsStatus() == null){
+		if (refundsOrder.getRefundsStatus() == null) {
 			return;
 		}
 		List<TradeOrderRefundsTrace> traceList = createTraceList(refundsOrder);
-		if(!CollectionUtils.isEmpty(traceList)){
+		if (!CollectionUtils.isEmpty(traceList)) {
 			tradeOrderRefundsTraceMapper.batchInsert(traceList);
 		}
 	}
-	
-	private List<TradeOrderRefundsTrace> createTraceList(TradeOrderRefunds refundsOrder){
+
+	private List<TradeOrderRefundsTrace> createTraceList(TradeOrderRefunds refundsOrder) {
 		// 轨迹列表
-		List<TradeOrderRefundsTrace> traceList = new ArrayList<TradeOrderRefundsTrace>();
+		List<TradeOrderRefundsTrace> traceList = new ArrayList<>();
 		// 构建操作轨迹
 		TradeOrderRefundsTrace optTrace = buildOptTrace(refundsOrder);
 		// 构建等待处理轨迹
 		TradeOrderRefundsTrace waitDealTrace = buildWaitDealTrace(refundsOrder);
-		if(optTrace != null && optTrace.getTraceStatus() != null){
+		if (optTrace.getTraceStatus() != null) {
 			traceList.add(optTrace);
 		}
-		if(waitDealTrace != null){
+		if (waitDealTrace != null) {
 			traceList.add(waitDealTrace);
 		}
 		return traceList;
 	}
-	
+
 	/**
 	 * @Description: 构建操作轨迹
 	 * @param refundsOrder 退款单对象
@@ -96,13 +97,13 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 	 * @author maojj
 	 * @date 2016年10月12日
 	 */
-	private TradeOrderRefundsTrace buildOptTrace(TradeOrderRefunds refundsOrder){
+	private TradeOrderRefundsTrace buildOptTrace(TradeOrderRefunds refundsOrder) {
 		TradeOrderRefundsTrace optTrace = initRefundsTrace(refundsOrder.getId());
 		// 填充轨迹状态和备注
-		fillTraceStatusAndRemark(optTrace,refundsOrder);
+		fillTraceStatusAndRemark(optTrace, refundsOrder);
 		return optTrace;
 	}
-	
+
 	/**
 	 * @Description: 构建等待处理轨迹
 	 * @param refundsOrder
@@ -110,19 +111,19 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 	 * @author maojj
 	 * @date 2016年10月12日
 	 */
-	private TradeOrderRefundsTrace buildWaitDealTrace(TradeOrderRefunds refundsOrder){
-		if(!isNeedWaitDeal(refundsOrder.getRefundsStatus())){
+	private TradeOrderRefundsTrace buildWaitDealTrace(TradeOrderRefunds refundsOrder) {
+		if (!isNeedWaitDeal(refundsOrder.getRefundsStatus())) {
 			// 不需要等待处理流程。
 			return null;
 		}
 		TradeOrderRefundsTrace waitDealTrace = initRefundsTrace(refundsOrder.getId());
 		switch (refundsOrder.getRefundsStatus()) {
 			case WAIT_SELLER_VERIFY:
-				if(refundsOrder.getType() == OrderTypeEnum.STORE_CONSUME_ORDER){
+				if (refundsOrder.getType() == OrderTypeEnum.STORE_CONSUME_ORDER) {
 					// 到店消费的订单，发起退款，则直接退款成功
 					waitDealTrace.setTraceStatus(RefundsTraceEnum.REFUND_SUCCESS);
 					waitDealTrace.setRemark(DEFAULT_NULL_REMARK);
-				}else{
+				} else {
 					waitDealTrace.setTraceStatus(RefundsTraceEnum.WAIT_SELLER_DEAL);
 					waitDealTrace.setRemark(WAIT_SELLER_REMARK);
 				}
@@ -144,8 +145,8 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 				break;
 		}
 		return waitDealTrace;
-	} 
-	
+	}
+
 	/**
 	 * @Description: 是否需要等待处理
 	 * @param refundsStatus
@@ -153,7 +154,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 	 * @author maojj
 	 * @date 2016年10月12日
 	 */
-	private boolean isNeedWaitDeal(RefundsStatusEnum refundsStatus){
+	private boolean isNeedWaitDeal(RefundsStatusEnum refundsStatus) {
 		boolean isNeedWaitDeal = true;
 		switch (refundsStatus) {
 			case APPLY_CUSTOMER_SERVICE_INTERVENE:
@@ -172,7 +173,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 		}
 		return isNeedWaitDeal;
 	}
-	
+
 	/**
 	 * @Description: 初始化退款轨迹对象
 	 * @param refundId
@@ -180,14 +181,14 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 	 * @author maojj
 	 * @date 2016年10月12日
 	 */
-	private TradeOrderRefundsTrace initRefundsTrace(String refundId){
+	private TradeOrderRefundsTrace initRefundsTrace(String refundId) {
 		TradeOrderRefundsTrace trace = new TradeOrderRefundsTrace();
 		trace.setId(UuidUtils.getUuid());
 		trace.setRefundsId(refundId);
 		trace.setOptTime(DateUtils.getSysDate());
 		return trace;
 	}
-	
+
 	/**
 	 * @Description: 设置轨迹状态和备注文案
 	 * @param trace
@@ -195,7 +196,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 	 * @author maojj
 	 * @date 2016年10月12日
 	 */
-	private void fillTraceStatusAndRemark(TradeOrderRefundsTrace trace,TradeOrderRefunds refundsOrder){
+	private void fillTraceStatusAndRemark(TradeOrderRefundsTrace trace, TradeOrderRefunds refundsOrder) {
 		// 轨迹状态
 		RefundsTraceEnum traceStatus = null;
 		// 轨迹备注信息
@@ -246,7 +247,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 				// 卖家退款中
 				traceStatus = RefundsTraceEnum.BUSINESS_AGREE_REFUND;
 				break;
-			case REFUND_SUCCESS : 
+			case REFUND_SUCCESS:
 			case YSC_REFUND_SUCCESS:
 			case FORCE_SELLER_REFUND_SUCCESS:
 				traceStatus = RefundsTraceEnum.REFUND_SUCCESS;
@@ -257,11 +258,11 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 			default:
 				break;
 		}
-		
+
 		trace.setTraceStatus(traceStatus);
 		trace.setRemark(remark);
 	}
-	
+
 	/**
 	 * @Description: 根据订单类型获取退款轨迹状态
 	 * @param orderType
@@ -277,7 +278,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 			return RefundsTraceEnum.RETURN_REFUND_APPLY;
 		}
 	}
-	
+
 	/**
 	 * @Description: 根据退货方式获取退款轨迹状态
 	 * @param logisticsType
@@ -285,7 +286,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 	 * @author maojj
 	 * @date 2016年10月12日
 	 */
-	private RefundsTraceEnum getTraceStatus(RefundsLogisticsEnum logisticsType){
+	private RefundsTraceEnum getTraceStatus(RefundsLogisticsEnum logisticsType) {
 		RefundsTraceEnum traceStatus = null;
 		switch (logisticsType) {
 			case LOGISTICS:
@@ -302,7 +303,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 		}
 		return traceStatus;
 	}
-	
+
 	/**
 	 * @Description: 根据退货方式获取等待处理的退款轨迹状态
 	 * @param logisticsType
@@ -310,7 +311,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 	 * @author maojj
 	 * @date 2016年10月12日
 	 */
-	private RefundsTraceEnum getWaitDealTraceStatus(RefundsLogisticsEnum logisticsType){
+	private RefundsTraceEnum getWaitDealTraceStatus(RefundsLogisticsEnum logisticsType) {
 		RefundsTraceEnum traceStatus = null;
 		switch (logisticsType) {
 			case LOGISTICS:
@@ -327,7 +328,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 		}
 		return traceStatus;
 	}
-	
+
 	/**
 	 * @Description: 查找用户轨迹列表
 	 * @param refundsId 退款单ID
@@ -340,15 +341,15 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 		Response<RefundsTraceResp> resp = new Response<RefundsTraceResp>();
 		RefundsTraceResp respData = new RefundsTraceResp();
 		// 根据退款单id查询退款单
-		TradeOrderRefunds refundsOrder =tradeOrderRefundsMapper.selectByPrimaryKey(refundsId);
-		if(refundsOrder == null){
+		TradeOrderRefunds refundsOrder = tradeOrderRefundsMapper.selectByPrimaryKey(refundsId);
+		if (refundsOrder == null) {
 			// 如果未找到退款单ID，表示该请求数据不对，返回错误代码。
 			resp.setCode(ResultCodeEnum.FAIL.getCode());
 			return resp;
 		}
 		// Begin added by maojj 2016-10-19
 		// 设置当前退款单所处的状态
-		if(refundsOrder.getRefundsStatus() == RefundsStatusEnum.SELLER_REFUNDING){
+		if (refundsOrder.getRefundsStatus() == RefundsStatusEnum.SELLER_REFUNDING) {
 			// 退款中的状态返回app为等待买家退货。这块的处理主要是为了显示“退款成功”的虚节点。不具备业务意义。
 			refundsOrder.setRefundsStatus(RefundsStatusEnum.WAIT_BUYER_RETURN_GOODS);
 		}
@@ -363,7 +364,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 		int size = traceList.size();
 		// Begin added by maojj 2016-10-13 增加对历史退款单的处理。因为历史退款单没有轨迹记录。
 		// 判断是否为历史退款单。如果是，则直接返回
-		if(isHistory(traceList)){
+		if (isHistory(traceList)) {
 			// 如果是历史退款单，直接响应。
 			resp.setCode(ResultCodeEnum.SUCCESS.getCode());
 			// 是否为历史退款单，0：否，1：是
@@ -371,19 +372,20 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 			resp.setData(respData);
 			return resp;
 		}
-		// End added by maojj 2016-10-13 
+		// End added by maojj 2016-10-13
 		for (TradeOrderRefundsTrace trace : traceList) {
 			traceVo = new RefundsTraceVo();
 			traceVo.setRefundsTraceStatus(trace.getTraceStatus());
 			traceVo.setTitle(trace.getTraceStatus().getDesc());
 			// 如果退款轨迹状态为：等待您的处理或者是等待卖家的处理，当所处状态不是最后一个节点时，无需显示备注信息，如果是最后一个节点，需要显示备注的提示信息
 			String remark = trace.getRemark();
-			if ((WAIT_SELLER_REMARK.equals(remark) || WAIT_BUYER_REMARK.equals(remark) || SELLER_WAIT_RETURN.equals(remark)) && index < size - 1) {
+			if ((WAIT_SELLER_REMARK.equals(remark) || WAIT_BUYER_REMARK.equals(remark)
+					|| SELLER_WAIT_RETURN.equals(remark)) && index < size - 1) {
 				traceVo.setContent(DEFAULT_NULL_REMARK);
 			} else {
 				traceVo.setContent(remark);
 			}
-			traceVo.setTime(DateUtils.formatDate(trace.getOptTime(),"MM-dd HH:mm"));
+			traceVo.setTime(DateUtils.formatDate(trace.getOptTime(), "MM-dd HH:mm"));
 			traceVo.setOptTime(trace.getOptTime());
 			traceVo.setIsDone(1);
 			traceVoList.add(traceVo);
@@ -394,7 +396,7 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 		resp.setCode(ResultCodeEnum.SUCCESS.getCode());
 		return resp;
 	}
-	
+
 	/**
 	 * @Description: 是否为历史退款单
 	 * @param traceList 退款轨迹列表
@@ -402,8 +404,8 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 	 * @author maojj
 	 * @date 2016年10月13日
 	 */
-	private boolean isHistory(List<TradeOrderRefundsTrace> traceList){
-		if(CollectionUtils.isEmpty(traceList)){
+	private boolean isHistory(List<TradeOrderRefundsTrace> traceList) {
+		if (CollectionUtils.isEmpty(traceList)) {
 			// 没有任何轨迹，则认为是历史退款单
 			return true;
 		}
@@ -412,4 +414,5 @@ public class TradeOrderRefundsTraceServiceImpl implements TradeOrderRefundsTrace
 		return firstNode.getTraceStatus() != RefundsTraceEnum.REFUND_APPLY
 				&& firstNode.getTraceStatus() != RefundsTraceEnum.RETURN_REFUND_APPLY;
 	}
+
 }

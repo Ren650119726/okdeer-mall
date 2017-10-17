@@ -679,7 +679,10 @@
 		<result column="consumer_code_status" property="consumerCodeStatus" jdbcType="INTEGER" />
 		<result column="is_breach" property="isBreach" jdbcType="TINYINT" />
 		<result column="breach_money" property="breachMoney" jdbcType="DECIMAL" />
-		
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="pick_up_time" property="pickUpTime" jdbcType="VARCHAR" />
+		<result column="store_preferential" property="storePreferential" jdbcType="DECIMAL" />
+		<result column="accept_time" property="acceptTime" jdbcType="TIMESTAMP" />
 	</resultMap>
 	<!--end xuzq 20170321 2.2.0 订单查询map -->
 	<sql id="Base_Column_List">
@@ -1122,8 +1125,17 @@
 		</if>
 		<if test="activityType != null">
 			<choose>
-				<when test="activityType == 5 or activityType == 6 or activityType == 7 ">AND (tr.activity_type = #{activityType} OR tr.store_activity_type = #{activityType})</when>
-				<otherwise>AND tr.activity_type = #{activityType}</otherwise>
+			    <!-- 当为特惠 秒杀 低价时 查询活动类型或者店铺活动类型 -->
+				<when test="activityType == 5 or activityType == 6 or activityType == 7 ">
+					AND (tr.activity_type = #{activityType} OR tr.store_activity_type = #{activityType})
+				</when>
+				 <!-- 零花钱活动 订单使用零花钱金额不为0代表参与零花钱-->
+				<when test="activityType == 8 ">
+					AND tr.pin_money > 0
+				</when>
+				<otherwise>
+					AND tr.activity_type = #{activityType}
+				</otherwise>
 			</choose>
 		</if>
 	</sql>
@@ -3307,16 +3319,15 @@
 		tp.id as pay_id,tp.pay_type,tp.pay_time,tr.invoice,tr.pick_up_time,tr.create_time,tr.type,tr.is_complete,
 		tr.consumer_code_status,tr.user_phone,tr.is_breach,tr.breach_percent,tr.breach_money,tr.accept_time,
 		tr.fare_preferential,tr.real_fare_preferential,tr.platform_preferential,tr.store_preferential,tr.fare_activity_id,
-		ti.id as invoice_id,ti.head,ti.context,it.service_assurance,
-		it.id as
-		item_id,it.store_sku_id,it.sku_name,it.main_pic_prl,it.unit_price,it.quantity,tr.reason,it.properties_indb,it.unit,it.total_amount as item_total_amount,
-		ol.id AS
-		logistics_id,ol.consignee_name,ol.mobile,ol.area,ol.address,ol.logistics_company_name,ol.logistics_no,ol.type
-		AS logisticsType,
+		tr.reason,tr.pin_money,
+		ti.id as invoice_id,ti.head,ti.context,
+		it.service_assurance,it.id as item_id,it.store_sku_id,it.sku_name,it.main_pic_prl,it.unit_price,it.quantity,
+		it.properties_indb,it.unit,it.total_amount as item_total_amount,
+		ol.id AS logistics_id,ol.consignee_name,ol.mobile,ol.area,ol.address,ol.logistics_company_name,ol.logistics_no,
+		ol.type	AS logisticsType,
 		tori.id AS refunds_item_id,
-		d.id as detail_id,d.consume_code,d.status as
-		detail_status,d.start_time,d.end_time,d.use_time,
-		refunds.refunds_status,tr.pin_money
+		d.id as detail_id,d.consume_code,d.status as detail_status,d.start_time,d.end_time,d.use_time,
+		refunds.refunds_status
 		FROM trade_order as tr
 		LEFT JOIN trade_order_pay AS tp on tr.id = tp.order_id
 		LEFT JOIN trade_order_invoice AS ti ON tr.id = ti.order_id
@@ -4525,8 +4536,6 @@
 		FROM
 		DUAL
 	</select>
-
-	
 
 	<!-- zengj:订单列表查询  update by wusw 20170215 修改排序规则和增加活动类型参数-->
 	<select id="selectOrderList" resultMap="TradeOrderMap"
@@ -6228,11 +6237,11 @@
 		SELECT
 		tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.preferential_price,tr.fare,
 		tr.status,tr.consumer_code_status,tr.delivery_time,tr.type,tr.is_breach,tr.breach_money,
+		tr.create_time,tr.activity_type,tr.activity_id,tr.pick_up_time,tr.accept_time,
 		(select sum(ti.quantity) from trade_order_item as ti where ti.order_id
 		= tr.id) as goods_count,
 		(select count(id) from trade_order_item as ti where ti.order_id = tr.id) as
 		goods_type_count,
-		tr.create_time,tr.activity_type,tr.activity_id,
 		(select count(1) from trade_order_refunds_item r inner join trade_order_item
 		i on r.order_item_id = i.id where i.order_id = tr.id) as refunds_count
 		FROM trade_order as tr
@@ -6272,7 +6281,11 @@
 		</if>
 		<!-- 订单类型 -->
 		<if test="type != null and type != ''">
-			AND tr.type = #{type,jdbcType=TINYINT}
+			AND tr.type IN
+			<foreach collection="type" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item}
+			</foreach>
 		</if>
 		<!-- Begin V2.3.0 added by luosm 20170522 -->
 		<if test="null != startCreateTime">
@@ -6317,12 +6330,14 @@
 	<select id="findCloudOrderInfo" parameterType="java.util.Map"
 		resultMap="tradeOrderDetailBo">
 		SELECT
-		tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.pick_up_type,tr.preferential_price,tr.fare,tr.status,tr.delivery_time,tr.type,
+		tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.pick_up_type,
+		tr.preferential_price,tr.fare,tr.status,tr.delivery_time,tr.type,
+		tr.create_time,tr.activity_type,tr.activity_id,tr.update_time,
+		tr.store_preferential,
 		(select sum(ti.quantity) from trade_order_item as ti where ti.order_id
 		= tr.id) as goods_count,
 		(select count(id) from trade_order_item as ti where ti.order_id = tr.id) as
 		goods_type_count,
-		tr.create_time,tr.activity_type,tr.activity_id,
 		(select count(1) from trade_order_refunds_item r inner join trade_order_item
 		i on r.order_item_id = i.id where i.order_id = tr.id) as refunds_count
 		FROM trade_order as tr
@@ -6394,4 +6409,67 @@
 		WHERE order_no = #{orderNo,jdbcType=VARCHAR}
 	</select>
 	<!-- End V2.4.1 added by maojj 2017-06-19 -->
+	
+	<!-- Begin V2.6.3 added by maojj 2017-10-12 -->
+	<update id="updateOrderType" parameterType="map">
+		UPDATE trade_order
+		SET type = 7,
+			accept_time = #{update_time,jdbcType=TIMESTAMP},
+			update_time = #{update_time,jdbcType=TIMESTAMP}
+		WHERE id IN 
+		<foreach collection="orderIdList" item="orderId" separator="," open="(" close=")">
+			#{orderId}
+		</foreach>	
+	</update>
+	
+	<select id="findByOrderIds" parameterType="list" resultMap="BaseResultMap">
+		SELECT <include refid="Base_Column_List" />
+		FROM trade_order
+		WHERE id IN 
+		<foreach collection="orderIdList" item="orderId" separator="," open="(" close=")">
+			#{orderId}
+		</foreach>	
+	</select>
+	<!-- End V2.6.3 added by maojj 2017-10-12 -->
+	
+	<select id="findListForSend" parameterType="com.okdeer.mall.order.dto.TradeOrderQueryParamDto" resultMap="BaseResultMap">
+		SELECT 
+			t.* ,
+			store.store_name as storeName
+			FROM trade_order t 
+		left join store_info store on (store.id = t.store_id)
+		left join trade_order_pay pay on (t.id = pay.order_id)
+		where t.disabled = 0 
+		<if test="orderNo != null and orderNo != ''">
+			AND t.order_No like CONCAT('%',#{orderNo},'%')
+		</if>
+		<if test="userPhone != null and userPhone != ''">
+			AND t.user_phone like CONCAT('%',#{userPhone},'%')
+		</if>
+		<if test="status != null">
+			AND t.status = #{status, jdbcType=TINYINT}
+		</if>
+		<if test="storeName != null and storeName != ''">
+			AND store.store_name like CONCAT('%',#{storeName},'%')
+		</if>
+		<if test="startTime != null and startTime!=''">
+			<![CDATA[AND t.create_time  >= #{startTime,jdbcType=VARCHAR}]]>
+		</if>
+		<if test="endTime != null and endTime!=''">
+			<![CDATA[ AND t.create_time <= #{endTime,jdbcType=VARCHAR}]]>
+		</if>
+		<if test="payType != null">
+			AND pay.pay_type = #{payType, jdbcType=TINYINT}
+		</if>
+		<if test="type != null">
+			AND t.type = #{type, jdbcType=TINYINT}
+		</if>
+		<if test="idList != null and idList.size() > 0">
+			AND t.id in
+			<foreach collection="idList" index="index" item="item" open="("
+				separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+	</select>
 </mapper>

@@ -36,13 +36,16 @@ import com.okdeer.mall.order.bo.AppAdapter;
 import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.AppStoreDto;
+import com.okdeer.mall.order.dto.GroupJoinUserDto;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
+import com.okdeer.mall.order.enums.GroupJoinTypeEnum;
 import com.okdeer.mall.order.enums.OrderOptTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.PlaceOrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandlerChain;
 import com.okdeer.mall.order.service.PlaceOrderApi;
+import com.okdeer.mall.order.service.TradeOrderGroupService;
 import com.okdeer.mall.order.service.TradeorderProcessLister;
 import com.okdeer.mall.system.utils.ConvertUtil;
 import com.okdeer.mall.util.RedisLock;
@@ -87,6 +90,20 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	 */
 	@Resource
 	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> submitSeckillOrderService;
+	
+	// Begin V2.6.3 added by maojj 2017-10-12
+	/**
+	 * 团购订单确认
+	 */
+	@Resource
+	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> confirmGroupOrderService;
+	
+	/**
+	 * 团购订单提交
+	 */
+	@Resource
+	private RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> submitGroupOrderService;
+	// End V2.6.3 added by maojj 2017-10-12
 
 	@Resource
 	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
@@ -103,6 +120,9 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	@Autowired
 	@Qualifier(value="jxcSynTradeorderProcessLister")
 	private TradeorderProcessLister tradeorderProcessLister;
+	
+	@Resource
+	private TradeOrderGroupService tradeOrderGroupService;
 
 	@Override
 	public Response<PlaceOrderDto> confirmOrder(Request<PlaceOrderParamDto> req) throws Exception {
@@ -120,6 +140,9 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 				break;
 			case SECKILL_ORDER:
 				handlerChain = confirmSeckillOrderService;
+				break;
+			case GROUP_ORDER:
+				handlerChain = confirmGroupOrderService;
 				break;
 			default:
 				break;
@@ -197,6 +220,16 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 			// 低价活动已关闭，给出响应的提示语
 			resp.setMessage(ResultCodeEnum.LOW_IS_CLOSED.getDesc());
 		}
+		// Begin V2.6.3 added by maojj 2017-10-13
+		if(paramDto.getOrderType() == PlaceOrderTypeEnum.GROUP_ORDER
+				&& paramDto.getGroupJoinType() == GroupJoinTypeEnum.GROUP_JOIN
+				&& paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SETTLEMENT){
+			List<GroupJoinUserDto> joinUserList = tradeOrderGroupService
+					.findGroupJoinUserList(paramDto.getGroupOrderId(), paramDto.getScreen());
+			resp.getData().setJoinUserList(joinUserList);
+			resp.getData().setAbsentNum(resp.getData().getAbsentNum() - joinUserList.size());
+		}
+		// End V2.6.3 added by maojj 2017-10-13
 		resp.getData().setCurrentTime(System.currentTimeMillis());
 	}
 
@@ -215,6 +248,9 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 				break;
 			case SECKILL_ORDER:
 				handlerChain = submitSeckillOrderService;
+				break;
+			case GROUP_ORDER:
+				handlerChain = submitGroupOrderService;
 				break;
 			default:
 				break;

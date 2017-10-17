@@ -20,7 +20,7 @@ import com.okdeer.mall.order.entity.TradePinMoneyObtain;
 public interface TradePinMoneyObtainMapper extends IBaseMapper {
 
 	/**
-	 * @Description: 查找我的零花钱余额
+	 * @Description: 查询我的零花钱可使用余额  去除未生效零花钱
 	 * @param userId
 	 * @param status 
 	 * @return   
@@ -76,5 +76,13 @@ public interface TradePinMoneyObtainMapper extends IBaseMapper {
 	 * @date 2017年8月28日
 	 */
 	BigDecimal findPinMoneyObtainAmount(TradePinMoneyQueryDto queryDto);
-
+	/**
+	 * @Description: 查询我的零花钱剩余余额
+	 * @param userId
+	 * @param status 
+	 * @return   
+	 * @author xuzq
+	 * @date 2017年10月11日
+	 */
+	BigDecimal findMyRemainTotal(@Param("userId") String userId, @Param("nowDate") Date nowDate);
 }

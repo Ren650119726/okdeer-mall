@@ -30,6 +30,8 @@ import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.common.consts.DescriptConstants;
+import com.okdeer.common.exception.MallApiException;
+import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.vo.PageResultVo;
 import com.okdeer.mall.order.dto.OrderRefundQueryParamDto;
 import com.okdeer.mall.order.dto.OrderRefundsDetailDto;
@@ -41,6 +43,8 @@ import com.okdeer.mall.order.dto.RefundsCertificateDto;
 import com.okdeer.mall.order.dto.RefundsMoneyDto;
 import com.okdeer.mall.order.dto.StoreConsumerApplyDto;
 import com.okdeer.mall.order.dto.StoreConsumerApplyParamDto;
+import com.okdeer.mall.order.dto.TradeOrderApplyRefundParamDto;
+import com.okdeer.mall.order.dto.TradeOrderApplyRefundResultDto;
 import com.okdeer.mall.order.dto.TradeOrderItemDetailDto;
 import com.okdeer.mall.order.dto.TradeOrderItemDto;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -142,13 +146,13 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 
 	@Autowired
 	private TradeOrderRefundsCertificateService tradeOrderRefundsCertificateService;
-	
+
 	@Autowired
 	private TradeOrderInvoiceService tradeOrderInvoiceService;
-	
+
 	@Autowired
 	private TradeOrderRefundsItemService tradeOrderRefundsItemService;
-	
+
 	@Reference(version = "1.0.0", check = false)
 	private StoreInfoServiceApi storeInfoService;
 
@@ -646,7 +650,7 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 				orderRefundsDto.setPayTime(tradeOrderPay.getPayTime());
 				orderRefundsDto.setThirdTransNo(tradeOrderPay.getReturns());
 			}
-			
+
 			orderRefundsDto.setRefundNo(refunds.getRefundNo());
 			orderRefundsDto.setRefundStatus(refunds.getRefundsStatus().ordinal());
 			if (refunds.getPaymentMethod() != null) {
@@ -663,17 +667,17 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 			orderRefundsDto.setCreateOrderTime(tradeOrder.getCreateTime());
 			orderRefundsDto.setDiscountName(tradeOrder.getActivityType().getValue());
 			orderRefundsDto.setSendTime(tradeOrder.getDeliveryTime());
-			
+
 			TradeOrderInvoice tradeOrderInvoice = tradeOrderInvoiceService.selectByOrderId(refunds.getOrderId());
-			
+
 			if (tradeOrderInvoice != null) {
 				orderRefundsDto.setInvoiceContent(tradeOrderInvoice.getContext());
 				orderRefundsDto.setInvoiceTile(tradeOrderInvoice.getHead());
 			}
-			
-			
-			List<TradeOrderRefundsItem>  tradeOrderRefundsItems = tradeOrderRefundsItemService.getTradeOrderRefundsItemByRefundsId(refundsId);
-			
+
+			List<TradeOrderRefundsItem> tradeOrderRefundsItems = tradeOrderRefundsItemService
+					.getTradeOrderRefundsItemByRefundsId(refundsId);
+
 			List<TradeOrderItemDto> itemList = Lists.newArrayList();
 			for (TradeOrderRefundsItem item : tradeOrderRefundsItems) {
 
@@ -941,6 +945,11 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 			throw new Exception(DescriptConstants.SYS_ERROR, e);
 		}
 
+	}
+	
+	@Override
+	public Response<TradeOrderApplyRefundResultDto> applyRefund(TradeOrderApplyRefundParamDto tradeOrderApplyRefundParamDto) throws MallApiException{
+		return tradeOrderRefundsService.processApplyRefund(tradeOrderApplyRefundParamDto);
 	}
 
 }

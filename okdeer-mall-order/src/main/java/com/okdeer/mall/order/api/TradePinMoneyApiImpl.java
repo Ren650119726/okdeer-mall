@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.redis.util.RedisLockRegistry;
 
 import com.alibaba.dubbo.config.annotation.Service;
-import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
@@ -67,7 +66,7 @@ public class TradePinMoneyApiImpl implements TradePinMoneyApi {
 	 */
 	@Override
 	public BigDecimal findMyUsableTotal(String userId, Date nowDate) {
-		return tradePinMoneyObtainService.findMyUsableTotal(userId, nowDate);
+		return tradePinMoneyObtainService.findMyRemainTotal(userId, nowDate);
 	}
 
 	/**
@@ -137,15 +136,22 @@ public class TradePinMoneyApiImpl implements TradePinMoneyApi {
 		obtain.setCreateTime(date);
 		obtain.setUpdateTime(date);
 		obtain.setActivityId(moneyDto.getId());
-		//0为无过期时间 
-		if(moneyDto.getValidDay()==0){
-			obtain.setValidTime(DateUtils.parseDate("2050-08-24 00:00:00"));
-		}else{
+		
+		if(moneyDto.getValidDayType() == 0){
 			Calendar calendar = Calendar.getInstance();
 			calendar.setTime(date);
+			calendar.add(calendar.DATE,moneyDto.getEffectDay());
+			Date effectTime = calendar.getTime();
+			//生效时间
+			obtain.setEffectTime(effectTime);
 			calendar.add(calendar.DATE,moneyDto.getValidDay());
+			//有效时间
 			obtain.setValidTime(calendar.getTime());
+		}else{
+			obtain.setEffectTime(moneyDto.getValidTimeStart());
+			obtain.setValidTime(moneyDto.getValidTimeEnd());
 		}
+		
 		LOGGER.info("零花钱领取对象参数===：{}" ,JsonMapper.nonDefaultMapper().toJson(obtain));
 		
 		// 已活动和用户id为key 进行加锁

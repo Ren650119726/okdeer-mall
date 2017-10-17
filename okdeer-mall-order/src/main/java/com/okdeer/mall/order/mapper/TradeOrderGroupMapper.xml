@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.order.mapper.TradeOrderGroupMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.TradeOrderGroup" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="group_no" property="groupNo" jdbcType="VARCHAR" />
+        <result column="group_user_id" property="groupUserId" jdbcType="VARCHAR" />
+        <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+        <result column="activity_name" property="activityName" jdbcType="VARCHAR" />
+        <result column="group_count" property="groupCount" jdbcType="INTEGER" />
+        <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+        <result column="group_price" property="groupPrice" jdbcType="DECIMAL" />
+        <result column="store_id" property="storeId" jdbcType="VARCHAR" />
+        <result column="status" property="status" jdbcType="TINYINT" javaType="com.okdeer.mall.order.enums.GroupOrderStatusEnum"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="expire_time" property="expireTime" jdbcType="TIMESTAMP" />
+        <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+    </resultMap>
+    
+    <resultMap id="dto" extends="BaseResultMap" type="com.okdeer.mall.order.dto.TradeOrderGroupDto">
+        
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, group_no, group_user_id, activity_id, activity_name, group_count, store_sku_id, 
+        group_price, store_id, status, create_time, expire_time, end_time, remark
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from trade_order_group
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.order.entity.TradeOrderGroup" >
+        insert into trade_order_group
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="groupNo != null" >
+                group_no,
+            </if>
+            <if test="groupUserId != null" >
+                group_user_id,
+            </if>
+            <if test="activityId != null" >
+                activity_id,
+            </if>
+            <if test="activityName != null" >
+                activity_name,
+            </if>
+            <if test="groupCount != null" >
+                group_count,
+            </if>
+            <if test="storeSkuId != null" >
+                store_sku_id,
+            </if>
+            <if test="groupPrice != null" >
+                group_price,
+            </if>
+            <if test="storeId != null" >
+                store_id,
+            </if>
+            <if test="status != null" >
+                status,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+            <if test="expireTime != null" >
+                expire_time,
+            </if>
+            <if test="endTime != null" >
+                end_time,
+            </if>
+            <if test="remark != null" >
+                remark,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="groupNo != null" >
+                #{groupNo,jdbcType=VARCHAR},
+            </if>
+            <if test="groupUserId != null" >
+                #{groupUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="activityId != null" >
+                #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="activityName != null" >
+                #{activityName,jdbcType=VARCHAR},
+            </if>
+            <if test="groupCount != null" >
+                #{groupCount,jdbcType=INTEGER},
+            </if>
+            <if test="storeSkuId != null" >
+                #{storeSkuId,jdbcType=VARCHAR},
+            </if>
+            <if test="groupPrice != null" >
+                #{groupPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="storeId != null" >
+                #{storeId,jdbcType=VARCHAR},
+            </if>
+            <if test="status != null" >
+                #{status,jdbcType=TINYINT},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="expireTime != null" >
+                #{expireTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="endTime != null" >
+                #{endTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="remark != null" >
+                #{remark,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.order.entity.TradeOrderGroup" >
+        update trade_order_group
+        <set >
+            <if test="groupNo != null" >
+                group_no = #{groupNo,jdbcType=VARCHAR},
+            </if>
+            <if test="groupUserId != null" >
+                group_user_id = #{groupUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="activityId != null" >
+                activity_id = #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="activityName != null" >
+                activity_name = #{activityName,jdbcType=VARCHAR},
+            </if>
+            <if test="groupCount != null" >
+                group_count = #{groupCount,jdbcType=INTEGER},
+            </if>
+            <if test="storeSkuId != null" >
+                store_sku_id = #{storeSkuId,jdbcType=VARCHAR},
+            </if>
+            <if test="groupPrice != null" >
+                group_price = #{groupPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="storeId != null" >
+                store_id = #{storeId,jdbcType=VARCHAR},
+            </if>
+            <if test="status != null" >
+                status = #{status,jdbcType=TINYINT},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="expireTime != null" >
+                expire_time = #{expireTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="endTime != null" >
+                end_time = #{endTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="remark != null" >
+                remark = #{remark,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from trade_order_group
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+	<!-- 统计成团商品总数 -->
+	<select id="countGroupSkuNum" parameterType="com.okdeer.mall.order.bo.TradeOrderGroupParamBo" resultType="int">
+		SELECT SUM(group_count)
+		FROM trade_order_group
+		<where>
+			<if test="activityId =! null ">
+				AND activity_id = #{activityId,jdbcType=VARCHAR}
+			</if>
+			<if test="storeSkuId != null">
+				AND store_sku_id = #{storeSkuId,jdbcType=VARCHAR}
+			</if>
+			<if test="startTime != null and endTime != null">
+				AND end_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND #{endTime,jdbcType=TIMESTAMP}
+			</if>
+			<if test="status != null">
+				AND status = #{status,jdbcType=TINYINT}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 根据查询条件动态查询(运营后台列表用) -->
+	<select id="findByParam" parameterType="com.okdeer.mall.order.dto.TradeOrderGroupParamDto" resultMap="dto">
+		SELECT 
+			t.* ,
+			store.store_name as storeName,
+			buy.login_name as groupUserName,
+			(select count(*) from trade_order_group_relation r where r.group_order_id = t.id and r.`status` = 1) as joinNum
+			FROM trade_order_group t 
+		left join sys_buyer_user buy on (buy.id = t.group_user_id)
+		left join store_info store on (store.id = t.store_id)
+		where 1 = 1
+		<if test="groupNoLike != null and groupNoLike != '' ">
+			AND t.group_no like CONCAT('%',#{groupNoLike},'%')
+		</if>
+		<if test="storeNameLike != null and storeNameLike != '' ">
+			AND store.store_name like CONCAT('%',#{storeNameLike},'%')
+		</if>
+		<if test="mobileLike != null and mobileLike != '' ">
+			AND buy.login_name like CONCAT('%',#{mobileLike},'%')
+		</if>
+		<if test="createTimeStart != null and createTimeStart != ''">
+			AND #{createTimeStart} &lt;= t.create_time  
+		</if>
+		<if test="createTimeEnd != null and createTimeEnd != ''">
+			AND #{createTimeEnd} &gt;= t.create_time  
+		</if>
+		<if test="status != null and status != ''">
+			AND t.status = #{status}
+		</if>
+		<if test="activityId != null and activityId != ''">
+			AND t.activity_id = #{activityId}
+		</if>
+		<if test="idList != null and idList.size() > 0">
+			AND t.id in
+			<foreach collection="idList" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+</mapper>

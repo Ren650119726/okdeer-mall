@@ -239,4 +239,15 @@ public interface MemberConsigneeAddressMapper extends IBaseCrudMapper {
 	 */
 	List<UserAddressVo> findByStoreIds(@Param("storeIds") List<String> storeIds);
 	//end added by zhulq  2017-03-22 V2.1.0
+	
+	// Begin V2.6.3 added by maojj 2017-10-11
+	/**
+	 * @Description: 查询用户地址列表（过滤物业地址）
+	 * @param userId
+	 * @return   
+	 * @author maojj
+	 * @date 2017年10月11日
+	 */
+	List<MemberConsigneeAddress> findByUserId(String userId);
+	// End V2.6.3 added by maojj 2017-10-11
 }

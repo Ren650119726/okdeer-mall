@@ -10,6 +10,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.order.bo.FmsOrderStatisBo;
 import com.okdeer.mall.order.bo.FmsStatisOrderCannelRefundBo;
 import com.okdeer.mall.order.bo.FmsTradeOrderBo;
@@ -1229,4 +1230,35 @@ public interface TradeOrderMapper {
 	 */
 	TradeOrder findByOrderNo(String orderNo);
 	// End V2.4.1 added by maojj 2017-06-19
+	
+	// Begin V2.6.3 added by maojj 2017-10-12
+	/**
+	 * @Description: 将团购订单更改为寄送服务订单类型
+	 * @param orderIdList   
+	 * @author maojj
+	 * @date 2017年10月12日
+	 */
+	void updateOrderType(@Param("orderIdList")List<String> orderIdList,@Param("updateTime")Date updateTime);
+	
+	/**
+	 * @Description: 根据订单id查询订单列表
+	 * @param orderIdList
+	 * @return   
+	 * @author maojj
+	 * @date 2017年10月12日
+	 */
+	List<TradeOrder> findByOrderIds(@Param("orderIdList")List<String> orderIdList);
+	// End V2.6.3 added by maojj 2017-10-12
+	
+	/**
+	 * @Description: 寄送服务订单列表(后台用)
+	 * @param dto
+	 * @param pageNumber
+	 * @param pageSize
+	 * @return
+	 * @throws Exception
+	 * @author zhangkn
+	 * @date 2017年10月16日
+	 */
+	List<TradeOrder> findListForSend(TradeOrderQueryParamDto dto) throws Exception;
 }

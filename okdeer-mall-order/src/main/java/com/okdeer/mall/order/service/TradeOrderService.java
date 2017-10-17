@@ -1053,4 +1053,15 @@ public interface TradeOrderService {
 
 	TradeOrder findByOrderNo(String orderNo);
 
+	/**
+	 * @Description: 寄送服务订单列表(后台用)
+	 * @param dto
+	 * @param pageNumber
+	 * @param pageSize
+	 * @return
+	 * @throws Exception
+	 * @author zhangkn
+	 * @date 2017年10月16日
+	 */
+	PageUtils<TradeOrder> findListForSend(TradeOrderQueryParamDto dto,int pageNumber, int pageSize) throws Exception;
 }

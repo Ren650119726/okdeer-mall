@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.discount.mapper.ActivityJoinRecordMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.order.entity.ActivityJoinRecord" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="activity_type" property="activityType" jdbcType="TINYINT" javaType="com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum"/>
+        <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+        <result column="activity_item_id" property="activityItemId" jdbcType="VARCHAR" />
+        <result column="activity_num" property="activityNum" jdbcType="INTEGER"/>
+        <result column="user_id" property="userId" jdbcType="VARCHAR" />
+        <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+        <result column="device_id" property="deviceId" jdbcType="VARCHAR" />
+        <result column="create_date" property="createDate" jdbcType="DATE" />
+        <result column="disabled" property="disabled" jdbcType="TINYINT" javaType="com.okdeer.base.common.enums.Disabled"/>
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, activity_type, activity_id, activity_item_id, activity_num, user_id, order_id, 
+        device_id, create_date, disabled
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_join_record
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.order.entity.ActivityJoinRecord" >
+        insert into activity_join_record
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="activityType != null" >
+                activity_type,
+            </if>
+            <if test="activityId != null" >
+                activity_id,
+            </if>
+            <if test="activityItemId != null" >
+                activity_item_id,
+            </if>
+            <if test="activityNum != null" >
+                activity_num,
+            </if>
+            <if test="userId != null" >
+                user_id,
+            </if>
+            <if test="orderId != null" >
+                order_id,
+            </if>
+            <if test="deviceId != null" >
+                device_id,
+            </if>
+            <if test="createDate != null" >
+                create_date,
+            </if>
+            <if test="disabled != null" >
+                disabled,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="activityType != null" >
+                #{activityType,jdbcType=TINYINT},
+            </if>
+            <if test="activityId != null" >
+                #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="activityItemId != null" >
+                #{activityItemId,jdbcType=VARCHAR},
+            </if>
+            <if test="activityNum != null" >
+                #{activityNum,jdbcType=INTEGER},
+            </if>
+            <if test="userId != null" >
+                #{userId,jdbcType=VARCHAR},
+            </if>
+            <if test="orderId != null" >
+                #{orderId,jdbcType=VARCHAR},
+            </if>
+            <if test="deviceId != null" >
+                #{deviceId,jdbcType=VARCHAR},
+            </if>
+            <if test="createDate != null" >
+                #{createDate,jdbcType=DATE},
+            </if>
+            <if test="disabled != null" >
+                #{disabled,jdbcType=TINYINT},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.order.entity.ActivityJoinRecord" >
+        update activity_join_record
+        <set >
+            <if test="activityType != null" >
+                activity_type = #{activityType,jdbcType=TINYINT},
+            </if>
+            <if test="activityId != null" >
+                activity_id = #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="activityItemId != null" >
+                activity_item_id = #{activityItemId,jdbcType=VARCHAR},
+            </if>
+            <if test="activityNum != null" >
+                activity_num = #{activityNum,jdbcType=INTEGER},
+            </if>
+            <if test="userId != null" >
+                user_id = #{userId,jdbcType=VARCHAR},
+            </if>
+            <if test="orderId != null" >
+                order_id = #{orderId,jdbcType=VARCHAR},
+            </if>
+            <if test="deviceId != null" >
+                device_id = #{deviceId,jdbcType=VARCHAR},
+            </if>
+            <if test="createDate != null" >
+                create_date = #{createDate,jdbcType=DATE},
+            </if>
+            <if test="disabled != null" >
+                disabled = #{disabled,jdbcType=TINYINT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_join_record
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+	
+	<!-- 统计活动参与总数量 -->
+	<select id="countActivityJoinNum" parameterType="com.okdeer.mall.activity.bo.ActivityJoinRecParamBo" resultType="int">
+		SELECT SUM(activity_num)
+		FROM activity_join_record
+		<where>
+			<if test="userId != null">
+				AND user_id = #{userId}
+			</if>
+			<if test="deviceId != null">
+				AND device_id = #{deviceId}
+			</if>
+			<if test="activityId !=null">
+				AND activity_id = #{activityId,jdbcType=VARCHAR}
+			</if>
+			<if test="activityItemId != null" >
+                AND activity_item_id = #{activityItemId,jdbcType=VARCHAR}
+            </if>
+            <if test="joinDate != null">
+            	AND create_date = #{joinDate,jdbcType=DATE}
+            </if>
+		</where>
+	</select>
+</mapper>

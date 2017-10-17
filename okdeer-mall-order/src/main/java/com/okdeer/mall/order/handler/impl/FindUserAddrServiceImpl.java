@@ -1,5 +1,6 @@
 package com.okdeer.mall.order.handler.impl;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,18 +11,27 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
+import com.okdeer.mall.activity.discount.entity.ActivityBusinessRel;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
+import com.okdeer.mall.activity.discount.enums.ActivityBusinessType;
+import com.okdeer.mall.activity.discount.mapper.ActivityBusinessRelMapper;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
+import com.okdeer.mall.common.enums.AreaType;
+import com.okdeer.mall.member.bo.UserAddressFilterCondition;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.vo.MemberConsigneeAddressVo;
 import com.okdeer.mall.member.member.vo.UserAddressVo;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
+import com.okdeer.mall.member.service.impl.GroupUserAddrFilterStrategy;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.handler.RequestHandler;
@@ -45,6 +55,12 @@ public class FindUserAddrServiceImpl implements RequestHandler<PlaceOrderParamDt
 	
 	@Resource
 	private MemberConsigneeAddressMapper memberConsigneeAddressMapper;
+	
+	@Resource
+	private ActivityBusinessRelMapper activityBusinessRelMapper;
+	
+	@Resource
+	private GroupUserAddrFilterStrategy groupUserAddrFilterStrategy;
 
 	@Override
 	public void process(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) throws Exception {
@@ -59,6 +75,9 @@ public class FindUserAddrServiceImpl implements RequestHandler<PlaceOrderParamDt
 				break;
 			case STORE_CONSUME_ORDER:
 				userAddrInfo = findStoreServAddr(paramDto.getStoreId());
+				break;
+			case GROUP_ORDER:
+				userAddrInfo = findUserGroupAddr(paramDto);
 				break;
 			default:
 				break;
@@ -191,6 +210,37 @@ public class FindUserAddrServiceImpl implements RequestHandler<PlaceOrderParamDt
 		UserAddressVo userAddressVo = BeanMapper.map(map, UserAddressVo.class);
 		return userAddressVo;
 	}
+	
+	// Begin V2.6.3 added by maojj 2017-10-11
+	/**
+	 * @Description: 查询用户地址信息
+	 * @param paramDto
+	 * @return   
+	 * @author maojj
+	 * @date 2017年10月11日
+	 */
+	private UserAddressVo findUserGroupAddr(PlaceOrderParamDto paramDto) {
+		UserAddressFilterCondition filterCondition = new UserAddressFilterCondition();
+		ActivityDiscount actInfo = (ActivityDiscount) paramDto.get("activityGroup");
+		filterCondition.setActivityInfo(actInfo);
+		if (actInfo.getLimitRange() != AreaType.national) {
+			// 如果团购活动限制了范围，需要查询范围关系
+			List<ActivityBusinessRel> relList = activityBusinessRelMapper.findByActivityId(actInfo.getId());
+			Map<ActivityBusinessType, List<String>> areaLimitCondition = Maps.newHashMap();
+			relList.forEach(rel -> {
+				if (areaLimitCondition.containsKey(rel.getBusinessType())) {
+					areaLimitCondition.get(rel.getBusinessType()).add(rel.getBusinessId());
+				} else {
+					areaLimitCondition.put(rel.getBusinessType(), Arrays.asList(new String[] { rel.getBusinessId() }));
+				}
+			});
+			filterCondition.setAreaLimitCondition(areaLimitCondition);
+		}
+		List<UserAddressVo> userAddrList = memberConsigneeAddressService.findUserAddrList(paramDto.getUserId(),
+				filterCondition, groupUserAddrFilterStrategy);
+		return CollectionUtils.isEmpty(userAddrList) ? null : userAddrList.get(0);
+	}
+	// End V2.6.3 added by maojj 2017-10-11
 }
 
 

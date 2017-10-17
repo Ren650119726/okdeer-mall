@@ -32,6 +32,16 @@
 		<result column="device_day_limit" property="deviceDayLimit" jdbcType="INTEGER" />
 		<result column="account_day_limit" property="accountDayLimit" jdbcType="INTEGER" />
 		<result column="valid_day" property="validDay" jdbcType="INTEGER" />
+		<!--v2.6.3添加 xuzq 20171009  -->
+		<result column="valid_day_type" property="validDayType" jdbcType="INTEGER" />
+		<result column="effect_day" property="effectDay" jdbcType="INTEGER" />
+		<result column="valid_time_start" property="validTimeStart" jdbcType="TIMESTAMP" />
+		<result column="valid_time_end" property="validTimeEnd" jdbcType="TIMESTAMP" />
+		<result column="limit_order_type" property="limitOrderType" jdbcType="VARCHAR" />
+		<!--v2.6.3添加 tuzhd 20171012  -->
+		<result column="device_all_limit" property="deviceAllLimit" jdbcType="INTEGER" />
+		<result column="account_all_limit" property="accountAllLimit" jdbcType="INTEGER" />
+		<result column="limit_range_type" property="limitRangeType" jdbcType="TINYINT"/>
 	</resultMap>
 
 	<sql id="Base_Column_List">
@@ -41,7 +51,9 @@
 		limit_freq, limit_freq_type, limit_channel, limit_user, limit_sku,
 		limit_order_amount,
 		limit_total_amount, limit_day_amount, grant_type, grant_total_amount, grant_total_user,
-		grant_total_order,device_day_limit,account_day_limit,valid_day
+		grant_total_order,device_day_limit,account_day_limit,valid_day,
+		valid_day_type,effect_day,valid_time_start,valid_time_end, limit_order_type,
+		device_all_limit,account_all_limit,limit_range_type
 	</sql>
 
 	<select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String">
@@ -143,6 +155,31 @@
 			<if test="validDay != null">
 				valid_day,
 			</if>
+			<if test="validDayType != null">
+				valid_day_type,
+			</if>
+			<if test="effectDay != null">
+				effect_day,
+			</if>
+			<if test="validTimeStart != null">
+				valid_time_start,
+			</if>
+			<if test="validTimeEnd != null">
+				valid_time_end,
+			</if>
+			<if test="limitOrderType != null">
+				limit_order_type,
+			</if>
+			<if test="deviceAllLimit != null">
+				device_all_limit,
+			</if>
+			<if test="accountAllLimit != null">
+				account_all_limit,
+			</if>
+			<if test="limitRangeType != null">
+				limit_range_type,
+			</if>
+			
 		</trim>
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
 			<if test="id != null">
@@ -234,6 +271,30 @@
 			</if>
 			<if test="validDay != null">
 				#{validDay,jdbcType=INTEGER},
+			</if>
+			<if test="validDayType != null">
+				#{validDayType,jdbcType=INTEGER},
+			</if>
+			<if test="effectDay != null">
+				#{effectDay,jdbcType=INTEGER},
+			</if>
+			<if test="validTimeStart != null">
+				#{validTimeStart,jdbcType=TIMESTAMP},
+			</if>
+			<if test="validTimeEnd != null">
+				#{validTimeEnd,jdbcType=TIMESTAMP},
+			</if>
+			<if test="limitOrderType != null">
+				#{limitOrderType,jdbcType=VARCHAR},
+			</if>
+			<if test="deviceAllLimit != null">
+				#{deviceAllLimit,jdbcType=INTEGER},
+			</if>
+			<if test="accountAllLimit != null">
+				#{accountAllLimit,jdbcType=INTEGER},
+			</if>
+			<if test="limitRangeType != null">
+				#{limitRangeType,jdbcType=TINYINT},
 			</if>
 		</trim>
 	</insert>
@@ -327,6 +388,30 @@
 			</if>
 			<if test="validDay != null">
 				valid_day = #{validDay,jdbcType=INTEGER},
+			</if>
+			<if test="validDayType != null">
+				valid_day_type = #{validDayType,jdbcType=INTEGER},
+			</if>
+			<if test="effectDay != null">
+				effect_day = #{effectDay,jdbcType=INTEGER},
+			</if>
+			<if test="validTimeStart != null">
+				valid_time_start = #{validTimeStart,jdbcType=TIMESTAMP},
+			</if>
+			<if test="validTimeEnd != null">
+				valid_time_end = #{validTimeEnd,jdbcType=TIMESTAMP},
+			</if>
+			<if test="limitOrderType != null">
+				limit_order_type = #{limitOrderType,jdbcType=VARCHAR},
+			</if>
+			<if test="deviceAllLimit != null">
+				device_all_limit = #{deviceAllLimit,jdbcType=INTEGER},
+			</if>
+			<if test="accountAllLimit != null">
+				account_all_limit = #{accountAllLimit,jdbcType=INTEGER},
+			</if>
+			<if test="limitRangeType != null">
+				limit_range_type = #{limitRangeType,jdbcType=TINYINT},
 			</if>
 		</set>
 		where id = #{id,jdbcType=VARCHAR}

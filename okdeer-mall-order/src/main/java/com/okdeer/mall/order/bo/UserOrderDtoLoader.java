@@ -23,6 +23,7 @@ import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.enums.AppOrderTypeEnum;
 import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
+import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.system.utils.ConvertUtil;
 
 /**
@@ -137,6 +138,7 @@ public class UserOrderDtoLoader {
 				case PHYSICAL_ORDER:
 				case SERVICE_ORDER:
 				case SERVICE_STORE_ORDER:
+				case SERVICE_EXPRESS_ORDER:
 					orderDto.setOrderStatus(OrderAppStatusAdaptor.convertAppOrderStatus(order.getStatus()));
 					break;
 				case PHONE_PAY_ORDER:
@@ -145,6 +147,14 @@ public class UserOrderDtoLoader {
 					break;
 				case STORE_CONSUME_ORDER:
 					orderDto.setOrderStatus(OrderAppStatusAdaptor.convertAppStoreConsumeOrderStatus(order.getStatus(), order.getConsumerCodeStatus()).ordinal());
+					break;
+				case GROUP_ORDER:
+					// 如果是团购订单.已付款待发货状态，显示为：已付款
+					if(order.getStatus() == OrderStatusEnum.DROPSHIPPING){
+						orderDto.setOrderStatus(OrderStatusEnum.PAY_COMPLETE.ordinal());
+					}else{
+						orderDto.setOrderStatus(order.getStatus().ordinal());
+					}
 					break;
 				default:
 					break;
