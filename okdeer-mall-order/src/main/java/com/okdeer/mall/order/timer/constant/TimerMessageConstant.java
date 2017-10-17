@@ -118,9 +118,9 @@ public interface TimerMessageConstant {
         tag_finish_timeout(1 * 24 * 60 * 60L),
 
         /**
-         * 订单完成超时未售后处理,并送积分(团购) 7天
+         * 团购订单完成超时未售后处理,并送积分(团购) 1天
          */
-        tag_finish_group_timeout(7 * 24 * 60 * 60L),
+        tag_finish_group_timeout(1 * 24 * 60 * 60L),
 
         /**
          * 订单完成超时自动好评 3天
