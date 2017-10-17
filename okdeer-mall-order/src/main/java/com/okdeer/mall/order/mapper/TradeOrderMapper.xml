@@ -5812,6 +5812,13 @@
 			<![CDATA[ AND trade.create_time <= #{endTime,jdbcType=VARCHAR}]]>
 		</if>
 		
+		<if test="updateStartTime != null and updateStartTime !='' ">
+			<![CDATA[AND trade.update_time  >= #{updateStartTime,jdbcType=VARCHAR}]]>
+		</if>
+		<if test="updateEndTime != null and updateEndTime !='' ">
+			<![CDATA[ AND trade.update_time <= #{updateEndTime,jdbcType=VARCHAR}]]>
+		</if>
+		
 		<if test="payWay != null">
 			AND trade.pay_way = #{payWay, jdbcType=TINYINT}
 		</if>
