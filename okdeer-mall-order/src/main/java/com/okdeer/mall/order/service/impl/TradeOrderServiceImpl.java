@@ -7149,4 +7149,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         return tradeOrderMapper.selectConsumeTotalAmount(params);
     }
 
+    @Override
+	public PageUtils<TradeOrder> findListForSend(TradeOrderQueryParamDto dto, int pageNumber, int pageSize)
+			throws Exception {
+		 PageHelper.startPage(pageNumber, pageSize, true);
+		 List<TradeOrder> list = tradeOrderMapper.findListForSend(dto);
+		 return new PageUtils<TradeOrder>(list);
+    }
 }
