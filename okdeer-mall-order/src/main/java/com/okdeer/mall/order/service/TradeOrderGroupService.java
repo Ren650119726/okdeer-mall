@@ -3,8 +3,12 @@ package com.okdeer.mall.order.service;
 import java.util.List;
 
 import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
+import com.okdeer.mall.activity.discount.dto.ActivityDiscountGroupSkuDto;
 import com.okdeer.mall.order.dto.GroupJoinUserDto;
+import com.okdeer.mall.order.dto.TradeOrderGroupDto;
+import com.okdeer.mall.order.dto.TradeOrderGroupParamDto;
 
 
 public interface TradeOrderGroupService extends IBaseService {
@@ -18,5 +22,28 @@ public interface TradeOrderGroupService extends IBaseService {
 	 * @date 2017年10月16日
 	 */
 	List<GroupJoinUserDto> findGroupJoinUserList(String groupOrderId,String screen) throws ServiceException;
+	
+	/**
+	 * @Description: 查询团购商品信息
+	 * @param activityId 用户id
+	 * @param storeSkuId 商品id
+	 * @return ActivityDiscountGroupDto  
+	 * @author tuzhd
+	 * @date 2017年10月16日
+	 */
+	ActivityDiscountGroupSkuDto findGoodsGroupList(String activityId,String storeSkuId);
+	
+	/**
+	 * @Description: 分页list 后台管理用
+	 * @param param
+	 * @param pageNum
+	 * @param pageSize
+	 * @return
+	 * @throws Exception
+	 * @author zhangkn
+	 * @date 2017年10月12日
+	 */
+	public PageUtils<TradeOrderGroupDto> findPage(TradeOrderGroupParamDto param, int pageNum, int pageSize)
+		throws Exception;
 
 }

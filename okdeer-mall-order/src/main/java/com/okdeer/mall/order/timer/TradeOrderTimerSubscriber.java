@@ -11,7 +11,6 @@ package com.okdeer.mall.order.timer;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-
 import javax.annotation.Resource;
 
 import org.slf4j.Logger;
@@ -31,10 +30,14 @@ import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.store.dto.StoreOrderCommentDto;
 import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.common.utils.RobotUserUtil;
+import com.okdeer.mall.order.dto.CancelOrderParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderGroup;
+import com.okdeer.mall.order.entity.TradeOrderGroupRelation;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
+import com.okdeer.mall.order.enums.GroupOrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderCancelType;
 import com.okdeer.mall.order.enums.OrderComplete;
 import com.okdeer.mall.order.enums.OrderItemStatusEnum;
@@ -46,6 +49,7 @@ import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.vo.TradeOrderCommentVo;
 import com.okdeer.mall.order.vo.TradeOrderRefundsCertificateVo;
+import com.okdeer.mall.util.RedisLock;
 import com.okdeer.base.common.constant.LoggerConstants;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.enums.WhetherEnum;
@@ -57,6 +61,8 @@ import com.okdeer.mall.order.service.CancelOrderApi;
 import com.okdeer.mall.order.service.CancelOrderService;
 import com.okdeer.mall.order.service.GenerateNumericalService;
 import com.okdeer.mall.order.service.TradeOrderCommentService;
+import com.okdeer.mall.order.service.TradeOrderGroupRelationService;
+import com.okdeer.mall.order.service.TradeOrderGroupService;
 import com.okdeer.mall.order.service.TradeOrderItemDetailService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderService;
@@ -147,6 +153,17 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 	@Resource
 	private CancelOrderApi cancelOrderApi;
 	
+	// Begin V2.6.3 added by maojj 2017-10-17
+	@Resource
+	private TradeOrderGroupService tradeOrderGroupService;
+	
+	@Resource
+	private TradeOrderGroupRelationService tradeOrderGroupRelationService;
+	
+	@Resource
+	private RedisLock redisLock;
+	// End V2.6.3 added by maojj 2017-10-17
+	
 	
 	@Override
 	public String getTopic() {
@@ -173,6 +190,8 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 		switch (tag) {
 			case tag_pay_timeout:
 				return processPayTimeout(content, tag);
+			case tag_group_timeout:
+				return processGroupTimeout(content, tag);
 			case tag_delivery_timeout:
 			case tag_delivery_group_timeout:
 			case tag_accept_server_timeout:
@@ -236,6 +255,7 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 				//begin add by zengjz 取消订单换接口类 and tuzd 会员卡扫码付
 				order.setCancelType(OrderCancelType.CANCEL_BY_SYSTEM);
 				if(order.getOrderResource() == OrderResourceEnum.SWEEP || 
+						order.getOrderResource() == OrderResourceEnum.WECHAT_MIN || 
 						order.getOrderResource() == OrderResourceEnum.MEMCARD){
 					//modify by mengsj begin 扫码购超时取消订单
 					TradeOrder tradeOrder = new TradeOrder();
@@ -758,6 +778,62 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 		return certificate;
 	}
 	
-	
+	// Begin V2.6.3 added by maojj 2017-10-17
+	/**
+	 * @Description: 处理团购订单到期超时消息
+	 * @param content
+	 * @param tag
+	 * @return   
+	 * @author maojj
+	 * @date 2017年10月17日
+	 */
+	private ConsumeConcurrentlyStatus processGroupTimeout(String content, Tag tag){
+		long currentTime = System.currentTimeMillis();
+		TimeoutMessage timeoutMsg = JsonMapper.nonEmptyMapper().fromJson(content, TimeoutMessage.class);
+		// 根据团购订单id查询团购订单
+		String lockKey = String.format("GROUP:%s", timeoutMsg.getKey());
+		try {
+			if (redisLock.tryLock(lockKey, 10)) {
+				TradeOrderGroup orderGroup =  tradeOrderGroupService.findById(timeoutMsg.getKey());
+				if (orderGroup == null) {
+					logger.warn(timeoutMsg.getKey() + "：团购订单不存在");
+					return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+				}
+				if(orderGroup.getExpireTime().getTime() - currentTime > MIN_INTERVAL){
+					// 如果团购订单过期时间-当前时间>最小时间间隔，则发送推迟执行消息，知道超时时间达到再进行消费
+					tradeOrderTimer.sendAfreshTimerMessage(tag, timeoutMsg, orderGroup.getExpireTime().getTime());
+					return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+				}
+				if(orderGroup.getStatus() != GroupOrderStatusEnum.UN_GROUP){
+					// 如果状态已经发生变更，则不做处理
+					return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+				}
+				// 修改团单状态为成团过期取消
+				orderGroup.setStatus(GroupOrderStatusEnum.GROUP_EXPIRT);
+				orderGroup.setEndTime(new Date());
+				orderGroup.setRemark("拼团过期超时");
+				tradeOrderGroupService.update(orderGroup);
+				// 查询所有已经入团的团购订单
+				List<TradeOrderGroupRelation> orderGroupRelList = tradeOrderGroupRelationService.findByGroupOrderId(orderGroup.getId());
+				// 对所有入团订单走订单取消流程
+				List<CancelOrderParamDto> cancelOrderList = Lists.newArrayList();
+				orderGroupRelList.forEach(groupRel -> {
+					CancelOrderParamDto cancelParamDto = new CancelOrderParamDto();
+					cancelParamDto.setOrderId(groupRel.getOrderId());
+					cancelParamDto.setReason("拼团失败");
+					cancelParamDto.setCancelType(OrderCancelType.CANCEL_BY_SYSTEM);
+					cancelOrderList.add(cancelParamDto);
+				});
+				cancelOrderList.forEach(cancelOrder -> cancelOrderApi.cancelOrder(cancelOrder));
+			}
+		} catch (Exception e) {
+			logger.error("{}团购订单过期失败：{}",timeoutMsg.getKey(),e);
+			return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+		} finally{
+			redisLock.unLock(lockKey);
+		}
+		return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+	}
+	// End V2.6.3 added by maojj 2017-10-17
 
 }
