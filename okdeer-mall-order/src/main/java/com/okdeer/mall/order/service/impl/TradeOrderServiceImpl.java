@@ -2195,7 +2195,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
         // 发送计时消息
         // Begin 重构4.1 add by wusw 20160801
-        if (storeInfo.getType() == StoreTypeEnum.SERVICE_STORE) {
+        if (tradeOrder.getType() == OrderTypeEnum.SERVICE_EXPRESS_ORDER){
+        	// 寄送服务订单确收超时为10天
+        	tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_group_timeout, tradeOrder.getId());
+        	// 寄送服务订单发货发送短信
+        	tradeMessageService.sendSmsByShipments(tradeOrder);
+        }else if (storeInfo.getType() == StoreTypeEnum.SERVICE_STORE) {
             Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime().substring(0, 16), "yyyy-MM-dd HH:mm");
             // 服务店订单，预约服务时间过后24小时未派单的自动确认收货
             // tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_server_timeout,

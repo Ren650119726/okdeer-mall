@@ -473,7 +473,11 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		// 查询用户电话号码
 		String mobile = sysBuyerUserService.selectMemberMobile(order.getUserId());
 		if (StringUtils.isNotBlank(mobile)) {
-			this.sendSms(mobile, tradeMessageProperties.smsShipmentsStyle1, params);
+			if(order.getType() == OrderTypeEnum.SERVICE_EXPRESS_ORDER){
+				this.sendSms(mobile, tradeMessageProperties.smsGroupShipmentStyle, params);
+			}else{
+				this.sendSms(mobile, tradeMessageProperties.smsShipmentsStyle1, params);
+			}
 		} else {
 			logger.error("订单号：[" + order.getOrderNo() + "]的用户ID:[" + order.getUserId() + "]手机号码为空");
 		}
