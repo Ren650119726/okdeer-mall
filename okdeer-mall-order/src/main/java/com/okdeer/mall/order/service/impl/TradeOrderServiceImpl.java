@@ -4679,6 +4679,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                     // 购买商品的数量
                     item.put("quantity", tradeOrderItem.getQuantity());
                     item.put("itemId", tradeOrderItem.getId());
+                    // Begin V2.6.3 added by maojj 2017-10-17
+                    // 服务保障
+                    String serviceAssurance = "0";
+                    if (orders.getIsComplete().ordinal() == 0) {
+                        serviceAssurance = getServiceAssurance(orders.getReceivedTime(), tradeOrderItem.getServiceAssurance());
+                    }
+                    item.put("serviceAssurance", serviceAssurance);
+                    // End V2.6.3 added by maojj 2017-10-17
                     // Begin V2.0.0 add by wusw 20170117
                     if (tradeOrderItem.getUnit() != null) {
                         item.put("unit", tradeOrderItem.getUnit());

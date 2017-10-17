@@ -62,6 +62,7 @@ import com.okdeer.mall.order.enums.CompainStatusEnum;
 import com.okdeer.mall.order.enums.OrderIsShowEnum;
 import com.okdeer.mall.order.enums.OrderItemStatusEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.PaymentStatusEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
@@ -546,6 +547,10 @@ public class TradeOrderBuilder {
 			tradeOrderItem.setCreateTime(new Date());
 			tradeOrderItem.setServiceAssurance(
 					StringUtils.isEmpty(skuBo.getGuaranteed()) ? 0 : Integer.valueOf(skuBo.getGuaranteed()));
+			if(tradeOrder.getType() == OrderTypeEnum.GROUP_ORDER){
+				// 如果是团购订单，服务保障默认为1天
+				tradeOrderItem.setServiceAssurance(1);
+			}
 			if(skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && skuBo.getSkuActQuantity() > 0){
 				tradeOrderItem.setStoreActivityType(ActivityTypeEnum.enumValueOf(skuBo.getActivityType()));
 				tradeOrderItem.setStoreActivityId(skuBo.getActivityId());
