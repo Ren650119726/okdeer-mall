@@ -4032,7 +4032,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
    
 
     @Override
-    public JSONObject findUserOrderDetailList(String orderId,String screen) throws ServiceException {
+    public JSONObject findUserOrderDetailList(String orderId) throws ServiceException {
         if (StringUtils.isEmpty(orderId)) {
             throw new ServiceException("非法请求参数");
         }
@@ -4061,13 +4061,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     			setOrderItemExtJxc(json, orderId);
     		}
     		//如果为会员卡订单 end tuzhd 2017-09-06
-        
-    		// Begin V2.6.3 added by maojj 2017-10-13
-    		if(orders.getType() == OrderTypeEnum.GROUP_ORDER && orders.getStatus() == OrderStatusEnum.DROPSHIPPING){
-    			// 如果是已付款的团购订单
-    			setGroupInfo(json,orderId,screen);
-    		}
-    		// End V2.6.3 added by maojj 2017-10-13
         } catch (Exception e) {
             logger.error("商品详细查询异常", e);
             throw new ServiceException();
@@ -6616,7 +6609,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
      * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findUserVisitServiceOrderDetail(java.lang.String)
      */
     @Override
-    public JSONObject findUserVisitServiceOrderDetail(String orderId) throws ServiceException {
+    public JSONObject findUserVisitServiceOrderDetail(String orderId,String screen) throws Exception {
         UserTradeOrderDetailVo orders = tradeOrderMapper.selectUserOrderServiceDetail(orderId);
         List<TradeOrderItem> tradeOrderItems = tradeOrderItemMapper.selectTradeOrderItemOrDetail(orderId);
         // 判断订单是否评价appraise大于0，已评价
@@ -6628,6 +6621,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
         orders.setItems(tradeOrderItems);
         JSONObject json = this.getServiceJsonObj(orders, appraise, storeInfoExt, true);
+        // Begin V2.6.3 added by maojj 2017-10-13
+		if(orders.getType() == OrderTypeEnum.GROUP_ORDER && orders.getStatus() == OrderStatusEnum.DROPSHIPPING){
+			// 如果是已付款的团购订单
+			setGroupInfo(json,orderId,screen);
+		}
+		// End V2.6.3 added by maojj 2017-10-13
         return json;
     }
     // End V1.1.0 add by wusw 20160929
