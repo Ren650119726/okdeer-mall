@@ -6431,4 +6431,45 @@
 		</foreach>	
 	</select>
 	<!-- End V2.6.3 added by maojj 2017-10-12 -->
+	
+	<select id="findListForSend" parameterType="com.okdeer.mall.order.dto.TradeOrderQueryParamDto" resultMap="BaseResultMap">
+		SELECT 
+			t.* ,
+			store.store_name as storeName
+			FROM trade_order t 
+		left join store_info store on (store.id = t.store_id)
+		left join trade_order_pay pay on (t.id = pay.order_id)
+		where t.disabled = 0 
+		<if test="orderNo != null and orderNo != ''">
+			AND t.order_No like CONCAT('%',#{orderNo},'%')
+		</if>
+		<if test="userPhone != null and userPhone != ''">
+			AND t.user_phone like CONCAT('%',#{userPhone},'%')
+		</if>
+		<if test="status != null">
+			AND t.status = #{status, jdbcType=TINYINT}
+		</if>
+		<if test="storeName != null and storeName != ''">
+			AND store.store_name like CONCAT('%',#{storeName},'%')
+		</if>
+		<if test="startTime != null and startTime!=''">
+			<![CDATA[AND t.create_time  >= #{startTime,jdbcType=VARCHAR}]]>
+		</if>
+		<if test="endTime != null and endTime!=''">
+			<![CDATA[ AND t.create_time <= #{endTime,jdbcType=VARCHAR}]]>
+		</if>
+		<if test="payType != null">
+			AND pay.pay_type = #{payType, jdbcType=TINYINT}
+		</if>
+		<if test="type != null">
+			AND t.type = #{type, jdbcType=TINYINT}
+		</if>
+		<if test="idList != null and idList.size() > 0">
+			AND t.id in
+			<foreach collection="idList" index="index" item="item" open="("
+				separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+	</select>
 </mapper>
