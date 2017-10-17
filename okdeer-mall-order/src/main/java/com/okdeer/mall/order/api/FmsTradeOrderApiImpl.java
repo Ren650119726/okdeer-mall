@@ -129,6 +129,9 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 			int pageNum, int pageSize) throws MallApiException {
 		try {
 			boolean hasData = queryFkTableInfo(tradeOrderQueryParamDto);
+			if(!hasData){
+				return new PageUtils<>(Lists.newArrayList());
+			}
 			PageUtils<FmsTradeOrderBo> fmsTradeOrderBoPage = tradeOrderService
 					.findOrderForFinanceByParams(tradeOrderQueryParamDto, pageNum, pageSize);
 			List<FmsTradeOrderBo> fmsTradeOrderBoList = fmsTradeOrderBoPage.getList();
