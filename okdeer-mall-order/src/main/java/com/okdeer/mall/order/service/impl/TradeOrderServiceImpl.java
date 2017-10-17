@@ -5891,7 +5891,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService.get(activityId);
             return activityCollectCoupons.getName();
         } else if (activityType == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES
-                || activityType == ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES) {
+                || activityType == ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES || activityType == ActivityTypeEnum.GROUP_ACTIVITY) {
             // 满减或满折活动
             ActivityDiscount activityDiscount = activityDiscountMapper.findById(activityId);
             return activityDiscount.getName();
@@ -5899,11 +5899,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             // 秒杀活动
             ActivitySeckill activitySeckill = activitySeckillMapper.findByPrimaryKey(activityId);
             return activitySeckill.getSeckillName();
-        } else if (activityType == ActivityTypeEnum.GROUP_ACTIVITY) {
-            // 团购活动
-            ActivityGroup activityGroup = activityGroupService.selectByPrimaryKey(activityId);
-            return activityGroup.getName();
-        } else {
+        }else {
             // 无活动
             return null;
         }
