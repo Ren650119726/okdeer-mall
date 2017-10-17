@@ -175,6 +175,11 @@ public class TradeMessageProperties {
 	public String smsGroupSuccessStyle;
 	
 	/**
+	 * 拼团失败的短信内容
+	 */
+	@Value("${sms.group.fail.style}")
+	public String smsGroupFailStyle;
+	/**
 	 * 团购订单发货的短信提示
 	 */
 	@Value("${sms.group.shipment.style}")

@@ -486,7 +486,16 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	@Override
 	public void sendSmsByCancel(TradeOrder order, OrderStatusEnum status) {
 		// 取消订单发送短信
-		if (status == OrderStatusEnum.DROPSHIPPING || status == OrderStatusEnum.WAIT_RECEIVE_ORDER) {
+		if (order.getType() == OrderTypeEnum.GROUP_ORDER && status == OrderStatusEnum.DROPSHIPPING){
+			// 如果是团购订单，待发货取消，标识该团购订单拼团失败，短信内容为拼团失败的短信内容
+			Map<String, String> params = Maps.newHashMap();
+			params.put("#1", order.getOrderNo());
+			String mobile = order.getUserPhone();
+			if(StringUtils.isEmpty(mobile)){
+				sysBuyerUserService.selectMemberMobile(order.getUserId());
+			}
+			this.sendSms(mobile, tradeMessageProperties.smsGroupFailStyle, params);		
+		} else if (status == OrderStatusEnum.DROPSHIPPING || status == OrderStatusEnum.WAIT_RECEIVE_ORDER) {
 			Map<String, String> params = Maps.newHashMap();
 			params.put("#1", order.getOrderNo());
 			params.put("#2", order.getReason());
