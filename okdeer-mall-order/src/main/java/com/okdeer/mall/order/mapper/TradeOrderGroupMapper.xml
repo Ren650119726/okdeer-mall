@@ -18,13 +18,10 @@
         <result column="remark" property="remark" jdbcType="VARCHAR" />
     </resultMap>
     
-<<<<<<< HEAD
     <resultMap id="SearchResultMap" extends="BaseResultMap" type="com.okdeer.mall.order.dto.TradeOrderGroupDto" >
         <result column="hadOrderCount" property="hadOrderCount" jdbcType="INTEGER" />
     </resultMap>
     
-=======
->>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
     <resultMap id="dto" extends="BaseResultMap" type="com.okdeer.mall.order.dto.TradeOrderGroupDto">
         
     </resultMap>
@@ -229,7 +226,6 @@
 		</where>
 	</select>
 	
-<<<<<<< HEAD
 	<!-- 统计成团总数 -->
 	<select id="countGroupNum" parameterType="com.okdeer.mall.order.bo.TradeOrderGroupParamBo" resultType="int">
 		SELECT count(id)
@@ -250,8 +246,6 @@
 		</where>
 	</select>
 	
-=======
->>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
 	<!-- 根据查询条件动态查询(运营后台列表用) -->
 	<select id="findByParam" parameterType="com.okdeer.mall.order.dto.TradeOrderGroupParamDto" resultMap="dto">
 		SELECT 
