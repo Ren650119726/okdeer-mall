@@ -236,6 +236,7 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 				//begin add by zengjz 取消订单换接口类 and tuzd 会员卡扫码付
 				order.setCancelType(OrderCancelType.CANCEL_BY_SYSTEM);
 				if(order.getOrderResource() == OrderResourceEnum.SWEEP || 
+						order.getOrderResource() == OrderResourceEnum.WECHAT_MIN || 
 						order.getOrderResource() == OrderResourceEnum.MEMCARD){
 					//modify by mengsj begin 扫码购超时取消订单
 					TradeOrder tradeOrder = new TradeOrder();

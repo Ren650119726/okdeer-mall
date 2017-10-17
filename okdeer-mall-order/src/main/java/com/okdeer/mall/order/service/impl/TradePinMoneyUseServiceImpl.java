@@ -85,11 +85,14 @@ public class TradePinMoneyUseServiceImpl extends BaseServiceImpl implements Trad
 	@Override
 	public void releaseOrderOccupy(String orderId) {
 		TradePinMoneyUse pinMoneyUse = tradePinMoneyUseMapper.findByOrderId(orderId);
-		//设置失效
+		if (pinMoneyUse == null) {
+			return;
+		}
+		// 设置失效
 		pinMoneyUse.setDisabled(Disabled.invalid);
 		tradePinMoneyUseMapper.update(pinMoneyUse);
-		
-		//释放零花钱领取占用
+
+		// 释放零花钱领取占用
 		Map<String, BigDecimal> sourceMap = JsonMapper.nonDefaultMapper().fromJson(pinMoneyUse.getSourceId(),
 				new TypeReference<HashMap<String, BigDecimal>>() {
 				});
