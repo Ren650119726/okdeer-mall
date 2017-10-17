@@ -24,7 +24,6 @@ public interface TradeOrderGroupService extends IBaseService {
 	List<GroupJoinUserDto> findGroupJoinUserList(String groupOrderId,String screen) throws ServiceException;
 	
 	/**
-<<<<<<< HEAD
 	 * @Description: 查询团购商品信息
 	 * @param activityId 用户id
 	 * @param storeSkuId 商品id
@@ -35,8 +34,6 @@ public interface TradeOrderGroupService extends IBaseService {
 	ActivityDiscountGroupSkuDto findGoodsGroupList(String activityId,String storeSkuId);
 	
 	/**
-=======
->>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
 	 * @Description: 分页list 后台管理用
 	 * @param param
 	 * @param pageNum
