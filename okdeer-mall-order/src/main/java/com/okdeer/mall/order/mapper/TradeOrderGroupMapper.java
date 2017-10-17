@@ -10,7 +10,10 @@ import java.util.List;
 
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.order.bo.TradeOrderGroupParamBo;
+<<<<<<< HEAD
 import com.okdeer.mall.order.dto.TradeOrderGroupGoodsDto;
+=======
+>>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
 import com.okdeer.mall.order.dto.TradeOrderGroupDto;
 import com.okdeer.mall.order.dto.TradeOrderGroupParamDto;
 
@@ -33,6 +36,7 @@ public interface TradeOrderGroupMapper extends IBaseMapper {
 	 * @date 2017年10月16日
 	 */
 	List<TradeOrderGroupDto> findByParam(TradeOrderGroupParamDto param);
+<<<<<<< HEAD
 	
 	/**
 	 * @Description: 查询开团信息集合
@@ -50,4 +54,6 @@ public interface TradeOrderGroupMapper extends IBaseMapper {
 	 */
 	int countGroupNum(TradeOrderGroupParamBo paramBo);
 	
+=======
+>>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
 }

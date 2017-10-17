@@ -166,4 +166,23 @@ public class TradeMessageProperties {
 	 */
 	@Value("${sms.pay.refund.success}")
 	public String smsPayRefundSuccess;
+	
+	// Begin V2.6.3 added by maojj 2017-10-17
+	/**
+	 * 拼团成功的短信提示
+	 */
+	@Value("${sms.group.success.style}")
+	public String smsGroupSuccessStyle;
+	
+	/**
+	 * 拼团失败的短信内容
+	 */
+	@Value("${sms.group.fail.style}")
+	public String smsGroupFailStyle;
+	/**
+	 * 团购订单发货的短信提示
+	 */
+	@Value("${sms.group.shipment.style}")
+	public String smsGroupShipmentStyle;
+	// End V2.6.3 added by maojj 2017-10-17
 }

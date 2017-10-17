@@ -1,3 +1,4 @@
+
 package com.okdeer.mall.order.service.impl;
 
 import java.util.List;
@@ -5,12 +6,12 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.mall.order.bo.TradeOrderLogisticsParamBo;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.service.TradeOrderLogisticsServiceApi;
 import com.okdeer.mall.order.utils.PageQueryUtils;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.mall.order.mapper.TradeOrderLogisticsMapper;
-import com.okdeer.mall.order.service.PageCallBack;
 import com.okdeer.mall.order.service.TradeOrderLogisticsService;
 
 /**
@@ -41,7 +42,7 @@ class TradeOrderLogisticsServiceImpl implements TradeOrderLogisticsService, Trad
 	public TradeOrderLogistics findByOrderId(String orderId) throws ServiceException {
 		return tradeOrderLogisticsMapper.selectByOrderId(orderId);
 	}
-	
+
 	// Begin 重构4.1 add by zengj
 	/**
 	 * 
@@ -59,29 +60,23 @@ class TradeOrderLogisticsServiceImpl implements TradeOrderLogisticsService, Trad
 	// Begin V2.1.0 added by luosm 20170217
 	@Override
 	public List<TradeOrderLogistics> selectByOrderIds(List<String> orderIds) throws ServiceException {
-		List<TradeOrderLogistics> list = PageQueryUtils.pageQueryByIds(orderIds, new PageCallBack<TradeOrderLogistics>() {
-			@Override
-			public List<TradeOrderLogistics> callBackHandle(List<String> indexList) {
-				return tradeOrderLogisticsMapper.selectByOrderIds(indexList);
-			}
-		});
-		return list;
+		return PageQueryUtils.pageQueryByIds(orderIds,
+				indexList -> tradeOrderLogisticsMapper.selectByOrderIds(indexList));
 	}
 
 	@Override
 	public List<String> selectByCityId(String cityId) throws ServiceException {
 		return tradeOrderLogisticsMapper.selectByCityId(cityId);
 	}
-	
+
 	@Override
 	public TradeOrderLogistics selectByOrderId(String orderId) throws ServiceException {
 		return tradeOrderLogisticsMapper.selectByOrderId(orderId);
 	}
-	
 
 	@Override
 	public void insertSelective(TradeOrderLogistics tradeOrderLogistics) throws ServiceException {
-		
+
 		tradeOrderLogisticsMapper.insertSelective(tradeOrderLogistics);
 	}
 
@@ -90,4 +85,10 @@ class TradeOrderLogisticsServiceImpl implements TradeOrderLogisticsService, Trad
 		tradeOrderLogisticsMapper.updateByOrderId(tradeOrderLogistics);
 	}
 	// End V2.1.0 added by luosm 20170217
+
+	@Override
+	public List<TradeOrderLogistics> findList(TradeOrderLogisticsParamBo tradeOrderLogisticsParamBo) {
+		
+		return tradeOrderLogisticsMapper.findList(tradeOrderLogisticsParamBo);
+	}
 }

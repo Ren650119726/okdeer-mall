@@ -36,6 +36,7 @@ import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
 import com.okdeer.mall.order.bo.FmsOrderStatisBo;
 import com.okdeer.mall.order.bo.FmsStatisOrderCannelRefundBo;
 import com.okdeer.mall.order.bo.FmsTradeOrderBo;
+import com.okdeer.mall.order.bo.TradeOrderLogisticsParamBo;
 import com.okdeer.mall.order.dto.FmsOrderStatisDto;
 import com.okdeer.mall.order.dto.FmsTradeOrderDto;
 import com.okdeer.mall.order.dto.FmsTradeOrderForRefundDto;
@@ -127,6 +128,10 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 	public PageUtils<FmsTradeOrderDto> findOrderListByParams(TradeOrderQueryParamDto tradeOrderQueryParamDto,
 			int pageNum, int pageSize) throws MallApiException {
 		try {
+			boolean hasData = queryFkTableInfo(tradeOrderQueryParamDto);
+			if(!hasData){
+				return new PageUtils<>(Lists.newArrayList());
+			}
 			PageUtils<FmsTradeOrderBo> fmsTradeOrderBoPage = tradeOrderService
 					.findOrderForFinanceByParams(tradeOrderQueryParamDto, pageNum, pageSize);
 			List<FmsTradeOrderBo> fmsTradeOrderBoList = fmsTradeOrderBoPage.getList();
@@ -140,6 +145,30 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 		} catch (ServiceException e) {
 			throw new MallApiException(e);
 		}
+	}
+	
+	/**
+	 * @Description: 查询其它关联表的信息
+	 * @param tradeOrderQueryParamDto
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年10月17日
+	 */
+	private boolean queryFkTableInfo(TradeOrderQueryParamDto tradeOrderQueryParamDto) {
+		if(StringUtils.isNotEmpty(tradeOrderQueryParamDto.getLogisticsNo())){
+			TradeOrderLogisticsParamBo tradeOrderLogisticsParamBo = new TradeOrderLogisticsParamBo();
+			tradeOrderLogisticsParamBo.setLogisticsNo(tradeOrderQueryParamDto.getLogisticsNo());
+			List<TradeOrderLogistics>  tradeOrderLogisticList = tradeOrderLogisticsService.findList(tradeOrderLogisticsParamBo);
+			if(CollectionUtils.isEmpty(tradeOrderLogisticList)){
+				return false;
+			}
+			List<String> orderIdList = Lists.newArrayList();
+			for (TradeOrderLogistics tradeOrderLogistics : tradeOrderLogisticList) {
+				orderIdList.add(tradeOrderLogistics.getOrderId());
+			}
+			tradeOrderQueryParamDto.setIdList(orderIdList);
+		}
+		return true;
 	}
 
 	@Override
@@ -270,6 +299,8 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 					String addressExt = logistics.getAddress() == null ? "" : logistics.getAddress();
 					// 收货地址
 					fmsTradeOrderDto.setAddress(area + addressExt);
+					fmsTradeOrderDto.setLogisticsCompanyName(logistics.getLogisticsCompanyName());
+					fmsTradeOrderDto.setLogisticsNo(logistics.getLogisticsNo());
 				}
 
 				StoreInfoDto storeInfoDto = storeAddressMap.get(fmsTradeOrderDto.getStoreId());
@@ -279,7 +310,6 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 					fmsTradeOrderDto.setCityName(address == null ? "" : address.getName());
 					fmsTradeOrderDto.setAddress(storeInfoDto.getAddress());
 				}
-
 			}
 		} catch (ServiceException e1) {
 			throw new MallApiException(e1);
@@ -300,7 +330,7 @@ public class FmsTradeOrderApiImpl implements FmsTradeOrderApi {
 		boolean isDliver = fmsTradeOrderDto.getType() == OrderTypeEnum.PHYSICAL_ORDER
 				&& fmsTradeOrderDto.getPickUpType() == PickUpTypeEnum.DELIVERY_DOOR;
 		// 上门服务订单
-		boolean isServiceStoreOrder = fmsTradeOrderDto.getType() == OrderTypeEnum.SERVICE_STORE_ORDER;
+		boolean isServiceStoreOrder = fmsTradeOrderDto.getType() == OrderTypeEnum.SERVICE_STORE_ORDER || fmsTradeOrderDto.getType() == OrderTypeEnum.SERVICE_EXPRESS_ORDER;
 		return isDliver || isServiceStoreOrder;
 	}
 

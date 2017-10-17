@@ -316,7 +316,7 @@ public interface TradeOrderService {
 	 *            请求参数orderId
 	 * @return 返回查询结果
 	 */
-	JSONObject findUserOrderDetailList(String orderId,String screen) throws ServiceException;
+	JSONObject findUserOrderDetailList(String orderId) throws ServiceException;
 
 	// begin update by wushp
 	/**
@@ -1053,4 +1053,15 @@ public interface TradeOrderService {
 
 	TradeOrder findByOrderNo(String orderNo);
 
+	/**
+	 * @Description: 寄送服务订单列表(后台用)
+	 * @param dto
+	 * @param pageNumber
+	 * @param pageSize
+	 * @return
+	 * @throws Exception
+	 * @author zhangkn
+	 * @date 2017年10月16日
+	 */
+	PageUtils<TradeOrder> findListForSend(TradeOrderQueryParamDto dto,int pageNumber, int pageSize) throws Exception;
 }

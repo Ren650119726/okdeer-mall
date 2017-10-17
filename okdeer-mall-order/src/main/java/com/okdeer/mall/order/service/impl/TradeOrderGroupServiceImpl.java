@@ -21,7 +21,10 @@ import com.okdeer.mall.activity.discount.entity.ActivityDiscountGroup;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountGroupMapper;
 import com.okdeer.mall.order.bo.TradeOrderGroupParamBo;
 import com.okdeer.mall.order.dto.GroupJoinUserDto;
+<<<<<<< HEAD
 import com.okdeer.mall.order.dto.TradeOrderGroupGoodsDto;
+=======
+>>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
 import com.okdeer.mall.order.dto.TradeOrderGroupDto;
 import com.okdeer.mall.order.dto.TradeOrderGroupParamDto;
 import com.okdeer.mall.order.entity.TradeOrderGroupRelation;
@@ -81,6 +84,7 @@ public class TradeOrderGroupServiceImpl extends BaseServiceImpl implements Trade
 		return joinUserList;
 	}
 	
+<<<<<<< HEAD
 	
 	/**
 	 * @Description: 查询团购商品信息
@@ -116,6 +120,8 @@ public class TradeOrderGroupServiceImpl extends BaseServiceImpl implements Trade
         return dto;
 	}
 	
+=======
+>>>>>>> branch 'master' of http://10.20.101.5/MallPlat/okdeer-mall.git
 	@Override
 	public PageUtils<TradeOrderGroupDto> findPage(TradeOrderGroupParamDto param, int pageNum, int pageSize)
 			throws Exception {
