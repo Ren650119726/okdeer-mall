@@ -3,6 +3,7 @@ package com.okdeer.mall.order.service;
 import java.util.List;
 
 import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.mall.order.bo.TradeOrderLogisticsParamBo;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
 
 /**
@@ -39,4 +40,12 @@ public interface TradeOrderLogisticsService {
 	// End 重构4.1 add by zengj
 	
 	List<TradeOrderLogistics> selectByOrderIds(List<String> orderIds) throws ServiceException;
+	/**
+	 * @Description: 更新参数查询物流列表
+	 * @param tradeOrderLogisticsParamBo
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年10月17日
+	 */
+	List<TradeOrderLogistics> findList(TradeOrderLogisticsParamBo tradeOrderLogisticsParamBo);
 }
