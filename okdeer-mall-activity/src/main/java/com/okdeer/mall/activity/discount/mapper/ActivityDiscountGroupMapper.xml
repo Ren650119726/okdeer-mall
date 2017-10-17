@@ -220,4 +220,63 @@
 		WHERE discount_id = #{activityId,jdbcType=VARCHAR}
 		AND store_sku_id = #{storeSkuId,jdbcType=VARCHAR}
 	</select>
+	
+	<resultMap id="CategoryResultMap"
+		type="com.okdeer.archive.goods.base.entity.GoodsSpuCategory">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="pid" property="pid" jdbcType="VARCHAR" />
+		<result column="level_id" property="levelId" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<!-- 查询团购商品信息 -->
+	<select id="findGroupGoodsCategory" parameterType="map" resultMap="CategoryResultMap">
+		SELECT 
+		     DISTINCT cate.name,cate.id
+		FROM activity_discount ad 
+		 	 INNER JOIN activity_discount_group g ON ad.`id` = g.`discount_id`
+		 	 INNER JOIN goods_store_sku sku ON g.store_sku_id = sku.id
+		 	 INNER JOIN goods_spu_category cate ON sku.spu_category_id = cate.id
+		WHERE 1=1
+		     <if test="status != null">
+			   and ad.status = #{status,jdbcType=TINYINT}
+		     </if>
+	</select>
+	
+	
+	<resultMap id="GoodsListResultMap"
+		type="com.okdeer.mall.activity.discount.dto.ActivityGoodsGroupSkuDto">
+		<id column="id" property="discountId" jdbcType="VARCHAR" />
+		<result column="group_count" property="groupCount" jdbcType="INTEGER" />
+        <result column="group_price" property="groupPrice" jdbcType="DECIMAL" />
+        <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+        <result column="url" property="url" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="alias" property="alias" jdbcType="VARCHAR" />
+		<result column="unit" property="unit" jdbcType="VARCHAR" />
+		<result column="openGroupTotal" property="openGroupTotal" jdbcType="INTEGER" />
+	</resultMap>
+	
+	<!-- 查询团购商品列表 -->
+	<select id="findGroupGoodsList" parameterType="java.util.Map" resultMap="GoodsListResultMap">
+		SELECT 
+			 ad.id,sku.name,sku.alias,p.url,
+			 g.group_price,g.group_count,sku.unit,
+			 COUNT(tg.id) openGroupTotal,g.store_sku_id
+		FROM activity_discount ad 
+		 	INNER JOIN activity_discount_group g ON ad.id = g.discount_id
+			INNER JOIN goods_store_sku sku ON g.store_sku_id = sku.id
+			INNER JOIN goods_store_sku_picture p ON p.store_sku_id = sku.id AND p.type = 1 
+			LEFT JOIN trade_order_group tg ON g.discount_id = tg.activity_id AND g.store_sku_id=tg.store_sku_id  and tg.status =1
+		WHERE 1=1
+		     <if test="status != null">
+			    and ad.status = #{status,jdbcType=TINYINT}
+		     </if>
+		     <if test="spuCategoryId != null and spuCategoryId != '' ">
+			    and sku.spu_category_id = #{spuCategoryId,jdbcType=VARCHAR}
+		     </if>
+		GROUP BY g.store_sku_id
+	</select>
+	
+	
 </mapper>

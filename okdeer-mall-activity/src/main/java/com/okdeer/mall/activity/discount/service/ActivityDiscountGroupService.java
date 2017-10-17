@@ -4,7 +4,7 @@
  * @Date 2017-10-10 Created
  * 注意：本内容仅限于友门鹿公司内部传阅，禁止外泄以及用于其他的商业目的
  */
-package com.okdeer.mall.activity.discount.mapper;
+package com.okdeer.mall.activity.discount.service;
 
 import java.util.List;
 import java.util.Map;
@@ -12,22 +12,22 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.archive.goods.base.entity.GoodsSpuCategory;
-import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.activity.discount.dto.ActivityGoodsGroupSkuDto;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountGroup;
-import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
 /**
  * ClassName: ActivityDiscountGroupMapper 
- * @Description: 团购商品关联表实体操作类
+ * @Description: 团购商品关联表接口
  * @author tuzhd
  * @date 2017年10月10日
  *
  * =================================================================================================
  *     Task ID			  Date			     Author		      Description
  * ----------------+----------------+-------------------+-------------------------------------------
- *	   2.6.3			2017-10-10			tuzhd			团购商品关联表实体操作类
+ *	   2.6.3			2017-10-17			tuzhd			团购商品关联表接口
  */
-public interface ActivityDiscountGroupMapper extends IBaseMapper {
+public interface ActivityDiscountGroupService extends IBaseService{
 	
 	/**
 	 * @Description: 批量新增团购活动
@@ -58,27 +58,26 @@ public interface ActivityDiscountGroupMapper extends IBaseMapper {
 	 * @param activityId
 	 * @param storeSkuId
 	 * @return   
-	 * @author maojj
+	 * @author tuzhd
 	 * @date 2017年10月13日
 	 */
 	ActivityDiscountGroup findByActivityIdAndSkuId(@Param("activityId")String activityId,@Param("storeSkuId")String storeSkuId);
-	
+
 	/**
 	 * @Description: 根据开团状态查询团购商品的分类
 	 * @param status
 	 * @author tuzhd
 	 * @date 2017年10月17日
 	 */
-	List<GoodsSpuCategory> findGroupGoodsCategory(@Param("status")ActivityDiscountStatus status);
-	
+	PageUtils<GoodsSpuCategory> findGroupGoodsCategory(Integer pageNumber, Integer pageSize);
+
 	/**
 	 * @Description: 根据开团状态查询团购商品的分类
 	 * @param status
 	 * @author tuzhd
 	 * @date 2017年10月17日
 	 */
-	List<ActivityGoodsGroupSkuDto> findGroupGoodsList(Map<String,Object> param);
-	
-	
+	PageUtils<ActivityGoodsGroupSkuDto> findGroupGoodsList(Map<String, Object> param, Integer pageNumber,
+			Integer pageSize);
 
 }
