@@ -59,6 +59,13 @@ public interface TimerMessageConstant {
          */
         tag_recharge_pay_timeout(30 * 60L),
         
+        // Begin V2.6.3 added by maojj 2017-10-17
+        /**
+         * 团购订单拼团超时处理，时间根据活动设置而定
+         */
+        tag_group_timeout(0L),
+        // End V2.6.3 added by maojj 2017-10-17
+        
         /**
          * 发货超时处理 3天
          */

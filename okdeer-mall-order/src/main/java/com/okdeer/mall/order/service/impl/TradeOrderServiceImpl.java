@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -4076,27 +4077,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     }
     
     /**
-     * @Description: TODO
-     * @param json
-     * @param orderId
-     * @param screen
-     * @throws Exception   
-     * @author maojj
-     * @date 2017年10月16日
-     */
-    private void setGroupInfo(JSONObject json,String orderId,String screen) throws Exception{
-    	// 查询团购订单关联关系
-    	TradeOrderGroupRelation groupRel = tradeOrderGroupRelationMapper.findByOrderId(orderId);
-    	// 查询团购订单信息
-    	TradeOrderGroup orderGroup = tradeOrderGroupService.findById(groupRel.getGroupOrderId());
-    	// 根据团购订单查询已经入团的关联关系
-    	List<GroupJoinUserDto> joinUserList = tradeOrderGroupService.findGroupJoinUserList(groupRel.getGroupOrderId(), screen);
-    	json.put("groupExpireTime", orderGroup.getExpireTime().getTime() - System.currentTimeMillis());
-    	json.put("absentNum", orderGroup.getGroupCount() - joinUserList.size());
-    	json.put("joinUserList", JSONArray.fromObject(joinUserList));
-    }
-    
-    /**
      * @Description: 如果为会员卡订单 添加扩展信息
      * @author tuzhd
      * @date 2017年9月6日
@@ -6633,10 +6613,46 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 			// 如果是已付款的团购订单
 			setGroupInfo(json,orderId,screen);
 		}
+		if(orders.getType() == OrderTypeEnum.SERVICE_EXPRESS_ORDER && orders.getStatus() == OrderStatusEnum.TO_BE_SIGNED){
+			// 已发货的寄送服务订单，需要设置快递信息
+			setExpressInfo(json,orderId);
+		}
 		// End V2.6.3 added by maojj 2017-10-13
         return json;
     }
     // End V1.1.0 add by wusw 20160929
+    
+    // Begin V2.6.3 added by maojj 2017-10-17
+    /**
+     * @Description: 设置团购信息
+     * @param json
+     * @param orderId
+     * @param screen
+     * @throws Exception   
+     * @author maojj
+     * @date 2017年10月16日
+     */
+    private void setGroupInfo(JSONObject json,String orderId,String screen) throws Exception{
+    	// 查询团购订单关联关系
+    	TradeOrderGroupRelation groupRel = tradeOrderGroupRelationMapper.findByOrderId(orderId);
+    	// 查询团购订单信息
+    	TradeOrderGroup orderGroup = tradeOrderGroupService.findById(groupRel.getGroupOrderId());
+    	// 根据团购订单查询已经入团的关联关系
+    	List<GroupJoinUserDto> joinUserList = tradeOrderGroupService.findGroupJoinUserList(groupRel.getGroupOrderId(), screen);
+    	json.put("groupExpireTime", orderGroup.getExpireTime().getTime() - System.currentTimeMillis());
+    	json.put("absentNum", orderGroup.getGroupCount() - joinUserList.size());
+    	json.put("joinUserList", JSONArray.fromObject(joinUserList));
+    }
+    
+    private void setExpressInfo(JSONObject json,String orderId){
+    	TradeOrderLogistics logistics = tradeOrderLogisticsMapper.selectByOrderId(orderId);
+    	if(logistics == null){
+    		return;
+    	}
+    	json.put("logisticsCompanyName", ConvertUtils.convert(logistics.getLogisticsCompanyName()));
+    	json.put("logisticsNo",  ConvertUtils.convert(logistics.getLogisticsNo()));
+    }
+    // End V2.6.3 added by maojj 2017-10-17
 
     /**
      * 到店消费订单处理

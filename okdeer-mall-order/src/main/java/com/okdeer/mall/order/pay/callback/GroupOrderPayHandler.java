@@ -13,6 +13,8 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
 import com.okdeer.archive.stock.dto.StockUpdateDto;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
+import com.okdeer.archive.store.entity.StoreInfoServiceExt;
+import com.okdeer.archive.store.service.IStoreInfoServiceExtServiceApi;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.jxc.common.utils.UuidUtils;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
@@ -76,6 +78,9 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
+	
+	@Reference(version = "1.0.0", check = false)
+	private IStoreInfoServiceExtServiceApi storeInfoServiceExtServiceApi;
 
 	@Resource
 	private CancelOrderApi cancelOrderApi;
@@ -126,13 +131,15 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 	 * @param tradeOrder
 	 * @param orderGroupRel   
 	 * @author maojj
+	 * @throws Exception 
 	 * @date 2017年10月12日
 	 */
-	private void openGroup(TradeOrder tradeOrder, TradeOrderGroupRelation orderGroupRel) {
+	private void openGroup(TradeOrder tradeOrder, TradeOrderGroupRelation orderGroupRel) throws Exception {
 		// 查询团购活动信息
 		ActivityDiscount activityGroup = activityDiscountMapper.findById(tradeOrder.getActivityId());
 		// 查询团购商品信息
-		ActivityDiscountGroup groupSku = activityDiscountGroupMapper.findByActivityIdAndSkuId(tradeOrder.getActivityId(), tradeOrder.getActivityItemId());
+		ActivityDiscountGroup groupSku = activityDiscountGroupMapper
+				.findByActivityIdAndSkuId(tradeOrder.getActivityId(), tradeOrder.getActivityItemId());
 		// 保存团购订单
 		TradeOrderGroup orderGroup = saveGroupOrder(tradeOrder, activityGroup, groupSku);
 		if (orderGroupRel == null) {
@@ -142,6 +149,8 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 			// 参团订单开团，修改团单关系
 			updateGroupOrderRel(orderGroupRel, orderGroup.getId());
 		}
+		// 开团成功发送团单过期消息
+		sendGroupOutTimeMessage(orderGroup);
 	}
 
 	/**
@@ -232,15 +241,30 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 		orderGroupRel.setStatus(status);
 		tradeOrderGroupRelationMapper.update(orderGroupRel);
 	}
+	
+	/**
+	 * @Description: 发送团购订单拼团超时消息
+	 * @param orderGroup
+	 * @throws Exception   
+	 * @author maojj
+	 * @date 2017年10月17日
+	 */
+	private void sendGroupOutTimeMessage(TradeOrderGroup orderGroup) throws Exception {
+		Date expireTime = orderGroup.getExpireTime();
+		long delayTimeMillis = expireTime.getTime() - System.currentTimeMillis();
+		delayTimeMillis = delayTimeMillis > 0L ? delayTimeMillis : 0L;
+		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_group_timeout, orderGroup.getId(), delayTimeMillis);
+	}
 
 	/**
 	 * @Description: 入团
 	 * @param tradeOrder
 	 * @param orderGroupRel   
 	 * @author maojj
+	 * @throws Exception 
 	 * @date 2017年10月12日
 	 */
-	private void joinGroup(TradeOrder tradeOrder, TradeOrderGroupRelation orderGroupRel) {
+	private void joinGroup(TradeOrder tradeOrder, TradeOrderGroupRelation orderGroupRel) throws Exception {
 		// 查询关联的团购订单
 		TradeOrderGroup orderGroup = tradeOrderGroupMapper.findById(orderGroupRel.getGroupOrderId());
 		if (orderGroup.getStatus() != GroupOrderStatusEnum.UN_GROUP) {
@@ -374,9 +398,10 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 	}
 
 	public void sendTimerMessage(List<String> orderIdList, String storeId) {
-		// 查询店铺设置信息
-		// TODO maojj
 		try {
+			// 查询店铺设置信息
+			StoreInfoServiceExt storeInfoExt = storeInfoServiceExtServiceApi.findByStoreId(storeId);
+			// TODO
 			int limitTimeOutHour = 1;
 			for (String orderId : orderIdList) {
 				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_timeout, orderId,
