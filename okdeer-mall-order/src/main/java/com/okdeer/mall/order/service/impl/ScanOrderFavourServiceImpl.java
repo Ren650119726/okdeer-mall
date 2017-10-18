@@ -70,6 +70,9 @@ public class ScanOrderFavourServiceImpl implements ScanOrderFavourService{
 	@Override
 	public void appendFavour(ScanOrderDto orderDetail, RequestParams requestParams) throws Exception {
 
+		if(OrderResourceEnum.WECHAT_MIN.ordinal() == Integer.valueOf(orderDetail.getOrderResource())){
+			return;
+		}
 		//设置为使用才进行查询优惠信息  并设置优惠信息
 		String userId = orderDetail.getUserId();
 		if(orderDetail.isUserDiscount()){
@@ -82,7 +85,9 @@ public class ScanOrderFavourServiceImpl implements ScanOrderFavourService{
 				orderDetail.setCouponsFaceValue(new BigDecimal(coupons.getCouponPrice()));
 				orderDetail.setCouponsId(coupons.getCouponId());
 				orderDetail.setCouponsActivityId(coupons.getId());
+				orderDetail.setRecordId(coupons.getRecordId());
 			}
+			orderDetail.setCouponList(preferentialVo.getCouponList());
 		}
 		//可以使用零花钱
 		BigDecimal myUsable = tradePinMoneyObtainService.findMyUsableTotal(userId,new Date());
