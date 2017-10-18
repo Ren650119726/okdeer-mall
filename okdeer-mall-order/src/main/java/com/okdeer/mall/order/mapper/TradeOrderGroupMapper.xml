@@ -48,7 +48,7 @@
 		FROM `trade_order_group` g 
 		INNER JOIN `trade_order_group_relation`  r ON g.id = r.`group_order_id`
 		<where>
-			<if test="activityId =! null ">
+			<if test="activityId != null ">
 				AND g.activity_id = #{activityId,jdbcType=VARCHAR}
 			</if>
 			<if test="storeSkuId != null">
@@ -211,7 +211,7 @@
 		SELECT SUM(group_count)
 		FROM trade_order_group
 		<where>
-			<if test="activityId =! null ">
+			<if test="activityId != null ">
 				AND activity_id = #{activityId,jdbcType=VARCHAR}
 			</if>
 			<if test="storeSkuId != null">
@@ -231,14 +231,11 @@
 		SELECT count(id)
 		FROM trade_order_group
 		<where>
-			<if test="activityId =! null ">
+			<if test="activityId != null">
 				AND activity_id = #{activityId,jdbcType=VARCHAR}
 			</if>
 			<if test="storeSkuId != null">
 				AND store_sku_id = #{storeSkuId,jdbcType=VARCHAR}
-			</if>
-			<if test="status != null">
-				AND status = #{status,jdbcType=TINYINT}
 			</if>
 		</where>
 	</select>
@@ -348,7 +345,7 @@
 		SELECT <include refid="Base_Column_List" />
 		FROM trade_order_group
 		<where>
-			<if test="activityId =! null ">
+			<if test="activityId != null ">
 				AND activity_id = #{activityId,jdbcType=VARCHAR}
 			</if>
 			<if test="storeSkuId != null">
