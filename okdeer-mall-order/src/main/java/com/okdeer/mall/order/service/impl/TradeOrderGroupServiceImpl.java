@@ -140,6 +140,21 @@ public class TradeOrderGroupServiceImpl extends BaseServiceImpl implements Trade
         return dto;
 	}
 	
+	/**
+	 * @Description: 查询分页的为成团数据
+	 * @param paramBo
+	 * @param pageNumber
+	 * @param pageSize
+	 * @author tuzhd
+	 * @date 2017年10月18日
+	 */
+	@Override
+	public PageUtils<TradeOrderGroupGoodsDto> findOrderGroupList(TradeOrderGroupParamBo paramBo,Integer pageNumber,Integer pageSize){
+		PageHelper.startPage(pageNumber, pageSize, true);
+		return new PageUtils<>(tradeOrderGroupMapper.findOrderGroupList(paramBo));
+		
+	}
+	
 	public PageUtils<TradeOrderGroupDto> findPage(TradeOrderGroupParamDto param, int pageNum, int pageSize)
 			throws Exception {
 		PageHelper.startPage(pageNum, pageSize, true);
