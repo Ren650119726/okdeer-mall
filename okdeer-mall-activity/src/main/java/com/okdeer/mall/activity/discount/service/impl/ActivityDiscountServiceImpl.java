@@ -496,6 +496,10 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		ActivityInfoDto actInfoDto = new ActivityInfoDto();
 		actInfoDto.setActivityInfo(activityInfo);
 		actInfoDto.setActivityType(activityInfo.getType().ordinal());
+		//零花钱活动 定额发放时 将默认订单最小金额置0 
+		if(activityInfo.getType() == ActivityDiscountType.PIN_MONEY && activityInfo.getGrantType() == 2){
+			conditionList.get(0).setRate(0);
+		}
 		actInfoDto.setConditionList(conditionList);
 		actInfoDto.setGroupGoodsList(groupGoodsList);
 		if(limitBuilder != null){
