@@ -30,6 +30,7 @@ import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.store.dto.StoreOrderCommentDto;
 import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.common.utils.RobotUserUtil;
+import com.okdeer.mall.order.bo.GroupOrderRemarkConst;
 import com.okdeer.mall.order.dto.CancelOrderParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderGroup;
@@ -804,14 +805,17 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 					tradeOrderTimer.sendAfreshTimerMessage(tag, timeoutMsg, orderGroup.getExpireTime().getTime());
 					return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 				}
-				if(orderGroup.getStatus() != GroupOrderStatusEnum.UN_GROUP){
+				if (orderGroup.getStatus() != GroupOrderStatusEnum.UN_GROUP
+						|| orderGroup.getStatus() != GroupOrderStatusEnum.GROUP_CLOSE) {
 					// 如果状态已经发生变更，则不做处理
 					return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 				}
 				// 修改团单状态为成团过期取消
+				if(orderGroup.getStatus() == GroupOrderStatusEnum.UN_GROUP){
+					orderGroup.setRemark(GroupOrderRemarkConst.GROUP_EXPIRE);
+				}
 				orderGroup.setStatus(GroupOrderStatusEnum.GROUP_EXPIRT);
 				orderGroup.setEndTime(new Date());
-				orderGroup.setRemark("拼团过期超时");
 				tradeOrderGroupService.update(orderGroup);
 				// 查询所有已经入团的团购订单
 				List<TradeOrderGroupRelation> orderGroupRelList = tradeOrderGroupRelationService.findByGroupOrderId(orderGroup.getId());

@@ -13,6 +13,7 @@ import com.okdeer.mall.order.bo.TradeOrderGroupParamBo;
 import com.okdeer.mall.order.dto.TradeOrderGroupDto;
 import com.okdeer.mall.order.dto.TradeOrderGroupGoodsDto;
 import com.okdeer.mall.order.dto.TradeOrderGroupParamDto;
+import com.okdeer.mall.order.entity.TradeOrderGroup;
 
 public interface TradeOrderGroupMapper extends IBaseMapper {
 
@@ -50,4 +51,21 @@ public interface TradeOrderGroupMapper extends IBaseMapper {
 	 */
 	int countGroupNum(TradeOrderGroupParamBo paramBo);
 	
+	/**
+	 * @Description: 分布式更新（采用乐观锁机制）
+	 * @param paramBo
+	 * @return   
+	 * @author maojj
+	 * @date 2017年10月18日
+	 */
+	int updateDistributed(TradeOrderGroupParamBo paramBo);
+	
+	/**
+	 * @Description: 根据条件查询团购订单列表
+	 * @param paramBo
+	 * @return   
+	 * @author maojj
+	 * @date 2017年10月18日
+	 */
+	List<TradeOrderGroup> findGroupOrderList(TradeOrderGroupParamBo paramBo);
 }

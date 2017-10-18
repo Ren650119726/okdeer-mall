@@ -20,6 +20,7 @@ import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountGroup;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountGroupMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
+import com.okdeer.mall.order.bo.GroupOrderRemarkConst;
 import com.okdeer.mall.order.bo.TradeOrderGroupParamBo;
 import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.dto.CancelOrderParamDto;
@@ -314,8 +315,8 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 			paramBo.setActivityId(orderGroup.getActivityId());
 			paramBo.setStoreSkuId(paramBo.getStoreSkuId());
 			paramBo.setStatus(GroupOrderStatusEnum.GROUP_SUCCESS);
-			paramBo.setStartTime(DateUtils.getDateStart(currentDate));
-			paramBo.setEndTime(DateUtils.getDateEnd(currentDate));
+			paramBo.setGroupTimeStart(DateUtils.getDateStart(currentDate));
+			paramBo.setGroupTimeEnd(DateUtils.getDateEnd(currentDate));
 
 			int soldDayNum = tradeOrderGroupMapper.countGroupSkuNum(paramBo);
 			if (soldDayNum + orderGroup.getGroupCount() > groupSku.getGoodsDayCountLimit().intValue()) {
@@ -382,7 +383,7 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 		// 修改团单状态为成团失败
 		orderGroup.setStatus(GroupOrderStatusEnum.GROUP_FAIL);
 		orderGroup.setEndTime(new Date());
-		orderGroup.setRemark("成团失败");
+		orderGroup.setRemark(GroupOrderRemarkConst.GROUP_FAIL);
 		tradeOrderGroupMapper.update(orderGroup);
 		// 对所有入团订单走订单取消流程
 		List<CancelOrderParamDto> cancelOrderList = Lists.newArrayList();

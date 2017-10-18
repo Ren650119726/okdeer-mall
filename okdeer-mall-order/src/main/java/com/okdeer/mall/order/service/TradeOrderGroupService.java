@@ -7,6 +7,7 @@ import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.activity.discount.dto.ActivityDiscountGroupSkuDto;
 import com.okdeer.mall.order.dto.GroupJoinUserDto;
+import com.okdeer.mall.order.dto.TradeOrderGroupDetailDto;
 import com.okdeer.mall.order.dto.TradeOrderGroupDto;
 import com.okdeer.mall.order.dto.TradeOrderGroupParamDto;
 
@@ -43,7 +44,23 @@ public interface TradeOrderGroupService extends IBaseService {
 	 * @author zhangkn
 	 * @date 2017年10月12日
 	 */
-	public PageUtils<TradeOrderGroupDto> findPage(TradeOrderGroupParamDto param, int pageNum, int pageSize)
+	PageUtils<TradeOrderGroupDto> findPage(TradeOrderGroupParamDto param, int pageNum, int pageSize)
 		throws Exception;
 
+	/**
+	 * @Description: 关闭活动时更新团购订单
+	 * @param activityId   
+	 * @author maojj
+	 * @date 2017年10月18日
+	 */
+	void updateByColseActivity(String activityId) throws Exception;
+	
+	/**
+	 * @Description: 查询拼团详情
+	 * @param groupOrderId
+	 * @return   
+	 * @author maojj
+	 * @date 2017年10月18日
+	 */
+	TradeOrderGroupDetailDto findGroupJoinDetail(String groupOrderId,String screen) throws ServiceException;
 }
