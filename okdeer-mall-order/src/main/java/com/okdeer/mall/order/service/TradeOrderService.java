@@ -316,7 +316,7 @@ public interface TradeOrderService {
 	 *            请求参数orderId
 	 * @return 返回查询结果
 	 */
-	JSONObject findUserOrderDetailList(String orderId) throws ServiceException;
+	JSONObject findUserOrderDetailList(String orderId,String screen) throws ServiceException;
 
 	// begin update by wushp
 	/**
