@@ -18,10 +18,6 @@
         <result column="remark" property="remark" jdbcType="VARCHAR" />
     </resultMap>
     
-    <resultMap id="SearchResultMap" extends="BaseResultMap" type="com.okdeer.mall.order.dto.TradeOrderGroupDto" >
-        <result column="hadOrderCount" property="hadOrderCount" jdbcType="INTEGER" />
-    </resultMap>
-    
     <resultMap id="dto" extends="BaseResultMap" type="com.okdeer.mall.order.dto.TradeOrderGroupDto">
         
     </resultMap>
@@ -38,15 +34,28 @@
         where id = #{id,jdbcType=VARCHAR}
     </select>
     
+    
+     <resultMap id="SearchResultMap" type="com.okdeer.mall.order.dto.TradeOrderGroupGoodsDto" >
+        <result column="hadOrderCount" property="hadOrderCount" jdbcType="INTEGER" />
+        <result column="expire_time" property="expireTime" jdbcType="TIMESTAMP" />
+        <result column="group_user_id" property="groupUserId" jdbcType="VARCHAR" />
+        <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+        <result column="nick_name" property="userName" jdbcType="VARCHAR" />
+        <result column="phone" property="phone" jdbcType="VARCHAR" />
+        <result column="pic_url" property="userImgUrl" jdbcType="VARCHAR" />
+        <result column="group_count" property="groupCount" jdbcType="INTEGER" />
+        <result column="store_sku_id" property="storeSkuId" jdbcType="VARCHAR" />
+        <result column="group_price" property="groupPrice" jdbcType="DECIMAL" />
+    </resultMap>
     <!-- 查询团购订单记录及统计已满人数 -->
     <select id="findOrderGroupList" resultMap="SearchResultMap" parameterType="java.lang.String" >
         SELECT 
-			g.id, g.group_no, g.group_user_id, g.activity_id, 
-			g.activity_name, g.group_count, g.store_sku_id, 
-       		g.group_price, g.store_id, g.status, g.create_time,
-       		g.expire_time, g.end_time,COUNT(r.`id`) orderCount
+			g.group_user_id, g.activity_id, g.store_sku_id,g.group_count,
+       		g.group_price,g.expire_time, COUNT(r.`id`) hadOrderCount,
+       		user.phone,user.pic_url,user.nick_name
 		FROM `trade_order_group` g 
-		INNER JOIN `trade_order_group_relation`  r ON g.id = r.`group_order_id`
+			 LEFT JOIN `trade_order_group_relation`  r ON g.id = r.`group_order_id` and r.status = 1
+			 LEFT JOIN sys_buyer_user user on g.group_user_id = user.id
 		<where>
 			<if test="activityId != null ">
 				AND g.activity_id = #{activityId,jdbcType=VARCHAR}
