@@ -59,4 +59,9 @@ public class TradeOrderGroupApiImpl implements TradeOrderGroupApi {
 	public TradeOrderGroupDetailDto findGroupJoinDetail(String groupOrderId, String screen) throws ServiceException {
 		return tradeOrderGroupService.findGroupJoinDetail(groupOrderId, screen);
 	}
+	
+	@Override
+	public void updateByColseActivity(String activityId) throws Exception{
+			tradeOrderGroupService.updateByColseActivity(activityId);
+	}
 }
