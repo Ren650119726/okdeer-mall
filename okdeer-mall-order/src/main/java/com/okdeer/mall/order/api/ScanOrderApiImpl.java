@@ -132,6 +132,7 @@ public class ScanOrderApiImpl implements ScanOrderApi {
     	RespSelfJson resp = selfPayOrderServiceApi.settlementOrder(prepayDto);
     	//验证返回结果
     	ScanOrderDto orderDetail = new ScanOrderDto();
+    	orderDetail.setOrderResource(scanOrderDto.getOrderResource());
 		if(Integer.valueOf(resp.get(RespSelfJson.KEY_CODE).toString()) != 0){
 			orderDetail.setCode(Integer.valueOf(resp.get(RespSelfJson.KEY_CODE).toString()));
 			return orderDetail;
