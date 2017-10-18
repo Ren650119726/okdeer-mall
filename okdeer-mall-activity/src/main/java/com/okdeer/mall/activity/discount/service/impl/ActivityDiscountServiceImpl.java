@@ -666,7 +666,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 			}
 			conditionList = actInfoDto.getConditionList();
 			for(ActivityDiscountCondition condition : conditionList){
-				if(condition.getArrive().compareTo(paramBo.getTotalAmount()) == 1){
+				if(condition.getArrive().compareTo(paramBo.getTotalAmount()) > 0){
 					continue;
 				}
 				fullSubtract = new FullSubtract();

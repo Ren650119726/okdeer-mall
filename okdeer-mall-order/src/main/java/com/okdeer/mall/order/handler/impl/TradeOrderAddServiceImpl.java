@@ -461,12 +461,12 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		// 店铺免配送费起送价
 		BigDecimal freefreight  = storeInfoExt.getFreeFreightPrice() == null ? new BigDecimal(0.0) : storeInfoExt.getFreeFreightPrice();
 		if (startPrice != null) {
-			if(tradeOrder.getTotalAmount().compareTo(startPrice) == -1){
+			if(tradeOrder.getTotalAmount().compareTo(startPrice) < 0){
 				throw new ServiceException(ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH.getDesc());
 			}
 			// 判断商品总金额是否达到起送金额 后台判断
 			// 如果商品总金额没有达到起送金额,则订单总金额=订单总金额+运费
-			if (tradeOrder.getTotalAmount().compareTo(freefreight) == -1) {
+			if (tradeOrder.getTotalAmount().compareTo(freefreight) < 0) {
 				// 运费
 				tradeOrder.setFare(freight);
 				tradeOrder.setTotalAmount(tradeOrder.getTotalAmount().add(freight));
@@ -742,7 +742,7 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 		BigDecimal totalAmount = tradeOrder.getTotalAmount();
 		BigDecimal favourAmount = tradeOrder.getPreferentialPrice();
 		// 如果总金额<优惠金额，则实付为0，优惠为订单总金额，否则实付金额为总金额-优惠金额，优惠为优惠金额
-		if (totalAmount.compareTo(favourAmount) == -1) {
+		if (totalAmount.compareTo(favourAmount) < 0) {
 			tradeOrder.setActualAmount(BigDecimal.valueOf(0.0));
 			tradeOrder.setPreferentialPrice(totalAmount);
 		} else {
@@ -874,13 +874,13 @@ public class TradeOrderAddServiceImpl implements TradeOrderAddService {
 					favourItem = BigDecimal.valueOf(0.00);
 				} else if (index++ < itemSize - 1) {
 					favourItem = totalAmountOfItem.multiply(totalFavour).divide(totalAmount, 2, BigDecimal.ROUND_FLOOR);
-					if (favourItem.compareTo(totalAmountOfItem) == 1) {
+					if (favourItem.compareTo(totalAmountOfItem) > 0) {
 						favourItem = totalAmountOfItem;
 					}
 					favourSum = favourSum.add(favourItem);
 				} else {
 					favourItem = totalFavour.subtract(favourSum);
-					if (favourItem.compareTo(totalAmountOfItem) == 1) {
+					if (favourItem.compareTo(totalAmountOfItem) > 0) {
 						favourItem = totalAmountOfItem;
 					}
 				}

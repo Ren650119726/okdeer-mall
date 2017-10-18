@@ -212,7 +212,7 @@ public class ServStoreCheckServiceImpl implements RequestHandler<ServiceOrderReq
 		String invalidMonth = null;
 		for (String invalidTime : invalidDateArr) {
 			invalidMonth = invalidTime.substring(0, 6);
-			if (servMonth.compareTo(invalidMonth) == -1) {
+			if (servMonth.compareTo(invalidMonth) < 0) {
 				// 如果当前月份小于不可用日期限制的月份，则当前日期一定可用
 				break;
 			} else if (servMonth.compareTo(invalidMonth) == 0) {
@@ -222,7 +222,7 @@ public class ServStoreCheckServiceImpl implements RequestHandler<ServiceOrderReq
 					// 如果当前天数为不可用日期
 					return false;
 				} 
-			} else if (servMonth.compareTo(invalidMonth) == 1) {
+			} else if (servMonth.compareTo(invalidMonth) > 0) {
 				// 如果当前月份大于不可用日期限制的月份，则循环跳入下一个月份限制进行判定
 				continue;
 			}

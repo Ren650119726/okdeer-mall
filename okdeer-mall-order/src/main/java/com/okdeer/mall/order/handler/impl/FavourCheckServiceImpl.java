@@ -163,7 +163,7 @@ public class FavourCheckServiceImpl implements FavourCheckService {
 				}
 			}
 			if (CollectionUtils.isEmpty(haveFavourGoodsIdList)
-					|| totalAmount.compareTo(BigDecimal.valueOf(coupons.getArriveLimit())) == -1) {
+					|| totalAmount.compareTo(BigDecimal.valueOf(coupons.getArriveLimit())) < 0) {
 				// 没有指定分类的商品或者如果享受优惠的商品总金额小于代金券的使用条件，不能使用该代金券
 				respDto.setFlag(false);
 				respDto.setMessage(OrderTipMsgConstant.KIND_LIMIT_OVER);
@@ -276,7 +276,7 @@ public class FavourCheckServiceImpl implements FavourCheckService {
 					totalAmount = totalAmount.add(item.getTotalAmount());
 				}
 			}
-			if (CollectionUtils.isEmpty(haveFavourGoodsIdList) || totalAmount.compareTo(condition.getArrive()) == -1) {
+			if (CollectionUtils.isEmpty(haveFavourGoodsIdList) || totalAmount.compareTo(condition.getArrive()) < 0) {
 				return false;
 			}
 			reqDto.getContext().setHaveFavourGoodsIds(haveFavourGoodsIdList);
@@ -291,7 +291,7 @@ public class FavourCheckServiceImpl implements FavourCheckService {
 					totalAmount = totalAmount.add(item.getTotalAmount());
 				}
 			}
-			if (CollectionUtils.isEmpty(haveFavourGoodsIdList)  || totalAmount.compareTo(condition.getArrive()) == -1) {
+			if (CollectionUtils.isEmpty(haveFavourGoodsIdList)  || totalAmount.compareTo(condition.getArrive()) < 0) {
 				return false;
 			}
 			reqDto.getContext().setHaveFavourGoodsIds(haveFavourGoodsIdList);
