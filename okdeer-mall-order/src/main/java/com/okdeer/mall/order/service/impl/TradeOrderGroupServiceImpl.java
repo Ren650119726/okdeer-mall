@@ -197,6 +197,8 @@ public class TradeOrderGroupServiceImpl extends BaseServiceImpl implements Trade
 		groupDetailDto.setGroupExpireTime(groupOrder.getExpireTime().getTime() - System.currentTimeMillis());
 		groupDetailDto.setAbsentNum(groupOrder.getGroupCount() - joinUserList.size());
 		groupDetailDto.setUnit(storeSku.getUnit());
+		//设置原价
+		groupDetailDto.setOrigPrice(storeSku.getOfflinePrice());
 		groupDetailDto.setPicUrl(ImageCutUtils.changeType(ImageTypeContants.SPQDSPLBTP,
 				String.format("%s%s", sysConfigComponent.getStoreImagePrefix(), storeSkuPic.getUrl()), screen));
 		return groupDetailDto;
