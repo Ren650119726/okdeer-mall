@@ -70,14 +70,9 @@ public class ScanOrderFavourServiceImpl implements ScanOrderFavourService{
 	@Override
 	public void appendFavour(ScanOrderDto orderDetail, RequestParams requestParams) throws Exception {
 
-		
 		//设置为使用才进行查询优惠信息  并设置优惠信息
+		String userId = orderDetail.getUserId();
 		if(orderDetail.isUserDiscount()){
-			//优惠金额
-			BigDecimal platDiscountAmount = BigDecimal.ZERO;
-			//总金额
-			BigDecimal paymentAmount = orderDetail.getAmount();
-			String userId = orderDetail.getUserId();
 			//可以使用的优惠金额  即是 排除掉  不可使用优惠的   商品金额
 			FavourParamBO parambo = createFavourParamBo(orderDetail,requestParams);
 			PreferentialVo preferentialVo = getPreferentialService.findPreferByCard(parambo);
@@ -88,10 +83,10 @@ public class ScanOrderFavourServiceImpl implements ScanOrderFavourService{
 				orderDetail.setCouponsId(coupons.getCouponId());
 				orderDetail.setCouponsActivityId(coupons.getId());
 			}
-			//可以使用零花钱
-			BigDecimal myUsable = tradePinMoneyObtainService.findMyUsableTotal(userId,new Date());
-			orderDetail.setPinMoneyAmount(myUsable);
 		}
+		//可以使用零花钱
+		BigDecimal myUsable = tradePinMoneyObtainService.findMyUsableTotal(userId,new Date());
+		orderDetail.setPinMoneyAmount(myUsable);
 	}
 	
 	/**
