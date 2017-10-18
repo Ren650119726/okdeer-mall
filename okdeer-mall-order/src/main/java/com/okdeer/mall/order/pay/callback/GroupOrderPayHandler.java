@@ -13,7 +13,6 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
 import com.okdeer.archive.stock.dto.StockUpdateDto;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
-import com.okdeer.archive.store.entity.StoreInfoServiceExt;
 import com.okdeer.archive.store.service.IStoreInfoServiceExtServiceApi;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.jxc.common.utils.UuidUtils;
@@ -369,7 +368,7 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 		// 成团成功，发送通知消息
 		sendNotifyMessage(orderIdList);
 		// 成团成功，发送订单待发货超时消息
-		sendTimerMessage(orderIdList, orderGroup.getStoreId());
+		sendTimerMessage(orderIdList);
 	}
 
 	/**
@@ -397,15 +396,10 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 		cancelOrderList.forEach(cancelOrder -> cancelOrderApi.cancelOrder(cancelOrder));
 	}
 
-	public void sendTimerMessage(List<String> orderIdList, String storeId) {
+	public void sendTimerMessage(List<String> orderIdList) {
 		try {
-			// 查询店铺设置信息
-			StoreInfoServiceExt storeInfoExt = storeInfoServiceExtServiceApi.findByStoreId(storeId);
-			// TODO
-			int limitTimeOutHour = 1;
 			for (String orderId : orderIdList) {
-				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_timeout, orderId,
-						limitTimeOutHour * 60 * 60L);
+				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_group_timeout, orderId);
 			}
 		} catch (Exception e) {
 			logger.error("发送团购订单待发货超时消息异常", e);
