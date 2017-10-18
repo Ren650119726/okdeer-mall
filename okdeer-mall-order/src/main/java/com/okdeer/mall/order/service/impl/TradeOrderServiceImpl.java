@@ -4497,7 +4497,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         json.put("orderNo", orders.getOrderNo() == null ? "" : orders.getOrderNo());
         json.put("tradeNum", orders.getTradeNum() == null ? "" : orders.getTradeNum());
         // 订单状态
-        json.put("orderStatus", OrderAppStatusAdaptor.convertAppOrderStatus(orders.getStatus()));
+        if(orders.getType() == OrderTypeEnum.GROUP_ORDER && orders.getStatus() == OrderStatusEnum.DROPSHIPPING){
+        	json.put("orderStatus", OrderStatusEnum.PAY_COMPLETE.ordinal());
+        }else{
+        	json.put("orderStatus", OrderAppStatusAdaptor.convertAppOrderStatus(orders.getStatus()));
+        }
         // 订单支付倒计时计算
 		/*
 		 * Integer remainingTime = orders.getRemainingTime(); if (remainingTime != null) { remainingTime = remainingTime
