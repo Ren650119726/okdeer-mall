@@ -135,7 +135,7 @@
 	
 	<!-- 统计活动参与总数量 -->
 	<select id="countActivityJoinNum" parameterType="com.okdeer.mall.activity.bo.ActivityJoinRecParamBo" resultType="int">
-		SELECT SUM(activity_num)
+		SELECT IFNULL(SUM(activity_num),0)
 		FROM activity_join_record
 		<where>
 			<if test="userId != null">
