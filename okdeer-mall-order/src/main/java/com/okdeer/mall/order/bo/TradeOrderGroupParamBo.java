@@ -2,6 +2,7 @@ package com.okdeer.mall.order.bo;
 
 import java.util.Date;
 
+import com.okdeer.mall.order.entity.TradeOrderGroup;
 import com.okdeer.mall.order.enums.GroupOrderStatusEnum;
 
 /**
@@ -15,71 +16,45 @@ import com.okdeer.mall.order.enums.GroupOrderStatusEnum;
  * ----------------+----------------+-------------------+-------------------------------------------
  *		友门鹿2.6.3 		2017年10月12日				maojj
  */
-public class TradeOrderGroupParamBo {
-
-	/**
-	 * 团购活动id
-	 */
-	private String activityId;
-
-	/**
-	 * 团购商品id
-	 */
-	private String storeSkuId;
+public class TradeOrderGroupParamBo extends TradeOrderGroup {
 
 	/**
 	 * 成团时间开始区间
 	 */
-	private Date startTime;
+	private Date groupTimeStart;
 
 	/**
 	 * 成团时间结束区间
 	 */
-	private Date endTime;
+	private Date groupTimeEnd;
 
 	/**
-	 * 成团状态
+	 * 当前团购订单状态(乐观锁机制)
 	 */
-	private GroupOrderStatusEnum status;
-
-	public String getActivityId() {
-		return activityId;
+	private GroupOrderStatusEnum currentStatus;
+	
+	public Date getGroupTimeStart() {
+		return groupTimeStart;
 	}
 
-	public void setActivityId(String activityId) {
-		this.activityId = activityId;
+	public void setGroupTimeStart(Date groupTimeStart) {
+		this.groupTimeStart = groupTimeStart;
 	}
 
-	public String getStoreSkuId() {
-		return storeSkuId;
+	public Date getGroupTimeEnd() {
+		return groupTimeEnd;
 	}
 
-	public void setStoreSkuId(String storeSkuId) {
-		this.storeSkuId = storeSkuId;
+	public void setGroupTimeEnd(Date groupTimeEnd) {
+		this.groupTimeEnd = groupTimeEnd;
 	}
 
-	public Date getStartTime() {
-		return startTime;
+	public GroupOrderStatusEnum getCurrentStatus() {
+		return currentStatus;
 	}
 
-	public void setStartTime(Date startTime) {
-		this.startTime = startTime;
-	}
-
-	public Date getEndTime() {
-		return endTime;
-	}
-
-	public void setEndTime(Date endTime) {
-		this.endTime = endTime;
-	}
-
-	public GroupOrderStatusEnum getStatus() {
-		return status;
-	}
-
-	public void setStatus(GroupOrderStatusEnum status) {
-		this.status = status;
+	public void setCurrentStatus(GroupOrderStatusEnum currentStatus) {
+		this.currentStatus = currentStatus;
 	}
 
 }

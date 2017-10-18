@@ -2,9 +2,11 @@ package com.okdeer.mall.order.api;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.activity.discount.dto.ActivityDiscountGroupSkuDto;
+import com.okdeer.mall.order.dto.TradeOrderGroupDetailDto;
 import com.okdeer.mall.order.dto.TradeOrderGroupDto;
 import com.okdeer.mall.order.dto.TradeOrderGroupParamDto;
 import com.okdeer.mall.order.service.TradeOrderGroupApi;
@@ -51,5 +53,10 @@ public class TradeOrderGroupApiImpl implements TradeOrderGroupApi {
 	 */
 	public ActivityDiscountGroupSkuDto findGoodsGroupList(String activityId,String storeSkuId){
 		return tradeOrderGroupService.findGoodsGroupList(activityId,storeSkuId);
+	}
+
+	@Override
+	public TradeOrderGroupDetailDto findGroupJoinDetail(String groupOrderId, String screen) throws ServiceException {
+		return tradeOrderGroupService.findGroupJoinDetail(groupOrderId, screen);
 	}
 }

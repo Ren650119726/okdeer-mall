@@ -217,8 +217,8 @@
 			<if test="storeSkuId != null">
 				AND store_sku_id = #{storeSkuId,jdbcType=VARCHAR}
 			</if>
-			<if test="startTime != null and endTime != null">
-				AND end_time BETWEEN #{startTime,jdbcType=TIMESTAMP} AND #{endTime,jdbcType=TIMESTAMP}
+			<if test="groupTimeStart != null and groupTimeEnd != null">
+				AND end_time BETWEEN #{groupTimeStart,jdbcType=TIMESTAMP} AND #{groupTimeEnd,jdbcType=TIMESTAMP}
 			</if>
 			<if test="status != null">
 				AND status = #{status,jdbcType=TINYINT}
@@ -284,5 +284,82 @@
 				#{item}
 			</foreach>
 		</if>
+	</select>
+	
+	<!-- 分布式更新，采用乐观锁机制 -->
+	<update id="updateDistributed" parameterType="com.okdeer.mall.order.bo.TradeOrderGroupParamBo" >
+        update trade_order_group
+        <set >
+            <if test="groupNo != null" >
+                group_no = #{groupNo,jdbcType=VARCHAR},
+            </if>
+            <if test="groupUserId != null" >
+                group_user_id = #{groupUserId,jdbcType=VARCHAR},
+            </if>
+            <if test="activityId != null" >
+                activity_id = #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="activityName != null" >
+                activity_name = #{activityName,jdbcType=VARCHAR},
+            </if>
+            <if test="groupCount != null" >
+                group_count = #{groupCount,jdbcType=INTEGER},
+            </if>
+            <if test="storeSkuId != null" >
+                store_sku_id = #{storeSkuId,jdbcType=VARCHAR},
+            </if>
+            <if test="groupPrice != null" >
+                group_price = #{groupPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="storeId != null" >
+                store_id = #{storeId,jdbcType=VARCHAR},
+            </if>
+            <if test="status != null" >
+                status = #{status,jdbcType=TINYINT},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="expireTime != null" >
+                expire_time = #{expireTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="endTime != null" >
+                end_time = #{endTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="remark != null" >
+                remark = #{remark,jdbcType=VARCHAR},
+            </if>
+        </set>
+        <where>	
+        	<if test="id != null">
+        		AND id = #{id,jdbcType=VARCHAR}
+        	</if>
+        	<if test="activityId != null">
+        		AND activity_id = #{activityId,jdbcType=VARCHAR}
+        	</if>
+        	<if test="storeSkuId != null">
+        		AND store_sku_id = #{storeSkuId,jdbcType=VARCHAR}
+        	</if>
+        	<if test="currentStatus != null">
+        		AND status = #{currentStatus,jdbcType=TINYINT}
+        	</if>
+        </where>
+    </update>
+    
+    <!-- 根据条件查询团购订单列表 -->
+	<select id="findGroupOrderList" parameterType="com.okdeer.mall.order.bo.TradeOrderGroupParamBo" resultMap="BaseResultMap">
+		SELECT <include refid="Base_Column_List" />
+		FROM trade_order_group
+		<where>
+			<if test="activityId =! null ">
+				AND activity_id = #{activityId,jdbcType=VARCHAR}
+			</if>
+			<if test="storeSkuId != null">
+				AND store_sku_id = #{storeSkuId,jdbcType=VARCHAR}
+			</if>
+			<if test="status != null">
+				AND status = #{status,jdbcType=TINYINT}
+			</if>
+		</where>
 	</select>
 </mapper>
