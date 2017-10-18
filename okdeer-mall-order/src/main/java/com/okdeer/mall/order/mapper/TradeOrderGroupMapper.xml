@@ -49,13 +49,13 @@
 		INNER JOIN `trade_order_group_relation`  r ON g.id = r.`group_order_id`
 		<where>
 			<if test="activityId =! null ">
-				AND activity_id = #{activityId,jdbcType=VARCHAR}
+				AND g.activity_id = #{activityId,jdbcType=VARCHAR}
 			</if>
 			<if test="storeSkuId != null">
-				AND store_sku_id = #{storeSkuId,jdbcType=VARCHAR}
+				AND g.store_sku_id = #{storeSkuId,jdbcType=VARCHAR}
 			</if>
 			<if test="status != null">
-				AND status = #{status,jdbcType=TINYINT}
+				AND g.status = #{status,jdbcType=TINYINT}
 			</if>
 		</where>
 		GROUP BY g.id
