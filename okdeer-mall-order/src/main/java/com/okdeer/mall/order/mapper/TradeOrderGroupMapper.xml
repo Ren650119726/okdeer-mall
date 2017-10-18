@@ -211,7 +211,7 @@
 		SELECT SUM(group_count)
 		FROM trade_order_group
 		<where>
-			<if test="activityId =! null ">
+			<if test="activityId != null ">
 				AND activity_id = #{activityId,jdbcType=VARCHAR}
 			</if>
 			<if test="storeSkuId != null">
