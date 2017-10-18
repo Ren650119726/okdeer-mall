@@ -122,6 +122,7 @@ public class TradeOrderGroupServiceImpl extends BaseServiceImpl implements Trade
 		dto.setGroupCount(skuGroup.getGroupCount());
 		dto.setGroupPrice(skuGroup.getGroupPrice());
 		dto.setGroupValid(skuGroup.getGroupValid());
+		dto.setGroupValidUnit("天");
 		TradeOrderGroupParamBo paramBo = new TradeOrderGroupParamBo();
 		paramBo.setActivityId(activityId);
 		paramBo.setStoreSkuId(storeSkuId);
