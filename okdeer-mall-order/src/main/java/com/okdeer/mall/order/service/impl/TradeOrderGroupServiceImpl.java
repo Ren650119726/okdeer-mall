@@ -131,10 +131,11 @@ public class TradeOrderGroupServiceImpl extends BaseServiceImpl implements Trade
 		dto.setAllGroupTotal(tradeOrderGroupMapper.countGroupNum(paramBo));
 		//查询总数后再查询 开团未成团记录
 		paramBo.setStatus(GroupOrderStatusEnum.UN_GROUP);
-		List<TradeOrderGroupGoodsDto> openGroupList = tradeOrderGroupMapper.findOrderGroupList(paramBo);
+		PageHelper.startPage(1, 5, true);
+		PageUtils<TradeOrderGroupGoodsDto> openGroup = new PageUtils<>(tradeOrderGroupMapper.findOrderGroupList(paramBo));
 		//未成团总数
-		dto.setOpenGroupTotal(openGroupList.size());
-		dto.setOpenGroupList(openGroupList);
+		dto.setOpenGroupTotal(openGroup.getTotal());
+		dto.setOpenGroupList(openGroup.getList());
 		
         return dto;
 	}
