@@ -5,9 +5,11 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -23,6 +25,7 @@ import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.common.consts.StaticConstants;
 import com.okdeer.common.utils.ImageCutUtils;
 import com.okdeer.common.utils.ImageTypeContants;
 import com.okdeer.mall.activity.discount.dto.ActivityDiscountGroupSkuDto;
@@ -74,6 +77,12 @@ public class TradeOrderGroupServiceImpl extends BaseServiceImpl implements Trade
 	
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuPictureServiceApi goodsStoreSkuPictureServiceApi;
+	
+	/**
+	 * 用户图片前缀
+	 */
+	@Value("${myinfoImagePrefix}")
+	private String userInfoPicServerUrl;
 	
 	@Override
 	public IBaseMapper getBaseMapper() {
@@ -133,6 +142,14 @@ public class TradeOrderGroupServiceImpl extends BaseServiceImpl implements Trade
 		paramBo.setStatus(GroupOrderStatusEnum.UN_GROUP);
 		PageHelper.startPage(1, 5, true);
 		PageUtils<TradeOrderGroupGoodsDto> openGroup = new PageUtils<>(tradeOrderGroupMapper.findOrderGroupList(paramBo));
+		//循环处理用户头像
+		if(CollectionUtils.isNotEmpty(openGroup.getList())){
+			openGroup.getList().forEach(e -> {
+				String url = e.getUserImgUrl();
+				url	= StringUtils.isNotBlank(url) ? (userInfoPicServerUrl + url + StaticConstants.PIC_SUFFIX_PARM_240) : "";
+				e.setUserImgUrl(url);
+			});
+		}
 		//未成团总数
 		dto.setOpenGroupTotal(openGroup.getTotal());
 		dto.setOpenGroupList(openGroup.getList());
@@ -151,14 +168,23 @@ public class TradeOrderGroupServiceImpl extends BaseServiceImpl implements Trade
 	@Override
 	public PageUtils<TradeOrderGroupGoodsDto> findOrderGroupList(TradeOrderGroupParamBo paramBo,Integer pageNumber,Integer pageSize){
 		PageHelper.startPage(pageNumber, pageSize, true);
-		return new PageUtils<>(tradeOrderGroupMapper.findOrderGroupList(paramBo));
+		PageUtils<TradeOrderGroupGoodsDto> page = new PageUtils<>(tradeOrderGroupMapper.findOrderGroupList(paramBo));
+		//循环处理用户头像
+		if(CollectionUtils.isNotEmpty(page.getList())){
+			page.getList().forEach(e -> {
+				String url = e.getUserImgUrl();
+				url	= StringUtils.isNotBlank(url) ? (userInfoPicServerUrl + url + StaticConstants.PIC_SUFFIX_PARM_240) : "";
+				e.setUserImgUrl(url);
+			});
+		}
+		return page;
 		
 	}
 	
 	public PageUtils<TradeOrderGroupDto> findPage(TradeOrderGroupParamDto param, int pageNum, int pageSize)
 			throws Exception {
 		PageHelper.startPage(pageNum, pageSize, true);
-		return new PageUtils<TradeOrderGroupDto>(tradeOrderGroupMapper.findByParam(param));
+		return new PageUtils<>(tradeOrderGroupMapper.findByParam(param));
 	}
 
 	/**
