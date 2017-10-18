@@ -112,7 +112,7 @@ public class SecKillCheckServiceImpl implements RequestHandler<ServiceOrderReq,S
 	 * @date 2016年9月22日
 	 */
 	private boolean isOutOfLimitBuy(ServiceOrderReq reqData){
-		if(reqData.getSkuNum().compareTo(Integer.parseInt(ExceptionConstant.ONE)) == 1){
+		if(reqData.getSkuNum().compareTo(Integer.parseInt(ExceptionConstant.ONE)) > 0){
 			return true;
 		}
 		// 统计该用户是否参与过该秒杀活动

@@ -24,6 +24,7 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.enums.IsShopNum;
+import com.okdeer.archive.store.enums.StoreActivityTypeEnum;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
@@ -263,7 +264,10 @@ public class StoreSkuParserBo {
 				currentSku.setMainPicUrl(storeSku.getGoodsStoreSkuPicture().getUrl());
 			}
 			
-			if (this.currentActivitySkuMap.containsKey(storeSku.getId())) {
+			if(storeSku.getActivityType() == StoreActivityTypeEnum.GROUP_BY){
+				currentSku.setActivityType(ActivityTypeEnum.GROUP_ACTIVITY.ordinal());
+				currentSku.setOnlinePrice(storeSku.getOnlinePrice());
+			} else if (this.currentActivitySkuMap.containsKey(storeSku.getId())) {
 				ActivitySaleGoods actGoods = this.currentActivitySkuMap.get(storeSku.getId());
 				ActivitySale actInfo = this.activityMap.get(actGoods.getSaleId());
 				currentSku.setActivityType(actInfo.getType().ordinal());
@@ -402,7 +406,8 @@ public class StoreSkuParserBo {
 			this.totalQuantity += skuBo.getQuantity();
 			
 			this.skuActNumMap.put(item.getStoreSkuId(), Integer.valueOf(item.getSkuActQuantity()));
-			if(item.getSkuActType() == ActivityTypeEnum.LOW_PRICE.ordinal() && item.getSkuActQuantity()>0 && skuBo.getActivityType()==ActivityTypeEnum.NO_ACTIVITY.ordinal()){
+			if (item.getSkuActType() == ActivityTypeEnum.LOW_PRICE.ordinal() && item.getSkuActQuantity() > 0
+					&& skuBo.getActivityType() == ActivityTypeEnum.NO_ACTIVITY.ordinal()) {
 				// 如果购买请求中，存在商品为低价商品类型，但是经过后台解析之后，该商品活动类型为未参加活动商品，则标识低价活动当前已经结束。
 				this.isCloseLow = true;
 			}
@@ -802,7 +807,8 @@ public class StoreSkuParserBo {
 			for(Map.Entry<String, CurrentStoreSkuBo> entry : this.currentSkuMap.entrySet()){
 				storeSkuId = entry.getKey();
 				currentSku = entry.getValue();
-				if(currentSku.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && currentSku.getQuantity() == currentSku.getSkuActQuantity()){
+				if (currentSku.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()
+						&& currentSku.getQuantity() == currentSku.getSkuActQuantity()) {
 					// 如果商品是低价商品，且商品购买数量=商品低价购买数量，则说明该商品不享受优惠活动
 					continue;
 				}
@@ -836,7 +842,7 @@ public class StoreSkuParserBo {
 	}
 
 	public void setPlatformPreferential(BigDecimal platformPreferential) {
-		if(platformPreferential != null && platformPreferential.compareTo(this.getTotalAmountHaveFavour()) == 1){
+		if(platformPreferential != null && platformPreferential.compareTo(this.getTotalAmountHaveFavour()) > 0){
 			// 如果平台优惠金额>实际用户享受的优惠金额。即当优惠券金额下限为0时，出现代金券面值大于满足优惠条件的商品总金额时，实际优惠为商品总金额
 			this.platformPreferential = this.getTotalAmountHaveFavour();
 		}else{

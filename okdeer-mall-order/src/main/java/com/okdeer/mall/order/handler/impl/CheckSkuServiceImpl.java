@@ -255,7 +255,7 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 				}else{
 					checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
 				}
-			} else if (currentSku.getOnlinePrice().compareTo(item.getSkuPrice()) == 1) {
+			} else if (currentSku.getOnlinePrice().compareTo(item.getSkuPrice()) > 0) {
 				if(kindSize > 1){
 					checkResult = ResultCodeEnum.PART_GOODS_IS_CHANGE;
 				}else{
@@ -295,7 +295,7 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		}else{
 			parserBo.setFare(fare);
 		}
-		if(totalAmount.compareTo(startPrice) == -1){
+		if(totalAmount.compareTo(startPrice) < 0){
 			if(paramDto.getOrderOptType() == OrderOptTypeEnum.ORDER_SUBMIT){
 				// 提交订单且不是到店自提订单，未达到起送价，提交订单失败。
 				resp.setResult(ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH);

@@ -530,13 +530,13 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 			if (req.getData().getActivityType() != ActivityTypeEnum.NO_ACTIVITY) {
 				if (index++ < itemSize - 1) {
 					favourItem = totalAmountOfItem.multiply(totalFavour).divide(totalAmount, 2, BigDecimal.ROUND_FLOOR);
-					if (favourItem.compareTo(totalAmountOfItem) == 1) {
+					if (favourItem.compareTo(totalAmountOfItem) > 0) {
 						favourItem = totalAmountOfItem;
 					}
 					favourSum = favourSum.add(favourItem);
 				} else {
 					favourItem = totalFavour.subtract(favourSum);
-					if (favourItem.compareTo(totalAmountOfItem) == 1) {
+					if (favourItem.compareTo(totalAmountOfItem) > 0) {
 						favourItem = totalAmountOfItem;
 					}
 				}
@@ -656,7 +656,7 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		// 设置订单实付金额
 		BigDecimal totalAmount = tradeOrder.getTotalAmount();
 		// 如果总金额<优惠金额，则实付为0，否则实付金额为总金额-优惠金额
-		if (totalAmount.compareTo(favourAmount) == -1 || totalAmount.compareTo(favourAmount) == 0) {
+		if (totalAmount.compareTo(favourAmount) <= 0) {
 			tradeOrder.setActualAmount(new BigDecimal(0.0));
 			// 实付金额为0时，订单状态为未支付
 			tradeOrder.setStatus(OrderStatusEnum.UNPAID);
@@ -722,7 +722,7 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 		ActivityCoupons activityCoupons = activityCouponsRecordMapper.selectCouponsItem(findCondition);
 		// 代金券面额
 		favourAmount = BigDecimal.valueOf(activityCoupons.getFaceValue());
-		if (totalAmount.compareTo(favourAmount) == -1) {
+		if (totalAmount.compareTo(favourAmount) < 0) {
 			// 商品总金额小于代金券面值，优惠金额设为商品总金额
 			favourAmount = totalAmount;
 		}
@@ -863,7 +863,7 @@ public class ServOrderSubmitServiceImpl implements RequestHandler<ServiceOrderRe
 				} else {
 					// 已满起送价不收取配送费
 					BigDecimal startingPrice = serviceExt.getStartingPrice();
-					if (tradeOrder.getTotalAmount().compareTo(startingPrice) == -1) {
+					if (tradeOrder.getTotalAmount().compareTo(startingPrice) < 0) {
 						// 设置运费
 						tradeOrder.setFare(BigDecimal.valueOf(distributionFee));
 						tradeOrder.setTotalAmount(tradeOrder.getTotalAmount().add(tradeOrder.getFare()));
