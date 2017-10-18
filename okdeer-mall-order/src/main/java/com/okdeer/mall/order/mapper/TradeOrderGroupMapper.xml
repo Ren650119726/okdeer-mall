@@ -36,6 +36,8 @@
     
     
      <resultMap id="SearchResultMap" type="com.okdeer.mall.order.dto.TradeOrderGroupGoodsDto" >
+     	<id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="group_no" property="groupNo" jdbcType="VARCHAR" />
         <result column="hadOrderCount" property="hadOrderCount" jdbcType="INTEGER" />
         <result column="expire_time" property="expireTime" jdbcType="TIMESTAMP" />
         <result column="group_user_id" property="groupUserId" jdbcType="VARCHAR" />
@@ -50,7 +52,7 @@
     <!-- 查询团购订单记录及统计已满人数 -->
     <select id="findOrderGroupList" resultMap="SearchResultMap" parameterType="java.lang.String" >
         SELECT 
-			g.group_user_id, g.activity_id, g.store_sku_id,g.group_count,
+			g.id, g.group_no,g.group_user_id, g.activity_id, g.store_sku_id,g.group_count,
        		g.group_price,g.expire_time, COUNT(r.`id`) hadOrderCount,
        		user.phone,user.pic_url,user.nick_name
 		FROM `trade_order_group` g 
