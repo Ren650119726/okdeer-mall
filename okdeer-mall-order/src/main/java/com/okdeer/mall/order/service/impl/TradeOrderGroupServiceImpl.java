@@ -28,6 +28,7 @@ import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.common.consts.StaticConstants;
 import com.okdeer.common.utils.ImageCutUtils;
 import com.okdeer.common.utils.ImageTypeContants;
+import com.okdeer.common.utils.JsonDateUtil;
 import com.okdeer.mall.activity.discount.dto.ActivityDiscountGroupSkuDto;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountGroup;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountGroupMapper;
@@ -129,7 +130,7 @@ public class TradeOrderGroupServiceImpl extends BaseServiceImpl implements Trade
 		dto.setDiscountId(activityId);
 		dto.setStoreSkuId(storeSkuId);
 		dto.setGroupCount(skuGroup.getGroupCount());
-		dto.setGroupPrice(skuGroup.getGroupPrice());
+		dto.setGroupPrice(JsonDateUtil.priceConvertToString(skuGroup.getGroupPrice(),2, 3));
 		dto.setGroupValid(skuGroup.getGroupValid());
 		dto.setGroupValidUnit("天");
 		TradeOrderGroupParamBo paramBo = new TradeOrderGroupParamBo();
