@@ -4281,6 +4281,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         	orderTypeDesc = AppOrderTypeEnum.MEMCARD_ORDER.getDesc();
             orderType = String.valueOf(AppOrderTypeEnum.MEMCARD_ORDER.getCode());
         }
+        if(orders.getType() == OrderTypeEnum.GROUP_ORDER || orders.getType() == OrderTypeEnum.SERVICE_EXPRESS_ORDER){
+        	orderType = String.valueOf(AppOrderTypeEnum.GROUP_ORDER.getCode());
+        	orderTypeDesc = AppOrderTypeEnum.GROUP_ORDER.getDesc();
+        }
         json.put("orderTypeDesc", orderTypeDesc);
         json.put("orderType", orderType);
         json.put("orderResource", orders.getOrderResource().ordinal());
