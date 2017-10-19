@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.dal.IBaseCrudMapper;
+import com.okdeer.mall.member.member.dto.UserAddrParamDto;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.vo.MemberConsigneeAddressVo;
 import com.okdeer.mall.member.member.vo.UserAddressVo;
@@ -167,7 +168,7 @@ public interface MemberConsigneeAddressMapper extends IBaseCrudMapper {
 	 * @author zengj
 	 * @date 2016年7月25日
 	 */
-	List<Map<String, Object>> findUserAddressList(Map<String, Object> params);
+	List<UserAddressVo> findUserAddressList(UserAddrParamDto paramDto);
 	
 	/**
 	 * 

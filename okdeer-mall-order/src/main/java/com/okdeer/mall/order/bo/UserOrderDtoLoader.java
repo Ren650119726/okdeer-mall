@@ -3,12 +3,13 @@ package com.okdeer.mall.order.bo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.common.utils.EnumAdapter;
@@ -18,6 +19,7 @@ import com.okdeer.mall.order.dto.BaseUserOrderItemDto;
 import com.okdeer.mall.order.dto.UserOrderDto;
 import com.okdeer.mall.order.dto.UserOrderItemDto;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderGroupRelation;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.enums.AppOrderTypeEnum;
@@ -45,6 +47,11 @@ public class UserOrderDtoLoader {
 	private Map<String,UserOrderDto> orderDtoMap = null;
 	
 	private List<String> orderIds = null;
+	
+	/**
+	 * 团购订单Id列表（只包括已经支付未成团的订单）
+	 */
+	private List<String> groupOrderIds = null;
 		
 	/**
 	 * 页面大小
@@ -58,9 +65,10 @@ public class UserOrderDtoLoader {
 	
 	
 	public UserOrderDtoLoader(int pageSize){
-		this.orderDtoList = new ArrayList<UserOrderDto>();
-		this.orderDtoMap = new HashMap<String,UserOrderDto>();
-		this.orderIds = new ArrayList<String>();
+		this.orderDtoList = Lists.newArrayList();
+		this.orderDtoMap = Maps.newHashMap();
+		this.orderIds = Lists.newArrayList();
+		this.groupOrderIds = Lists.newArrayList();
 		this.pageSize = pageSize;
 	}
 	
@@ -166,6 +174,9 @@ public class UserOrderDtoLoader {
 			this.orderIds.add(order.getId());
 			this.orderDtoList.add(orderDto);
 			this.orderDtoMap.put(order.getId(), orderDto);
+			if(order.getType() == OrderTypeEnum.GROUP_ORDER && order.getStatus() == OrderStatusEnum.DROPSHIPPING){
+				this.groupOrderIds.add(order.getId());
+			}
 		}
 	}
 	
@@ -230,4 +241,21 @@ public class UserOrderDtoLoader {
 			}
 		}
 	}
+
+	// Begin V2.6.3 added by maojj 2017-10-19
+	public void loadGroupRelList(List<TradeOrderGroupRelation> groupRelList ,String groupShareLink){
+		if(CollectionUtils.isEmpty(groupRelList)){
+			return;
+		}
+		groupRelList.forEach(groupRel -> {
+			UserOrderDto orderDto = this.orderDtoMap.get(groupRel.getOrderId());
+			orderDto.setGroupShareUrl(String.format("%s%s", groupShareLink,groupRel.getGroupOrderId()));
+		});
+	}
+	// End V2.6.3 added by maojj 2017-10-19
+	
+	public List<String> extraGroupOrderIds() {
+		return this.groupOrderIds;
+	}
+	
 }

@@ -9,6 +9,7 @@ package com.okdeer.mall.order.api;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
@@ -25,6 +26,7 @@ import com.okdeer.archive.goods.store.service.GoodsStoreSkuPictureServiceApi;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.model.RequestParams;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
+import com.okdeer.base.redis.IRedisTemplateWrapper;
 import com.okdeer.common.utils.ImageCutUtils;
 import com.okdeer.common.utils.ImageTypeContants;
 import com.okdeer.common.utils.JsonDateUtil;
@@ -45,6 +47,7 @@ import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.utils.TradeNumUtil;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
+import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.dto.ScanOrderDetailDto;
 import com.okdeer.mall.order.dto.ScanOrderDto;
@@ -82,10 +85,15 @@ public class ScanOrderApiImpl implements ScanOrderApi {
 	@Value("${goodsImagePrefix}")
 	private String goodsImagePrefix;
 	
+	@Resource
+	private IRedisTemplateWrapper<String, Object> redisTemplateWrapper;
+	
 	/**
 	 * 订单支付超时时间（分钟）
 	 */
 	private static final int  TIME_OUT_MINUTES = 30;
+	
+	private static final String SCAN_ORDER_PRDFIX = "scanOrder:";
 	
 	@Autowired
 	private ScanOrderFavourService scanOrderFavourService;
@@ -143,6 +151,7 @@ public class ScanOrderApiImpl implements ScanOrderApi {
     	for (ScanOrderItemDto item : orderDetail.getList()) {
     		item.setSkuPic(findSkuPic(item.getSkuId(), requestParams.getScreen()));
     	}
+    	redisTemplateWrapper.set(SCAN_ORDER_PRDFIX+orderDetail.getOrderId(), orderDetail, TIME_OUT_MINUTES, TimeUnit.MINUTES);
     	return orderDetail;
     }
     
@@ -160,7 +169,19 @@ public class ScanOrderApiImpl implements ScanOrderApi {
 		orderParamDto.getCacheMap().put("parserBo", bo);
 		orderParamDto.setChannel(String.valueOf(OrderResourceEnum.WECHAT_MIN.ordinal()));
 		if(orderParamDto.getActivityType() == null){
-			reqDto.getData().setActivityType(String.valueOf(ActivityTypeEnum.NO_ACTIVITY.ordinal()));
+			orderParamDto.setActivityType(String.valueOf(ActivityTypeEnum.NO_ACTIVITY.ordinal()));
+		}else{
+			ScanOrderDto orderDetail = (ScanOrderDto) redisTemplateWrapper.get(SCAN_ORDER_PRDFIX+orderParamDto.getOrderId());
+			PlaceOrderItemDto item = new PlaceOrderItemDto();
+			//设置可优惠金额 用于代金券校验，设置可以优惠金额到订单项中，由于优惠校验
+			item.setTotalAmount(orderDetail.getTotalAmount());
+			item.setSkuPrice(orderDetail.getTotalAmount());
+			item.setQuantity(1);
+			item.setSkuActType(ActivityTypeEnum.NO_ACTIVITY.ordinal());
+			item.setSkuActType(0);
+			List<PlaceOrderItemDto> list= Lists.newArrayList();
+			list.add(item);
+			reqDto.getData().setSkuList(list);
 		}
 		//检查代金券
     	checkFavourService.process(reqDto, resp);
@@ -175,11 +196,11 @@ public class ScanOrderApiImpl implements ScanOrderApi {
     	
 		//构建请求参数
 		SelfOrderVo orderParam = builderParams(reqDto.getData(),bo.getPlatformPreferential());
-		// 调用零售提交订单接口
+		// 调用零售提交订单接口 
 		RespSelfJson jxcResp = selfPayOrderServiceApi.getOrderInfo(orderParam );
     	SelfPayTradeInfoVo tradeInfoVo = (SelfPayTradeInfoVo) jxcResp.get(RespSelfJson.DATA);
     	ScanOrderDto orderDetail = BeanMapper.map(tradeInfoVo, ScanOrderDto.class);
-
+    	orderDetail.setPinMoneyAmount(tradeInfoVo.getPinAmount());
 		//保存扫描购订单信息
 		orderDetail.setRecordId(reqDto.getData().getRecordId());
 		scanOrderService.saveScanOrder(orderDetail, orderDetail.getBranchId(),requestParams);

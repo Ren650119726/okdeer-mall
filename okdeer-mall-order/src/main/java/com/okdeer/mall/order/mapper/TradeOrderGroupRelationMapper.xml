@@ -104,6 +104,16 @@
         FROM trade_order_group_relation
         WHERE order_id =  #{orderId,jdbcType=VARCHAR};
     </select>
+    
+    <!-- 根据订单id列表查询关联关系 -->
+    <select id="findByOrderIds" resultMap="BaseResultMap" parameterType="list" >
+        SELECT <include refid="Base_Column_List" />
+        FROM trade_order_group_relation
+        WHERE order_id IN
+        <foreach collection="orderIds" item="orderId" separator="," open="(" close=")">
+        	#{orderId,jdbcType=VARCHAR}
+        </foreach>
+    </select>
 	
 	<!-- 查询已成功入团的团单关联关系 -->
 	<select id="findByGroupOrderId" parameterType="string" resultMap="BaseResultMap">
