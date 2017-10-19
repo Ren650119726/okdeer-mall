@@ -4292,7 +4292,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         json.put("orderTypeDesc", orderTypeDesc);
         json.put("orderType", orderType);
         json.put("orderResource", orders.getOrderResource().ordinal());
-        json.put("platformPreferential", orders.getPlatformPreferential());
+        json.put("platformPreferential", orders.getPlatformPreferential().subtract(orders.getPinMoney()));
         json.put("storePreferential", orders.getStorePreferential());
         json.put("pinMoney", ConvertUtil.format(orders.getPinMoney()));
         // End V2.2 added by maojj 2017-03-20  + tuzhd 2017-8-1
