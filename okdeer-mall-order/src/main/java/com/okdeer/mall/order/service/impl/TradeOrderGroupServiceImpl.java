@@ -31,6 +31,7 @@ import com.okdeer.common.utils.ImageTypeContants;
 import com.okdeer.mall.activity.discount.dto.ActivityDiscountGroupSkuDto;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountGroup;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountGroupMapper;
+import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.order.bo.GroupOrderRemarkConst;
 import com.okdeer.mall.order.bo.TradeOrderGroupParamBo;
 import com.okdeer.mall.order.dto.GroupJoinUserDto;
@@ -240,6 +241,10 @@ public class TradeOrderGroupServiceImpl extends BaseServiceImpl implements Trade
 		groupDetailDto.setGroupExpireTime(groupOrder.getExpireTime().getTime() - System.currentTimeMillis());
 		groupDetailDto.setAbsentNum(groupOrder.getGroupCount() - joinUserList.size());
 		groupDetailDto.setUnit(storeSku.getUnit());
+		groupDetailDto.setOnlinePrice(storeSku.getOnlinePrice());
+		groupDetailDto.setStoreId(storeSku.getStoreId());
+		groupDetailDto.setStoreSkuName(storeSku.getName());
+		groupDetailDto.setUpdateTime(DateUtils.formatDate(storeSku.getUpdateTime(), "yyyy-MM-dd HH:mm:ss"));
 		groupDetailDto.setPicUrl(ImageCutUtils.changeType(ImageTypeContants.SPQDSPLBTP,
 				String.format("%s%s", sysConfigComponent.getStoreImagePrefix(), storeSkuPic.getUrl()), screen));
 		return groupDetailDto;
