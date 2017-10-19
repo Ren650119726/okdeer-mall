@@ -23,5 +23,14 @@ public interface TradeOrderGroupRelationService extends IBaseService {
 	 * @date 2017年10月12日
 	 */
 	int countSuccessJoinNum(String groupOrderId);
+	
+	/**
+	 * @Description: 根据订单id列表查询团购关联关系
+	 * @param orderIds
+	 * @return   
+	 * @author maojj
+	 * @date 2017年10月19日
+	 */
+	List<TradeOrderGroupRelation> findByOrderIds(List<String> orderIds);
 
 }

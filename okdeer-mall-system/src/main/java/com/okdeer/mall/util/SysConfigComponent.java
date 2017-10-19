@@ -29,6 +29,9 @@ public class SysConfigComponent {
 	@Value("${storeImagePrefix}")
 	private String storeImagePrefix;
 
+	@Value("${group.share.link}")
+	private String groupShareLink;
+
 	public String getMyinfoImagePrefix() {
 		return myinfoImagePrefix;
 	}
@@ -37,4 +40,7 @@ public class SysConfigComponent {
 		return storeImagePrefix;
 	}
 
+	public String getGroupShareLink() {
+		return groupShareLink;
+	}
 }

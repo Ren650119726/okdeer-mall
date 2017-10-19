@@ -14,12 +14,15 @@ import com.okdeer.mall.order.bo.UserOrderDtoLoader;
 import com.okdeer.mall.order.bo.UserOrderParamBo;
 import com.okdeer.mall.order.dto.AppUserOrderDto;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderGroupRelation;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.mapper.TradeOrderLogisticsMapper;
+import com.okdeer.mall.order.service.TradeOrderGroupRelationService;
 import com.okdeer.mall.order.service.TradeOrderItemService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.UserOrderService;
+import com.okdeer.mall.util.SysConfigComponent;
 
 @Service
 public class UserOrderServiceImpl implements UserOrderService {
@@ -32,6 +35,12 @@ public class UserOrderServiceImpl implements UserOrderService {
 	
 	@Resource
 	private TradeOrderLogisticsMapper tradeOrderLogisticsMapper;
+	
+	@Resource
+	private SysConfigComponent sysConfigComponent;
+	
+	@Resource
+	private TradeOrderGroupRelationService tradeOrderGroupRelationService;
 	
 	@Override
 	public AppUserOrderDto findUserOrders(UserOrderParamBo paramBo) throws Exception {
@@ -51,6 +60,13 @@ public class UserOrderServiceImpl implements UserOrderService {
 			List<TradeOrderLogistics> orderLogisticsList = tradeOrderLogisticsMapper.selectByOrderIds(orderIds);
 			// 装载物流信息列表
 			loader.loadOrderLogisticsList(orderLogisticsList);
+		}
+		// 提取参与团购未成团的订单id
+		List<String> groupOrderIds = loader.extraGroupOrderIds();
+		if(CollectionUtils.isNotEmpty(groupOrderIds)){
+			List<TradeOrderGroupRelation> groupRelList = tradeOrderGroupRelationService.findByOrderIds(groupOrderIds);
+			// 装载团购订单信息
+			loader.loadGroupRelList(groupRelList, sysConfigComponent.getGroupShareLink());
 		}
 		return loader.retrieveResult();
 	}
