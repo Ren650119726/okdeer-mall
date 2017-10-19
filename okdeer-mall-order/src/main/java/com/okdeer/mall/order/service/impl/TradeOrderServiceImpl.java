@@ -261,6 +261,7 @@ import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mall.system.mq.StockMQProducer;
 import com.okdeer.mall.system.service.InvitationCodeServiceApi;
 import com.okdeer.mall.system.utils.ConvertUtil;
+import com.okdeer.mall.util.SysConfigComponent;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
 
@@ -665,6 +666,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     
     @Resource
 	private ActivityCouponsReceiveStrategy activityCouponsReceiveStrategy;
+    
+    @Resource
+    private SysConfigComponent sysConfigComponent;
 
     @Override
     public List<TradeOrder> selectByParam(TradeOrderParamDto param) throws Exception {
@@ -6673,6 +6677,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     	json.put("groupExpireTime", orderGroup.getExpireTime().getTime() - System.currentTimeMillis());
     	json.put("absentNum", orderGroup.getGroupCount() - joinUserList.size());
     	json.put("joinUserList", JSONArray.fromObject(joinUserList));
+    	json.put("groupShareUrl",String.format("%s%s", sysConfigComponent.getGroupShareLink(),groupRel.getGroupOrderId()));
     }
     
     private void setExpressInfo(JSONObject json,String orderId){

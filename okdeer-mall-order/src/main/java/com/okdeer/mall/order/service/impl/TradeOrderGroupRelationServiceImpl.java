@@ -4,8 +4,10 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Lists;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
 import com.okdeer.mall.order.entity.TradeOrderGroupRelation;
@@ -34,5 +36,13 @@ public class TradeOrderGroupRelationServiceImpl extends BaseServiceImpl implemen
 	@Override
 	public int countSuccessJoinNum(String groupOrderId) {
 		return tradeOrderGroupRelationMapper.countSuccessJoinNum(groupOrderId);
+	}
+
+	@Override
+	public List<TradeOrderGroupRelation> findByOrderIds(List<String> orderIds) {
+		if(CollectionUtils.isEmpty(orderIds)){
+			return Lists.newArrayList();
+		}
+		return tradeOrderGroupRelationMapper.findByOrderIds(orderIds);
 	}
 }
