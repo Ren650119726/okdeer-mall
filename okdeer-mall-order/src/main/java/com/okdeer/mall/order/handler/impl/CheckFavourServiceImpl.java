@@ -187,11 +187,11 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 			logger.info("代金券使用检查不通过4：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
 			return false;
 		}
-		if(!coupons.getActivityId().equals(paramDto.getActivityId()) || !coupons.getId().equals(paramDto.getActivityItemId())){
-			resp.setResult(ResultCodeEnum.ILLEGAL_PARAM);
-			logger.info("代金券使用检查不通过5：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
-			return false;
-		}
+//		if(!coupons.getActivityId().equals(paramDto.getActivityId()) || !coupons.getId().equals(paramDto.getActivityItemId())){
+//			resp.setResult(ResultCodeEnum.ILLEGAL_PARAM);
+//			logger.info("代金券使用检查不通过5：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
+//			return false;
+//		}
 		if(coupons.getUseUserType() == UseUserType.ONlY_NEW_USER){
 			// 仅限首单用户，检查当前用户是否为首单用户。
 			if(!isFirstOrderUser(paramDto.getUserId())){
