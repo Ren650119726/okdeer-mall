@@ -79,11 +79,7 @@ public class ScanOrderFavourServiceImpl implements ScanOrderFavourService{
 		PreferentialVo preferentialVo = getPreferentialService.findPreferByCard(parambo);
 		Coupons coupons = (Coupons) preferentialVo.getMaxFavourOnline();
 		if(coupons != null){
-			//设置优惠金额
-			orderDetail.setCouponsFaceValue(new BigDecimal(coupons.getCouponPrice()));
-			orderDetail.setCouponsId(coupons.getCouponId());
-			orderDetail.setCouponsActivityId(coupons.getId());
-			orderDetail.setRecordId(coupons.getRecordId());
+			orderDetail.setMaxFavourOnline(coupons);
 		}
 		orderDetail.setCouponList(preferentialVo.getCouponList());
 		//可以使用零花钱
