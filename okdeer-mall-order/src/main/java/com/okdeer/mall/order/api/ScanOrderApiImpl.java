@@ -182,6 +182,7 @@ public class ScanOrderApiImpl implements ScanOrderApi {
 			List<PlaceOrderItemDto> list= Lists.newArrayList();
 			list.add(item);
 			reqDto.getData().setSkuList(list);
+			bo.setTotalAmountHaveFavour(orderDetail.getAllowDiscountsAmount());
 		}
 		//检查代金券
     	checkFavourService.process(reqDto, resp);
