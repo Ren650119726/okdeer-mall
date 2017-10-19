@@ -1,6 +1,5 @@
 package com.okdeer.mall.order.handler.impl;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,20 +10,15 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
-import com.okdeer.mall.activity.discount.entity.ActivityBusinessRel;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
-import com.okdeer.mall.activity.discount.enums.ActivityBusinessType;
 import com.okdeer.mall.activity.discount.mapper.ActivityBusinessRelMapper;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
-import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.member.bo.UserAddressFilterCondition;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
@@ -223,19 +217,7 @@ public class FindUserAddrServiceImpl implements RequestHandler<PlaceOrderParamDt
 		UserAddressFilterCondition filterCondition = new UserAddressFilterCondition();
 		ActivityDiscount actInfo = (ActivityDiscount) paramDto.get("activityGroup");
 		filterCondition.setActivityInfo(actInfo);
-		if (actInfo.getLimitRange() != AreaType.national) {
-			// 如果团购活动限制了范围，需要查询范围关系
-			List<ActivityBusinessRel> relList = activityBusinessRelMapper.findByActivityId(actInfo.getId());
-			Map<ActivityBusinessType, List<String>> areaLimitCondition = Maps.newHashMap();
-			relList.forEach(rel -> {
-				if (areaLimitCondition.containsKey(rel.getBusinessType())) {
-					areaLimitCondition.get(rel.getBusinessType()).add(rel.getBusinessId());
-				} else {
-					areaLimitCondition.put(rel.getBusinessType(), Arrays.asList(new String[] { rel.getBusinessId() }));
-				}
-			});
-			filterCondition.setAreaLimitCondition(areaLimitCondition);
-		}
+		filterCondition.setActivityId(actInfo.getId());
 		List<UserAddressVo> userAddrList = memberConsigneeAddressService.findUserAddrList(paramDto.getUserId(),
 				filterCondition, groupUserAddrFilterStrategy);
 		return CollectionUtils.isEmpty(userAddrList) ? null : userAddrList.get(0);

@@ -803,7 +803,7 @@
   </sql>
   
   <!-- 用户收货地址列表，针对服务订单 add by zengj 2016-7-25 19:34:51 -->
-  <select id="findUserAddressList" parameterType="java.util.Map" resultType ="java.util.Map">
+  <select id="findUserAddressList" parameterType="com.okdeer.mall.member.member.dto.UserAddrParamDto" resultType ="com.okdeer.mall.member.member.vo.UserAddressVo">
     <include refid="userAddressListSql" />
     order by addr.`source` asc
   </select>

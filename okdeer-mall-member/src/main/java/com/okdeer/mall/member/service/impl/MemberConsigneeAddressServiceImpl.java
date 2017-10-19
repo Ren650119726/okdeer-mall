@@ -13,6 +13,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,7 @@ import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.member.bo.UserAddressFilterCondition;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
+import com.okdeer.mall.member.member.dto.UserAddrParamDto;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.member.enums.AddressDefault;
 import com.okdeer.mall.member.member.enums.AddressSource;
@@ -60,6 +63,9 @@ public class MemberConsigneeAddressServiceImpl
 	 */
 	@Autowired
 	private MemberConsigneeAddressMapper memberConsigneeAddressMapper;
+	
+	@Resource
+	private GroupUserAddrFilterStrategy groupUserAddrFilterStrategy;
 
 	/**
 	 * 收货地址mapper
@@ -395,8 +401,8 @@ public class MemberConsigneeAddressServiceImpl
 	 * @date 2016年7月25日
 	 */
 	@Override
-	public List<Map<String, Object>> findUserAddressList(Map<String, Object> params) {
-		return memberConsigneeAddressMapper.findUserAddressList(params);
+	public List<UserAddressVo> findUserAddressList(UserAddrParamDto paramDto) {
+		return memberConsigneeAddressMapper.findUserAddressList(paramDto);
 	}
 
 	/**
@@ -528,4 +534,12 @@ public class MemberConsigneeAddressServiceImpl
 		return userAddrVoList;
 	}
 	// End V2.6.3 added by maojj 2017-10-11
+
+	@Override
+	public List<UserAddressVo> findUserGroupAddrList(UserAddrParamDto paramDto) {
+		UserAddressFilterCondition filterCondition = new UserAddressFilterCondition();
+		filterCondition.setActivityId(paramDto.getActivityId());
+		List<UserAddressVo> userAddrList = findUserAddrList(paramDto.getUserId(),filterCondition, groupUserAddrFilterStrategy);
+		return userAddrList;
+	}
 }
