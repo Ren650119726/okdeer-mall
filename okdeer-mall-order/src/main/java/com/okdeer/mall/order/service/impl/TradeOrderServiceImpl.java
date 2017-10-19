@@ -4339,8 +4339,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                 item.put("unitPrice",
                         tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice().toString());
                 Integer quantity = tradeOrderItem.getQuantity();
-                item.put("quantity", quantity == null ? ConvertUtil.format(tradeOrderItem.getWeight()) : quantity);
-                item.put("quantityStr",quantity==null ? ConvertUtil.format(tradeOrderItem.getWeight()) : String.valueOf(quantity));
+                item.put("quantity", quantity == null ? ConvertUtil.format(tradeOrderItem.getWeight(),3,1) : quantity);
+                item.put("quantityStr",quantity==null ? ConvertUtil.format(tradeOrderItem.getWeight(),3,1) : String.valueOf(quantity));
                 item.put("skuTotalAmount", tradeOrderItem.getTotalAmount().toString());
                 item.put("skuActualAmount", tradeOrderItem.getActualAmount().toString());
                 item.put("preferentialPrice", tradeOrderItem.getPreferentialPrice() == null ? "0.00"
