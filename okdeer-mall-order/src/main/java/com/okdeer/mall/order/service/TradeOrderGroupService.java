@@ -6,9 +6,11 @@ import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.activity.discount.dto.ActivityDiscountGroupSkuDto;
+import com.okdeer.mall.order.bo.TradeOrderGroupParamBo;
 import com.okdeer.mall.order.dto.GroupJoinUserDto;
 import com.okdeer.mall.order.dto.TradeOrderGroupDetailDto;
 import com.okdeer.mall.order.dto.TradeOrderGroupDto;
+import com.okdeer.mall.order.dto.TradeOrderGroupGoodsDto;
 import com.okdeer.mall.order.dto.TradeOrderGroupParamDto;
 
 
@@ -63,4 +65,15 @@ public interface TradeOrderGroupService extends IBaseService {
 	 * @date 2017年10月18日
 	 */
 	TradeOrderGroupDetailDto findGroupJoinDetail(String groupOrderId,String screen) throws ServiceException;
+
+	/**
+	 * @Description: 查询分页的为成团数据
+	 * @param paramBo
+	 * @param pageNumber
+	 * @param pageSize
+	 * @author tuzhd
+	 * @date 2017年10月18日
+	 */
+	PageUtils<TradeOrderGroupGoodsDto> findOrderGroupList(TradeOrderGroupParamBo paramBo, Integer pageNumber,
+			Integer pageSize);
 }

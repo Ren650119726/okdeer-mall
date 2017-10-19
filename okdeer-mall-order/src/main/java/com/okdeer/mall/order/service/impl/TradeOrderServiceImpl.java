@@ -4046,7 +4046,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
    
 
     @Override
-    public JSONObject findUserOrderDetailList(String orderId) throws ServiceException {
+    public JSONObject findUserOrderDetailList(String orderId,String screen) throws ServiceException {
         if (StringUtils.isEmpty(orderId)) {
             throw new ServiceException("非法请求参数");
         }
@@ -4075,6 +4075,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     			setOrderItemExtJxc(json, orderId);
     		}
     		//如果为会员卡订单 end tuzhd 2017-09-06
+    		// Begin V2.6.3 added by maojj 2017-10-13
+    		if(orders.getType() == OrderTypeEnum.GROUP_ORDER && orders.getStatus() == OrderStatusEnum.DROPSHIPPING){
+    			// 如果是已付款的团购订单
+    			setGroupInfo(json,orderId,screen);
+    		}
+    		if(orders.getType() == OrderTypeEnum.SERVICE_EXPRESS_ORDER && orders.getStatus() == OrderStatusEnum.TO_BE_SIGNED){
+    			// 已发货的寄送服务订单，需要设置快递信息
+    			setExpressInfo(json,orderId);
+    		}
+    		// End V2.6.3 added by maojj 2017-10-13
         } catch (Exception e) {
             logger.error("商品详细查询异常", e);
             throw new ServiceException();
@@ -4131,8 +4141,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         JSONObject json = new JSONObject();
         // 1 订单信息
         json.put("orderId", orders.getId() == null ? "" : orders.getId());
-        json.put("orderStatus", OrderAppStatusAdaptor.convertAppOrderStatus(orders.getStatus()));
-
+        if(orders.getType() == OrderTypeEnum.GROUP_ORDER && orders.getStatus() == OrderStatusEnum.DROPSHIPPING){
+        	json.put("orderStatus", OrderStatusEnum.PAY_COMPLETE.ordinal());
+        }else{
+        	json.put("orderStatus", OrderAppStatusAdaptor.convertAppOrderStatus(orders.getStatus()));
+        }
         // 2 订单支付倒计时计算
         // Begin 14375 add by wusw 20161015
         if (orders.getStatus() != null && orders.getStatus().ordinal() == Constant.ZERO) {
@@ -4267,6 +4280,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         }else if (orders.getOrderResource() == OrderResourceEnum.MEMCARD ) {
         	orderTypeDesc = AppOrderTypeEnum.MEMCARD_ORDER.getDesc();
             orderType = String.valueOf(AppOrderTypeEnum.MEMCARD_ORDER.getCode());
+        }
+        if(orders.getType() == OrderTypeEnum.GROUP_ORDER || orders.getType() == OrderTypeEnum.SERVICE_EXPRESS_ORDER){
+        	orderType = String.valueOf(AppOrderTypeEnum.GROUP_ORDER.getCode());
+        	orderTypeDesc = AppOrderTypeEnum.GROUP_ORDER.getDesc();
         }
         json.put("orderTypeDesc", orderTypeDesc);
         json.put("orderType", orderType);
@@ -4497,7 +4514,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         json.put("orderNo", orders.getOrderNo() == null ? "" : orders.getOrderNo());
         json.put("tradeNum", orders.getTradeNum() == null ? "" : orders.getTradeNum());
         // 订单状态
-        json.put("orderStatus", OrderAppStatusAdaptor.convertAppOrderStatus(orders.getStatus()));
+        if(orders.getType() == OrderTypeEnum.GROUP_ORDER && orders.getStatus() == OrderStatusEnum.DROPSHIPPING){
+        	json.put("orderStatus", OrderStatusEnum.PAY_COMPLETE.ordinal());
+        }else{
+        	json.put("orderStatus", OrderAppStatusAdaptor.convertAppOrderStatus(orders.getStatus()));
+        }
         // 订单支付倒计时计算
 		/*
 		 * Integer remainingTime = orders.getRemainingTime(); if (remainingTime != null) { remainingTime = remainingTime

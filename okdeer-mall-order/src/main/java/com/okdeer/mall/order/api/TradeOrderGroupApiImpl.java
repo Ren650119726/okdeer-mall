@@ -6,8 +6,10 @@ import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.activity.discount.dto.ActivityDiscountGroupSkuDto;
+import com.okdeer.mall.order.bo.TradeOrderGroupParamBo;
 import com.okdeer.mall.order.dto.TradeOrderGroupDetailDto;
 import com.okdeer.mall.order.dto.TradeOrderGroupDto;
+import com.okdeer.mall.order.dto.TradeOrderGroupGoodsDto;
 import com.okdeer.mall.order.dto.TradeOrderGroupParamDto;
 import com.okdeer.mall.order.service.TradeOrderGroupApi;
 import com.okdeer.mall.order.service.TradeOrderGroupService;
@@ -58,5 +60,16 @@ public class TradeOrderGroupApiImpl implements TradeOrderGroupApi {
 	@Override
 	public TradeOrderGroupDetailDto findGroupJoinDetail(String groupOrderId, String screen) throws ServiceException {
 		return tradeOrderGroupService.findGroupJoinDetail(groupOrderId, screen);
+	}
+	
+	@Override
+	public void updateByColseActivity(String activityId) throws Exception{
+			tradeOrderGroupService.updateByColseActivity(activityId);
+	}
+
+	@Override
+	public PageUtils<TradeOrderGroupGoodsDto> findOrderGroupList(TradeOrderGroupParamDto paramBo, Integer pageNumber,
+			Integer pageSize) {
+		return tradeOrderGroupService.findOrderGroupList(BeanMapper.map(paramBo, TradeOrderGroupParamBo.class), pageNumber, pageSize);
 	}
 }

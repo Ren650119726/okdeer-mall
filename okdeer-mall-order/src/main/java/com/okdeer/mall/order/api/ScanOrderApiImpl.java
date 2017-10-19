@@ -31,6 +31,7 @@ import com.okdeer.common.utils.JsonDateUtil;
 import com.okdeer.jxc.branch.entity.Branches;
 import com.okdeer.jxc.branch.service.BranchesServiceApi;
 import com.okdeer.jxc.common.result.RespSelfJson;
+import com.okdeer.jxc.common.utils.JsonMapper;
 import com.okdeer.jxc.pos.service.SelfPayOrderServiceApi;
 import com.okdeer.jxc.pos.vo.SelfOrderVo;
 import com.okdeer.jxc.pos.vo.SelfPayTradeInfoVo;
@@ -131,6 +132,7 @@ public class ScanOrderApiImpl implements ScanOrderApi {
     	RespSelfJson resp = selfPayOrderServiceApi.settlementOrder(prepayDto);
     	//验证返回结果
     	ScanOrderDto orderDetail = new ScanOrderDto();
+    	orderDetail.setOrderResource(scanOrderDto.getOrderResource());
 		if(Integer.valueOf(resp.get(RespSelfJson.KEY_CODE).toString()) != 0){
 			orderDetail.setCode(Integer.valueOf(resp.get(RespSelfJson.KEY_CODE).toString()));
 			return orderDetail;

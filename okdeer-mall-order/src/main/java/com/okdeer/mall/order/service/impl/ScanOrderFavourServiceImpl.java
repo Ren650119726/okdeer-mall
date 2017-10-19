@@ -70,28 +70,25 @@ public class ScanOrderFavourServiceImpl implements ScanOrderFavourService{
 	@Override
 	public void appendFavour(ScanOrderDto orderDetail, RequestParams requestParams) throws Exception {
 
-		
-		//设置为使用才进行查询优惠信息  并设置优惠信息
-		if(orderDetail.isUserDiscount()){
-			//优惠金额
-			BigDecimal platDiscountAmount = BigDecimal.ZERO;
-			//总金额
-			BigDecimal paymentAmount = orderDetail.getAmount();
-			String userId = orderDetail.getUserId();
-			//可以使用的优惠金额  即是 排除掉  不可使用优惠的   商品金额
-			FavourParamBO parambo = createFavourParamBo(orderDetail,requestParams);
-			PreferentialVo preferentialVo = getPreferentialService.findPreferByCard(parambo);
-			Coupons coupons = (Coupons) preferentialVo.getMaxFavourOnline();
-			if(coupons != null){
-				//设置优惠金额
-				orderDetail.setCouponsFaceValue(new BigDecimal(coupons.getCouponPrice()));
-				orderDetail.setCouponsId(coupons.getCouponId());
-				orderDetail.setCouponsActivityId(coupons.getId());
-			}
-			//可以使用零花钱
-			BigDecimal myUsable = tradePinMoneyObtainService.findMyUsableTotal(userId,new Date());
-			orderDetail.setPinMoneyAmount(myUsable);
+		if(OrderResourceEnum.WECHAT_MIN.ordinal() == Integer.valueOf(orderDetail.getOrderResource())){
+			return;
 		}
+		//设置为使用才进行查询优惠信息  并设置优惠信息
+		//可以使用的优惠金额  即是 排除掉  不可使用优惠的   商品金额
+		FavourParamBO parambo = createFavourParamBo(orderDetail,requestParams);
+		PreferentialVo preferentialVo = getPreferentialService.findPreferByCard(parambo);
+		Coupons coupons = (Coupons) preferentialVo.getMaxFavourOnline();
+		if(coupons != null){
+			//设置优惠金额
+			orderDetail.setCouponsFaceValue(new BigDecimal(coupons.getCouponPrice()));
+			orderDetail.setCouponsId(coupons.getCouponId());
+			orderDetail.setCouponsActivityId(coupons.getId());
+			orderDetail.setRecordId(coupons.getRecordId());
+		}
+		orderDetail.setCouponList(preferentialVo.getCouponList());
+		//可以使用零花钱
+		BigDecimal myUsable = tradePinMoneyObtainService.findMyUsableTotal(orderDetail.getUserId(),new Date());
+		orderDetail.setPinMoneyAmount(myUsable);
 	}
 	
 	/**

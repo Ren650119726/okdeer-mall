@@ -72,6 +72,7 @@ import com.okdeer.mall.activity.service.MaxFavourStrategy;
 import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.common.utils.RobotUserUtil;
+import com.okdeer.mall.order.service.TradeOrderGroupApi;
 import com.okdeer.mall.order.vo.FullSubtract;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mall.system.utils.ConvertUtil;
@@ -132,6 +133,11 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	private MaxFavourStrategy genericMaxFavourStrategy;
 	@Resource
 	private ActivityDiscountGroupMapper activityDiscountGroupMapper;
+	
+	@Reference(version = "1.0.0",check=false)
+	private TradeOrderGroupApi tradeOrderGroupApi; 
+	
+	
 	@Override
 	public IBaseMapper getBaseMapper() {
 		return activityDiscountMapper;
@@ -463,6 +469,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		paramDto.setActivityIds(paramBo.getActivityIds());
 		// 检查需要关闭的活动状态
 		List<ActivityDiscount> actList = activityDiscountMapper.findListByParam(paramDto);
+		//进行循环检查
 		for(ActivityDiscount act : actList){
 			if(act.getStatus() != ActivityDiscountStatus.noStart 
 					&& act.getStatus() != ActivityDiscountStatus.ing){
@@ -471,12 +478,16 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 				retInfo.setMessage("选中的活动中存在已关闭活动，请重新选择!");
 				return retInfo;
 			}
-			// 释放原来商品活动库存 + 解除原商品关联关系
-			removeSkuAndStockRelation(act.getId());
 		}
 		// 关闭活动
 		activityDiscountMapper.updateStatus(paramBo);
 		
+		//逐个解除
+		for(ActivityDiscount act : actList){
+			// 释放原来商品活动库存 + 解除原商品关联关系
+			removeSkuAndStockRelation(act.getId());
+			tradeOrderGroupApi.updateByColseActivity(act.getId());
+		}
 		
 		return retInfo;
 	}
@@ -666,7 +677,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 			}
 			conditionList = actInfoDto.getConditionList();
 			for(ActivityDiscountCondition condition : conditionList){
-				if(condition.getArrive().compareTo(paramBo.getTotalAmount()) == 1){
+				if(condition.getArrive().compareTo(paramBo.getTotalAmount()) > 0){
 					continue;
 				}
 				fullSubtract = new FullSubtract();

@@ -216,7 +216,7 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 				}
 				
 				Date endTime = skuService.getEndTime();
-				if (new Date().compareTo(endTime) == 0 || new Date().compareTo(endTime) == 1) {
+				if (new Date().compareTo(endTime) == 0 || new Date().compareTo(endTime) > 0) {
 					// 服务商品已过期，不能预约
 					resp.setResult(ResultCodeEnum.SERV_GOODS_EXP);
 					req.setComplete(true);
@@ -254,7 +254,7 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 					&& serviceExt.getIsStartingPrice() == 1 
 					&& serviceExt.getIsSupportPurchase() == 0) {
 				BigDecimal startingPrice = serviceExt.getStartingPrice();
-				if (totalAmout.compareTo(startingPrice) == -1) {
+				if (totalAmout.compareTo(startingPrice) < 0) {
 					// 订单总价小与起送价
 					if (req.getOrderOptType().ordinal() == OrderOptTypeEnum.ORDER_SUBMIT.ordinal()) {
 						// 提交订单
@@ -281,7 +281,7 @@ public class ServiceGoodsCheckServiceImpl implements RequestHandler<ServiceOrder
 					} else {
 						// 已满起送价不收取配送费
 						BigDecimal startingPrice = serviceExt.getStartingPrice();
-						if (totalAmout.compareTo(startingPrice) == -1) {
+						if (totalAmout.compareTo(startingPrice) < 0) {
 							// 设置运费
 							respData.setFare(BigDecimal.valueOf(serviceExt.getDistributionFee()));
 						}

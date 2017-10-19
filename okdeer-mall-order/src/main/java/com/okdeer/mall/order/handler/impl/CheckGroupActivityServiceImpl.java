@@ -94,12 +94,11 @@ public class CheckGroupActivityServiceImpl implements RequestHandler<PlaceOrderP
 		Map<String, CurrentStoreSkuBo> currentSkuMap = parserBo.getCurrentSkuMap();
 		// 团购一次只能团购一件商品
 		CurrentStoreSkuBo storeSkuBo = currentSkuMap.values().stream().findFirst().get();
-		storeSkuBo.setActivityType(ActivityTypeEnum.GROUP_ACTIVITY.ordinal());
 		// 团购活动id
 		String groupActId = storeSkuBo.getActivityId();
 		// 检查团购活动是否结束
-		if(StringUtils.isEmpty(groupActId) || storeSkuBo.getActivityType() != ActivityTypeEnum.GROUP_ACTIVITY.ordinal()){
-			// 如果商品关联的活动id为空，或者关联的活动类型不为团购活动，标识团购活动已经结束或者关闭
+		if("0".equals(groupActId) || storeSkuBo.getActivityType() != ActivityTypeEnum.GROUP_ACTIVITY.ordinal()){
+			// 如果商品关联的活动id为0，或者关联的活动类型不为团购活动，标识团购活动已经结束或者关闭
 			resp.setResult(ResultCodeEnum.ACTIVITY_IS_END);
 			return;
 		}
@@ -117,6 +116,7 @@ public class CheckGroupActivityServiceImpl implements RequestHandler<PlaceOrderP
 		}
 		// 查询团购商品信息
 		ActivityDiscountGroup groupSku = activityDiscountGroupMapper.findByActivityIdAndSkuId(groupActId, storeSkuBo.getId());
+		storeSkuBo.setActPrice(groupSku.getGroupPrice());
 		// 检查用户是否超出日限购
 		if(isOutOfLimit(paramDto,storeSkuBo,groupSku.getUserDayCountLimit(),LIMIT_SKU_USER_DAY)){
 			resp.setResult(ResultCodeEnum.GROUP_SKU_USER_DAY_LIMIT_OUT);
