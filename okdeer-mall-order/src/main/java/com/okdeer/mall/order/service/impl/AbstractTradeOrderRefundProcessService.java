@@ -24,6 +24,8 @@ import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
+import com.okdeer.mall.order.enums.OrderComplete;
+import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
@@ -57,11 +59,10 @@ public abstract class AbstractTradeOrderRefundProcessService implements TradeOrd
 		TradeOrder tradeOrder = tradeOrderApplyRefundParamDto.getTradeOrder();
 		Assert.notNull(tradeOrder);
 		TradeOrderItem tradeOrderItem = tradeOrderApplyRefundParamDto.getTradeOrderItem();
-		if(tradeOrderItem == null){
-			tradeOrderItem = tradeOrderItemMapper
-					.selectOrderItemById(tradeOrderApplyRefundParamDto.getOrderItemId());
+		if (tradeOrderItem == null) {
+			tradeOrderItem = tradeOrderItemMapper.selectOrderItemById(tradeOrderApplyRefundParamDto.getOrderItemId());
 		}
-		
+
 		if (tradeOrderItem == null) {
 			// 订单项不存在
 			response.setResult(ResultCodeEnum.ILLEGAL_PARAM);
@@ -75,8 +76,29 @@ public abstract class AbstractTradeOrderRefundProcessService implements TradeOrd
 			response.setResult(ResultCodeEnum.ILLEGAL_PARAM);
 			return false;
 		}
-		if(!tradeOrder.getId().equals(tradeOrderItem.getOrderId())){
+		if (!tradeOrder.getId().equals(tradeOrderItem.getOrderId())) {
 			response.setResult(ResultCodeEnum.ILLEGAL_PARAM);
+			return false;
+		}
+
+		// 订单已过售后期
+		if (tradeOrder.getIsComplete() == OrderComplete.YES) {
+			response.setResult(ResultCodeEnum.ORDER_REFUND_EXPIRE);
+			return false;
+		}
+
+		// 校验订单状态
+		if (tradeOrder.getStatus() != OrderStatusEnum.HAS_BEEN_SIGNED) {
+			response.setResult(ResultCodeEnum.ORDER_NOT_FINSH);
+			return false;
+		}
+		
+		if (tradeOrderItem.getServiceAssurance() == null || tradeOrderItem.getServiceAssurance() == 0) {
+			response.setResult(ResultCodeEnum.ORDER_NOT_SUPPORT_REFUND);
+			return false;
+		}
+		if (tradeOrderRefundsService.isRefundOrderItemId(tradeOrderItem.getId())) {
+			response.setResult(ResultCodeEnum.ORDER_HAS_BEAN_REFUND);
 			return false;
 		}
 		return true;
