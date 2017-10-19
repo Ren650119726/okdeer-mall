@@ -994,14 +994,14 @@
 		parameterType="java.lang.String">
 		SELECT refunds.refunds_status,refunds.update_time,refunds.order_id as order_id,refunds.total_income,
 		refunds.id,refunds.refund_no,refunds.logistics_type,refunds.refuse_reson,refunds.memo,refunds.create_time,
-		refunds.refund_money_time,refunds.total_amount,refunds.store_preferential,refunds_mobile,
-		refunds.total_preferential_price,refunds.refunds_reason,refunds_address,
-		trade.order_resource, trade.type as order_type,trade.pick_up_type,trade.pick_up_time
+		refunds.refund_money_time,refunds.total_amount,refunds.store_preferential,
+		refunds.total_preferential_price,refunds.refunds_reason,
+		trade.order_resource, trade.type as order_type,trade.pick_up_type,trade.pick_up_time,
 		trade.received_time,trade.store_id,trade.order_no,trade.update_time as order_update_time,
-		trade.`status` AS order_status,,trade.create_time AS order_create_time,trade.remark,
+		trade.`status` AS order_status,trade.create_time AS order_create_time,trade.remark,
 		trade.delivery_time,trade.invoice,trade.activity_id,trade.activity_type,trade.pay_way,trade.payment_time,
-		logistics.consignee_name as refunds_consignee_name,logistics.mobile as
-		logistics.area as refunds_area,logistics.address as
+		logistics.consignee_name as refunds_consignee_name,logistics.mobile as refunds_mobile,
+		logistics.area as refunds_area,logistics.address as refunds_address,
 		logistics.`logistics_no` as	refunds_logistics_no,
 		logistics.type as refunds_type,
 		image.id as image_id,image.image_path,

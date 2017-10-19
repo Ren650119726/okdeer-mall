@@ -248,6 +248,8 @@ public class TradeOrderGroupServiceImpl extends BaseServiceImpl implements Trade
 		groupDetailDto.setUpdateTime(DateUtils.formatDate(storeSku.getUpdateTime(), "yyyy-MM-dd HH:mm:ss"));
 		groupDetailDto.setPicUrl(ImageCutUtils.changeType(ImageTypeContants.SPQDSPLBTP,
 				String.format("%s%s", sysConfigComponent.getStoreImagePrefix(), storeSkuPic.getUrl()), screen));
+		groupDetailDto.setJoinUserList(joinUserList);
+		groupDetailDto.setActivityId(groupOrder.getActivityId());
 		return groupDetailDto;
 	}
 
