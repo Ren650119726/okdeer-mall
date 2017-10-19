@@ -1886,7 +1886,7 @@
 		<if test="userId != null and userId != ''">
 			AND refunds.user_id = #{userId,jdbcType=VARCHAR}
 		</if>
-		AND refunds.type in (0,5)
+		AND refunds.type in (0,5,7)
 		AND refunds.disabled = 0
 		AND refunds.is_show = 1
 		<if test="skuName !=null and skuName !=''">
