@@ -116,7 +116,10 @@ public class CheckGroupActivityServiceImpl implements RequestHandler<PlaceOrderP
 		}
 		// 查询团购商品信息
 		ActivityDiscountGroup groupSku = activityDiscountGroupMapper.findByActivityIdAndSkuId(groupActId, storeSkuBo.getId());
-		storeSkuBo.setActPrice(groupSku.getGroupPrice());
+		// 按照叶伟需求，团购不算任何优惠
+		storeSkuBo.setOnlinePrice(groupSku.getGroupPrice());
+		// 加载购买商品记录
+		parserBo.loadBuySkuList(paramDto.getSkuList());
 		// 检查用户是否超出日限购
 		if(isOutOfLimit(paramDto,storeSkuBo,groupSku.getUserDayCountLimit(),LIMIT_SKU_USER_DAY)){
 			resp.setResult(ResultCodeEnum.GROUP_SKU_USER_DAY_LIMIT_OUT);
@@ -137,9 +140,6 @@ public class CheckGroupActivityServiceImpl implements RequestHandler<PlaceOrderP
 			resp.setResult(ResultCodeEnum.GROUP_DEVICE_LIMIT_OUT);
 			return;
 		}
-		// 计算平台优惠
-		BigDecimal platformFavour = storeSkuBo.getOnlinePrice().subtract(groupSku.getGroupPrice());
-		parserBo.setPlatformPreferential(platformFavour);
 		paramDto.setActivityId(groupActId);
 		paramDto.setActivityType(String.valueOf(ActivityTypeEnum.GROUP_ACTIVITY.ordinal()));
 		paramDto.setActivityItemId(storeSkuBo.getId());
