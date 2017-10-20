@@ -370,18 +370,16 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		persity.setStoreId(vo.getBranchId());
 		//实付金额
 		persity.setActualAmount(vo.getPaymentAmount());
-		
+		//优惠金额
 		BigDecimal prefer = vo.getPlatDiscountAmount() != null ? vo.getPlatDiscountAmount():BigDecimal.ZERO;
 		BigDecimal discount = vo.getDiscountAmount() != null ? vo.getDiscountAmount():BigDecimal.ZERO;
-		//优惠总金额	
-		persity.setPreferentialPrice(prefer.add(discount));
-		
-		//店铺优惠金额	
-		persity.setStorePreferential(vo.getDiscountAmount());
+		BigDecimal pinMoney = vo.getPinMoneyAmount()!=null?vo.getPinMoneyAmount():BigDecimal.ZERO;
+		//店铺优惠
+		persity.setStorePreferential(discount);
+		//总优惠
+		persity.setPreferentialPrice(discount.add(prefer).add(pinMoney));
 		//零花钱优惠
-		persity.setPinMoney(vo.getPinMoneyAmount());
-		//平台优惠字段
-		persity.setPlatformPreferential(vo.getPlatDiscountAmount().add(vo.getPinMoneyAmount()));
+		persity.setPinMoney(pinMoney);
 		persity.setCreateTime(new Date());
 		persity.setUpdateTime(persity.getCreateTime());
 		//设置显示

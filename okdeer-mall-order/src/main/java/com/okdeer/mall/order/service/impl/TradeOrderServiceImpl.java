@@ -2246,19 +2246,20 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         if (tradeOrder.getOrderResource() == OrderResourceEnum.SWEEP || 
         		tradeOrder.getOrderResource() == OrderResourceEnum.WECHAT_MIN ||
         		tradeOrder.getOrderResource() == OrderResourceEnum.MEMCARD) {
-        	//释放所有代金卷
-        	activityCouponsRecordService.releaseConpons(tradeOrder);
-        	//释放零花钱
-        	tradePinMoneyUseService.releaseOrderOccupy(tradeOrder.getId());
-        	//调用零售取消订单（会员卡订单）
-        	if(tradeOrder.getOrderResource() == OrderResourceEnum.MEMCARD && 
-        			tradeOrder.getStatus() == OrderStatusEnum.CANCELED){
-        		try{
-        			//新版会员卡支付通知零售取消订单
-        			hykPayOrderServiceApi.cancelOrder(tradeOrder.getId(), null);
-        		}catch(Exception e){
-        			logger.error("零售取消订单失败"+tradeOrder.getId(),e);
-        		}
+        	if(tradeOrder.getStatus() == OrderStatusEnum.CANCELED){
+        		//释放所有代金卷
+        		activityCouponsRecordService.releaseConpons(tradeOrder);
+        		//释放零花钱
+        		tradePinMoneyUseService.releaseOrderOccupy(tradeOrder.getId());
+	        	//调用零售取消订单（会员卡订单）
+	        	if(tradeOrder.getOrderResource() == OrderResourceEnum.MEMCARD){
+	        		try{
+	        			//新版会员卡支付通知零售取消订单
+	        			hykPayOrderServiceApi.cancelOrder(tradeOrder.getId(), null);
+	        		}catch(Exception e){
+	        			logger.error("零售取消订单失败"+tradeOrder.getId(),e);
+	        		}
+	        	}
         	}
             return tradeOrderMapper.updateOrderStatus(tradeOrder);
         }
