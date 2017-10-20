@@ -172,6 +172,10 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		if(actInfo.getLimitUser() == UseUserType.ONlY_NEW_USER){
 			actInfo.setLimitTotalFreq(1);
 		}
+		//如果开始时间早于当前时间,活动直接进行中
+		if(actInfo.getStartTime().getTime() <= new Date().getTime()){
+			actInfo.setStatus(ActivityDiscountStatus.ing);
+		}
 		// 修改活动信息
 		activityDiscountMapper.update(actInfo);
 		
@@ -223,6 +227,10 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		
 		// 活动状态默认为未开始
 		actInfo.setStatus(ActivityDiscountStatus.noStart);
+		//如果开始时间早于当前时间,活动直接进行中
+		if(actInfo.getStartTime().getTime() <= new Date().getTime()){
+			actInfo.setStatus(ActivityDiscountStatus.ing);
+		}
 		if(actInfo.getType() != ActivityDiscountType.PIN_MONEY){
 			actInfo.setGrantType(0);
 		}
