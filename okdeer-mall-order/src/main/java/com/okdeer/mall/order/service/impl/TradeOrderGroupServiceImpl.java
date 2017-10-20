@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.github.pagehelper.PageHelper;
@@ -93,6 +94,8 @@ public class TradeOrderGroupServiceImpl extends BaseServiceImpl implements Trade
 
 	@Override
 	public List<GroupJoinUserDto> findGroupJoinUserList(String groupOrderId,String screen) throws ServiceException {
+		Assert.notNull(groupOrderId, "团购订单Id不能为空");
+		Assert.notNull(screen, "分辨率不能为空");
 		// 根据团购订单Id查询已入团的用户关系列表
 		List<TradeOrderGroupRelation> groupRelList = tradeOrderGroupRelationMapper.findByGroupOrderId(groupOrderId);
 		List<GroupJoinUserDto> joinUserList = Lists.newArrayList();
