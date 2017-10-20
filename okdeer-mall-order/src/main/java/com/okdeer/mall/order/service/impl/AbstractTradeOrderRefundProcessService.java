@@ -26,6 +26,7 @@ import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.enums.OrderComplete;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderRefundsMapper;
@@ -97,7 +98,7 @@ public abstract class AbstractTradeOrderRefundProcessService implements TradeOrd
 			response.setResult(ResultCodeEnum.ORDER_NOT_SUPPORT_REFUND);
 			return false;
 		}
-		if (tradeOrderRefundsService.isRefundOrderItemId(tradeOrderItem.getId())) {
+		if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER && tradeOrderRefundsService.isRefundOrderItemId(tradeOrderItem.getId())) {
 			response.setResult(ResultCodeEnum.ORDER_HAS_BEAN_REFUND);
 			return false;
 		}
