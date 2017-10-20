@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import com.alibaba.dubbo.config.annotation.Reference;
+import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.common.exception.MallApiException;
 import com.okdeer.mall.order.bo.TradeOrderRefundContextBo;
@@ -24,8 +27,12 @@ import com.okdeer.mall.order.service.TradeOrderRefundsListener;
 @Service("storeConsumerOrderProcess")
 public class StoreConsumerOrderProcess implements TradeOrderRefundsListener {
 
+	
 	@Autowired
 	private TradeOrderRefundsItemDetailMapper tradeOrderRefundsItemDetailMapper;
+	
+	@Reference(version="1.0.0",check = false)
+	private StoreInfoServiceApi storeInfoServiceApi;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -43,6 +50,12 @@ public class StoreConsumerOrderProcess implements TradeOrderRefundsListener {
 		}
 		//添加退款单明细
 		addTradeOrderRefundsItemDetail(tradeOrderRefundContext);
+		try {
+			String bossSysUserId = storeInfoServiceApi.getBossIdByStoreId(tradeOrderRefundContext.getTradeOrder().getStoreId());
+			tradeOrderRefundContext.setSotreUserId(bossSysUserId);
+		} catch (ServiceException e) {
+			throw new MallApiException("查询店老板用户id出错",e);
+		}
 	}
 
 	private void addTradeOrderRefundsItemDetail(TradeOrderRefundContextBo tradeOrderRefundContext) {
