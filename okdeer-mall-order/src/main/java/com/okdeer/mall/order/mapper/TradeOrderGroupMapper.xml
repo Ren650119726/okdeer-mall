@@ -219,7 +219,7 @@
 
 	<!-- 统计成团商品总数 -->
 	<select id="countGroupSkuNum" parameterType="com.okdeer.mall.order.bo.TradeOrderGroupParamBo" resultType="int">
-		SELECT SUM(group_count)
+		SELECT IFNULL(SUM(group_count),0)
 		FROM trade_order_group
 		<where>
 			<if test="activityId != null ">
