@@ -54,7 +54,7 @@ public class UserOrderServiceImpl implements UserOrderService {
 		//　根据订单Id查询订单项明细
 		List<TradeOrderItem> orderItemList = tradeOrderItemService.findOrderItems(orderIds);
 		// 装载订单项列表
-		loader.loadOrderItemList(orderItemList);
+		loader.loadOrderItemList(orderItemList,sysConfigComponent.getOrderImagePrefix(),paramBo.getScreen());
 		// 根据订单Id查询物流信息
 		if(CollectionUtils.isNotEmpty(orderIds)){
 			List<TradeOrderLogistics> orderLogisticsList = tradeOrderLogisticsMapper.selectByOrderIds(orderIds);

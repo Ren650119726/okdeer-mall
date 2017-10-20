@@ -6225,6 +6225,13 @@
 				AND order_resource != #{notOrderResource,jdbcType=TINYINT}
 			</if>
 			
+			<!-- 限制订单类型 -->
+			<if test="orderTypeList != null and orderTypeList.size()>0">
+				AND type IN 
+				<foreach collection="orderTypeList" item="orderType" separator="," open="(" close=")">
+					#{orderType,jdbcType=TINYINT}
+				</foreach>
+			</if>
 			
 			<!-- 待使用订单查询 -->
 			<if test="status == '2'.toString()">
