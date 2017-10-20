@@ -29,6 +29,15 @@ public class SysConfigComponent {
 	@Value("${storeImagePrefix}")
 	private String storeImagePrefix;
 
+	/**
+	 * 订单商品图片前缀
+	 */
+	@Value("${orderImagePrefix}")
+	private String orderImagePrefix;
+
+	/**
+	 * 团购分享链接地址
+	 */
 	@Value("${group.share.link}")
 	private String groupShareLink;
 
@@ -43,4 +52,9 @@ public class SysConfigComponent {
 	public String getGroupShareLink() {
 		return groupShareLink;
 	}
+
+	public String getOrderImagePrefix() {
+		return orderImagePrefix;
+	}
+
 }

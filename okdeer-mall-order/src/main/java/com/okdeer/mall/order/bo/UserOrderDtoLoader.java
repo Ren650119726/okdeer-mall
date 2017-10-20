@@ -7,12 +7,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.common.utils.EnumAdapter;
+import com.okdeer.common.utils.ImageCutUtils;
+import com.okdeer.common.utils.ImageTypeContants;
 import com.okdeer.mall.common.enums.LogisticsType;
 import com.okdeer.mall.order.dto.AppUserOrderDto;
 import com.okdeer.mall.order.dto.BaseUserOrderItemDto;
@@ -122,6 +125,7 @@ public class UserOrderDtoLoader {
 			orderDto.setStoreId(order.getStoreId());
 			orderDto.setStoreName(order.getStoreName());
 			orderDto.setOrderId(order.getId());
+			orderDto.setTradeNum(order.getTradeNum());
 			orderDto.setTotalAmount(ConvertUtil.format(order.getTotalAmount()));
 			orderDto.setActualAmount(ConvertUtil.format(order.getActualAmount()));
 			orderDto.setFare(ConvertUtil.format(order.getFare()));
@@ -186,7 +190,7 @@ public class UserOrderDtoLoader {
 	 * @author maojj
 	 * @date 2017年2月18日
 	 */
-	public void loadOrderItemList(List<TradeOrderItem> orderItemList){
+	public void loadOrderItemList(List<TradeOrderItem> orderItemList,String orderImagePrefix,String screen){
 		if(CollectionUtils.isEmpty(orderItemList)){
 			return;
 		}
@@ -200,6 +204,11 @@ public class UserOrderDtoLoader {
 			itemDto = new UserOrderItemDto();
 			itemDto.setItemId(orderItem.getId());
 			itemDto.setMainPicUrl(orderItem.getMainPicPrl());
+			if(StringUtils.isEmpty(orderItem.getMainPicPrl())){
+				itemDto.setMainPicUrl("");
+			}else{
+				itemDto.setMainPicUrl(ImageCutUtils.changeType(ImageTypeContants.BLDDPLBDPTP, String.format("%s%s", orderImagePrefix,orderItem.getMainPicPrl()), screen));
+			}
 			itemDto.setStoreSkuId(orderItem.getStoreSkuId());
 			itemDto.setSkuName(orderItem.getSkuName());
 			itemDto.setPropertiesIndb(ConvertUtil.format(orderItem.getPropertiesIndb()));
