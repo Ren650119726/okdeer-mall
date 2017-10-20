@@ -227,6 +227,10 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 	private void updateGroupOrderRel(TradeOrderGroupRelation orderGroupRel, String groupOrderId) {
 		orderGroupRel.setGroupOrderIdHis(orderGroupRel.getGroupOrderId());
 		orderGroupRel.setGroupOrderId(groupOrderId);
+		// 订单身份由拼团转为开团
+		orderGroupRel.setType(GroupJoinTypeEnum.GROUP_OPEN);
+		// 关系状态由待入团改为已入团
+		orderGroupRel.setStatus(GroupJoinStatusEnum.JOIN_SUCCESS);
 		tradeOrderGroupRelationMapper.update(orderGroupRel);
 	}
 
