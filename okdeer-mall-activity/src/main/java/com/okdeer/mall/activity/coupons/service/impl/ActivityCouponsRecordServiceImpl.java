@@ -1590,6 +1590,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	@Override
 	public List<Coupons> findValidCoupons(FavourParamBO paramBo, CouponsFilterStrategy favourFilter) throws Exception {
+		if (paramBo.getTotalAmount() == BigDecimal.ZERO) {
+			return new ArrayList<Coupons>();
+		}
 		List<Coupons> couponsList = activityCouponsRecordMapper.findValidCoupons(paramBo);
 		if (CollectionUtils.isEmpty(couponsList)) {
 			return couponsList;

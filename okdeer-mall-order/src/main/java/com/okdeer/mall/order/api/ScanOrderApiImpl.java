@@ -143,6 +143,7 @@ public class ScanOrderApiImpl implements ScanOrderApi {
     	orderDetail.setOrderResource(scanOrderDto.getOrderResource());
 		if(Integer.valueOf(resp.get(RespSelfJson.KEY_CODE).toString()) != 0){
 			orderDetail.setCode(Integer.valueOf(resp.get(RespSelfJson.KEY_CODE).toString()));
+			logger.error("扫码购确认订单失败，code:{},原因：{}",resp.get(RespSelfJson.KEY_CODE),resp.get(RespSelfJson.KEY_MESSAGE));
 			return orderDetail;
 		}
 		SelfPayTradeInfoVo tradeInfoVo = (SelfPayTradeInfoVo) resp.get(RespSelfJson.DATA);
@@ -202,6 +203,8 @@ public class ScanOrderApiImpl implements ScanOrderApi {
     	SelfPayTradeInfoVo tradeInfoVo = (SelfPayTradeInfoVo) jxcResp.get(RespSelfJson.DATA);
     	ScanOrderDto orderDetail = BeanMapper.map(tradeInfoVo, ScanOrderDto.class);
     	orderDetail.setPinMoneyAmount(tradeInfoVo.getPinAmount());
+    	orderDetail.setActivityType(orderParamDto.getActivityType());
+    	orderDetail.setCouponsId(orderParamDto.getActivityItemId());
 		//保存扫描购订单信息
 		orderDetail.setRecordId(reqDto.getData().getRecordId());
 		scanOrderService.saveScanOrder(orderDetail, orderDetail.getBranchId(),requestParams);

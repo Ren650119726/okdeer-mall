@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
@@ -113,6 +114,7 @@ public class ScanOrderServiceImpl implements ScanOrderService {
 	 * @date 2017年3月18日
 	 */
     @Override
+    @Transactional(rollbackFor=Exception.class)
 	public void saveScanOrder(ScanOrderDto vo,String branchId,RequestParams requestParams) throws Exception{
 		//转化结果集
 		TradeOrder persity = BeanMapper.map(vo, TradeOrder.class);
@@ -124,13 +126,12 @@ public class ScanOrderServiceImpl implements ScanOrderService {
 		persity.setActualAmount(vo.getSaleAmount());
 		//优惠金额
 		BigDecimal prefer = vo.getPlatDiscountAmount() != null ? vo.getPlatDiscountAmount():BigDecimal.ZERO;
-//		BigDecimal prefer = BigDecimal.ZERO;
 		BigDecimal discount = vo.getDiscountAmount() != null ? vo.getDiscountAmount():BigDecimal.ZERO;
 		BigDecimal pinMoney = vo.getPinMoneyAmount()!=null?vo.getPinMoneyAmount():BigDecimal.ZERO;
 		//店铺优惠
 		persity.setStorePreferential(discount);
 		//总优惠
-		persity.setPreferentialPrice(discount.add(prefer));
+		persity.setPreferentialPrice(discount.add(prefer).add(pinMoney));
 		//零花钱优惠
 		persity.setPinMoney(pinMoney);
 		//平台优惠字段
