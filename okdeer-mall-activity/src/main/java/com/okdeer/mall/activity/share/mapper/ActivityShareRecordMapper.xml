@@ -193,7 +193,7 @@
     		<if test="storeId != null and storeId != ''">
     			AND   store_id = #{storeId,jdbcType=VARCHAR}
     		</if>
-    		 <if test="activityId != null" >
+    		 <if test="activityId != null and activityId != ''" >
                 AND activity_id = #{activityId,jdbcType=VARCHAR}
             </if>
             <if test="sysUserPhone != null and sysUserPhone !='' ">
