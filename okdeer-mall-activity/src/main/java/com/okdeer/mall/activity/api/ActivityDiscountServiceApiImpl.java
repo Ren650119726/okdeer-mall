@@ -49,9 +49,7 @@ public class ActivityDiscountServiceApiImpl implements ActivityDiscountServiceAp
 	public List<ActivityPinMoneyDto> findDiscountList(ActivityDiscountQueryDto discountQueryDto) {
 		//订单来源  店铺id 活动类型 状态 城市名称
 		ActivityParamDto paramDto = new ActivityParamDto();
-		paramDto.setType(discountQueryDto.getType());
-		paramDto.setStatus(discountQueryDto.getStatus());
-		paramDto.setLimitChannel(discountQueryDto.getLimitChannel());
+		BeanMapper.copy(discountQueryDto, paramDto);
 		List<ActivityDiscount> discountList = activityDiscountService.findListByParam(paramDto);
 		return BeanMapper.mapList(discountList, ActivityPinMoneyDto.class);
 	}
