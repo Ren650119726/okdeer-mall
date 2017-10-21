@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.share.mapper.ActivityShareOrderRecordMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.share.entity.ActivityShareOrderRecord" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+        <result column="share_id" property="shareId" jdbcType="VARCHAR" />
+        <result column="type" property="type" jdbcType="TINYINT"  />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, order_id, share_id, type, create_time
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_share_order_record
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.activity.share.entity.ActivityShareOrderRecord" >
+        insert into activity_share_order_record
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="orderId != null" >
+                order_id,
+            </if>
+            <if test="shareId != null" >
+                share_id,
+            </if>
+            <if test="type != null" >
+                type,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="orderId != null" >
+                #{orderId,jdbcType=VARCHAR},
+            </if>
+            <if test="shareId != null" >
+                #{shareId,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null" >
+                #{type,jdbcType=TINYINT},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.share.entity.ActivityShareOrderRecord" >
+        update activity_share_order_record
+        <set >
+            <if test="orderId != null" >
+                order_id = #{orderId,jdbcType=VARCHAR},
+            </if>
+            <if test="shareId != null" >
+                share_id = #{shareId,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null" >
+                type = #{type,jdbcType=TINYINT},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_share_order_record
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+	 <select id="findList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.share.bo.ActivityShareOrderRecordParamBo" >
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM activity_share_order_record
+        <where>
+        	<if test="orderId != null and orderId != ''">
+        		AND order_id = #{orderId,jdbcType=VARCHAR}
+        	</if>
+        	<if test="shareId != null and shareId != ''">
+        		AND share_id = #{shareId,jdbcType=VARCHAR}
+        	</if>
+        	<if test="type != null">
+        		AND type = #{type,jdbcType=TINYINT}
+        	</if>
+        </where>
+        <if test="isOrderBy">
+        	ORDER BY create_time DESC
+        </if>
+    </select>
+</mapper>
