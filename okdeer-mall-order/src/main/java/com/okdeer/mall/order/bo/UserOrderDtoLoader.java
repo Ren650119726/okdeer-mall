@@ -13,6 +13,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.common.utils.EnumAdapter;
 import com.okdeer.common.utils.ImageCutUtils;
 import com.okdeer.common.utils.ImageTypeContants;
@@ -121,11 +122,9 @@ public class UserOrderDtoLoader {
 		totalNum += orderList.getTotal();
 		UserOrderDto orderDto = null;
 		for(TradeOrder order : orderListTemp){
-			orderDto = new UserOrderDto();
-			orderDto.setStoreId(order.getStoreId());
-			orderDto.setStoreName(order.getStoreName());
+			orderDto = BeanMapper.map(order, UserOrderDto.class);
 			orderDto.setOrderId(order.getId());
-			orderDto.setTradeNum(order.getTradeNum());
+			orderDto.setActivityType(String.valueOf(order.getActivityType().ordinal()));
 			orderDto.setTotalAmount(ConvertUtil.format(order.getTotalAmount()));
 			orderDto.setActualAmount(ConvertUtil.format(order.getActualAmount()));
 			orderDto.setFare(ConvertUtil.format(order.getFare()));
@@ -159,7 +158,9 @@ public class UserOrderDtoLoader {
 					orderDto.setOrderStatus(order.getStatus().ordinal());
 					break;
 				case STORE_CONSUME_ORDER:
-					orderDto.setOrderStatus(OrderAppStatusAdaptor.convertAppStoreConsumeOrderStatus(order.getStatus(), order.getConsumerCodeStatus()).ordinal());
+					orderDto.setOrderStatus(OrderAppStatusAdaptor
+							.convertAppStoreConsumeOrderStatus(order.getStatus(), order.getConsumerCodeStatus())
+							.ordinal());
 					break;
 				case GROUP_ORDER:
 					// 如果是团购订单.已付款待发货状态，显示为：已付款
