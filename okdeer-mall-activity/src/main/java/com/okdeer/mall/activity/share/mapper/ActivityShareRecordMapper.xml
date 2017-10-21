@@ -184,13 +184,21 @@
         where id = #{id,jdbcType=VARCHAR}
     </delete>
 	
-	 <select id="findList" resultMap="BaseResultMap" parameterType="java.lang.String" >
+	 <select id="findList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.share.dto.ActivityShareRecordParamDto" >
         SELECT 
         <include refid="Base_Column_List" />
         FROM activity_share_record
         WHERE disabled = 0
         <where>
-    		
+    		<if test="storeId != null and storeId != ''">
+    			AND   store_id = #{storeId,jdbcType=VARCHAR}
+    		</if>
+    		 <if test="activityId != null" >
+                AND activity_id = #{activityId,jdbcType=VARCHAR}
+            </if>
+            <if test="sysUserPhone != null and sysUserPhone !='' ">
+            	AND  sys_user_phone LIKE  CONCAT('%',#{sysUserPhone,jdbcType=VARCHAR},'%') 
+            </if>
         </where>
     </select>
 </mapper>
