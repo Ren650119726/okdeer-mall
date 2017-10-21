@@ -5833,6 +5833,12 @@
 		<if test="updateEndTime != null and updateEndTime !='' ">
 			<![CDATA[ AND trade.update_time <= #{updateEndTime,jdbcType=VARCHAR}]]>
 		</if>
+		<if test="deliveryStartTime != null and deliveryStartTime !='' ">
+			<![CDATA[AND trade.delivery_time  >= #{updateStartTime,jdbcType=VARCHAR}]]>
+		</if>
+		<if test="deliveryEndTime != null and deliveryEndTime !='' ">
+			<![CDATA[ AND trade.delivery_time <= #{updateEndTime,jdbcType=VARCHAR}]]>
+		</if>
 		
 		<if test="payWay != null">
 			AND trade.pay_way = #{payWay, jdbcType=TINYINT}
