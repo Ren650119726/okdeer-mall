@@ -210,6 +210,7 @@ public class TradeOrderBuilder {
 		tradeOrder.setUpdateTime(new Date());
 		tradeOrder.setClientVersion(paramDto.getVersion());
 		tradeOrder.setFareActivityId(parserBo.getFareActivityId());
+		tradeOrder.setShareUserId(paramDto.getShareUserId());
 		// 设置订单配送方式和佣金比率
 		if(storeInfo.getStoreInfoExt() != null){
 			//直接设置佣金方案为： A 

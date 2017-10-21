@@ -4203,6 +4203,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             // 而低价优惠可以与代金券、满减一起使用。
             json.put("activityType", String.valueOf(ActivityTypeEnum.LOW_PRICE.ordinal()));
         }
+        json.put("activityId", orders.getActivityId());
+        json.put("activityItemId", orders.getActivityItemId());
         json.put("preferentialPrice",
                 orders.getPreferentialPrice().subtract(orders.getRealFarePreferential()).subtract(orders.getPinMoney()).toString());
         json.put("fare", orders.getFare() == null ? "" : orders.getFare().toString());
