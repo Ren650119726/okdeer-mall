@@ -188,8 +188,8 @@
         SELECT 
         <include refid="Base_Column_List" />
         FROM activity_share_record
-        WHERE disabled = 0
         <where>
+        	disabled = 0
     		<if test="storeId != null and storeId != ''">
     			AND   store_id = #{storeId,jdbcType=VARCHAR}
     		</if>

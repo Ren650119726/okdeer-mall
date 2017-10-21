@@ -2,7 +2,6 @@
 package com.okdeer.mall.activity.share.api;
 
 import java.util.Date;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,11 +84,8 @@ public class ActivityShareRecordApiImpl implements ActivityShareRecordApi {
 	@SuppressWarnings("unchecked")
 	public PageUtils<ActivityShareRecordDto> findPageList(ActivityShareRecordParamDto activityShareRecordParamDto,
 			int pageNum, int pageSize) {
-		PageUtils<ActivityShareRecordDto> page = activityShareRecordService.findList(activityShareRecordParamDto, pageNum,
+		return activityShareRecordService.findList(activityShareRecordParamDto, pageNum,
 				pageSize).toBean(ActivityShareRecordDto.class);
-		List<ActivityShareRecordDto> dtoList = page.getList();
-		
-		return page;
 	}
 
 }
