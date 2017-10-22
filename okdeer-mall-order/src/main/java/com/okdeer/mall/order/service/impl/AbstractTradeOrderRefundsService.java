@@ -57,6 +57,7 @@ public abstract class AbstractTradeOrderRefundsService implements TradeOrderRefu
 			TradeOrder tradeOrder = tradeOrderApplyRefundParamDto.getTradeOrder();
 			if (tradeOrder == null) {
 				tradeOrder = tradeOrderService.selectById(tradeOrderApplyRefundParamDto.getOrderId());
+				tradeOrderApplyRefundParamDto.setTradeOrder(tradeOrder);
 			}
 			// 订单不存在
 			if (tradeOrder == null) {
