@@ -1926,13 +1926,13 @@
 			<if test="idList != null and idList.size() > 0">
 				AND refunds.id in
 				<foreach collection="idList" open="(" close=")" item="item" separator="," >
-					${item,jdbcType=VARCHAR}
+					#{item,jdbcType=VARCHAR}
 				</foreach>				
 			</if>
 			<if test="orderIdList != null and orderIdList.size() > 0">
 				AND refunds.order_id in
 				<foreach collection="orderIdList" open="(" close=")" item="item" separator="," >
-					${item,jdbcType=VARCHAR}
+					#{item,jdbcType=VARCHAR}
 				</foreach>				
 			</if>
 			<if test="createStartTime != null and createStartTime != '' ">
