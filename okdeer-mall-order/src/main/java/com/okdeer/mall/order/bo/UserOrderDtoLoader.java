@@ -123,6 +123,8 @@ public class UserOrderDtoLoader {
 		UserOrderDto orderDto = null;
 		for(TradeOrder order : orderListTemp){
 			orderDto = new UserOrderDto();
+			//设置订单ID 
+			orderDto.setOrderId(order.getId());
 			orderDto.setStoreId(order.getStoreId());
 			orderDto.setStoreName(order.getStoreName());
 			orderDto.setTradeNum(order.getTradeNum());
