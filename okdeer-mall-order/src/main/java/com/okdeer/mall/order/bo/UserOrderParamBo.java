@@ -50,9 +50,14 @@ public class UserOrderParamBo {
 	private String keyword;
 	
 	/**
-	 * 不查询订单来源 0:友门鹿App,1:微信,2:pos 3.友门鹿便利店  4.便利店扫码购 5.会员卡扫码付
+	 * 不查询订单来源 0:友门鹿App,1:微信,2:pos 3.友门鹿便利店  4.便利店扫码购 5.会员卡扫码付 6微信小程序
 	 */
 	private OrderResourceEnum notOrderResource;
+	
+	/**
+	 * 不查询订单来源 0:友门鹿App,1:微信,2:pos 3.友门鹿便利店  4.便利店扫码购 5.会员卡扫码付 6微信小程序
+	 */
+	private OrderResourceEnum orderResource;
 	
 	/**
 	 * 订单类型列表
@@ -133,4 +138,13 @@ public class UserOrderParamBo {
 		this.screen = screen;
 	}
 
+	
+	public OrderResourceEnum getOrderResource() {
+		return orderResource;
+	}
+
+	public void setOrderResource(OrderResourceEnum orderResource) {
+		this.orderResource = orderResource;
+	}
+	
 }
