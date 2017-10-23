@@ -186,7 +186,7 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 					// 重新设置低价商品可参与活动的数量
 					storeSkuBo.setSkuActQuantity(storeSkuBo.getLocked());
 				}
-				if(storeSkuBo.getSkuActQuantity() > 0 && storeSkuBo.getActPrice().compareTo(storeSkuBo.getAppActPrice()) == 1){
+				if(storeSkuBo.getSkuActQuantity() > 0 && storeSkuBo.getActPrice().compareTo(storeSkuBo.getAppActPrice()) > 0){
 					// 如果后台分配用户有购买低价商品，且当前的低价价格>app请求的低价价格，则提示用户信息发生变化。让用户重新确认购买。
 					if(kindSize > 1){
 						resp.setResult(ResultCodeEnum.PART_GOODS_IS_CHANGE);
@@ -270,7 +270,7 @@ public class CheckStockServiceImpl implements RequestHandler<PlaceOrderParamDto,
 			} else if (bindStockMap.containsKey(skuNum.getKey())) {
 				stockCheckNum = bindStockMap.get(skuNum.getKey()).getSellable();
 			}
-			if(skuNum.getValue().compareTo(stockCheckNum) == 1){
+			if(skuNum.getValue().compareTo(stockCheckNum) > 0){
 				resp.setResult(kindSize > 1 ? ResultCodeEnum.PART_GOODS_STOCK_NOT_ENOUGH:ResultCodeEnum.STOCK_NOT_ENOUGH);
 				return true;
 			}

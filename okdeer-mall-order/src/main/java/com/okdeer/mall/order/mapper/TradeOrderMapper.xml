@@ -681,6 +681,8 @@
 		<result column="breach_money" property="breachMoney" jdbcType="DECIMAL" />
 		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
 		<result column="pick_up_time" property="pickUpTime" jdbcType="VARCHAR" />
+		<result column="store_preferential" property="storePreferential" jdbcType="DECIMAL" />
+		<result column="accept_time" property="acceptTime" jdbcType="TIMESTAMP" />
 	</resultMap>
 	<!--end xuzq 20170321 2.2.0 订单查询map -->
 	<sql id="Base_Column_List">
@@ -1361,8 +1363,8 @@
 		parameterType="java.lang.String">
 		SELECT
 		o.id,o.status,o.pick_up_type,o.pick_up_time,o.pick_up_code,o.received_time,o.delivery_time,o.compain_status,o.pay_way,o.is_complete,o.order_resource,
-		o.total_amount,o.actual_amount,o.preferential_price,o.fare,o.order_no,o.create_time,o.remark,o.activity_type,o.reason,o.trade_num,o.cancel_type,
-		o.real_fare_preferential,o.store_activity_type,o.platform_preferential,o.store_preferential,o.pin_money,
+		o.total_amount,o.actual_amount,o.preferential_price,o.fare,o.order_no,o.create_time,o.remark,o.activity_type,o.activity_id,o.activity_item_id,o.reason,o.trade_num,o.cancel_type,
+		o.real_fare_preferential,o.store_activity_type,o.platform_preferential,o.store_preferential,o.pin_money,o.type,
 		logistics.consignee_name,logistics.telephone,logistics.mobile,logistics.area,logistics.address,
 		logistics.type as
 		logistics_type,logistics.logistics_no,logistics.logistics_company_name,
@@ -2985,9 +2987,9 @@
 		SELECT CASE
 		WHEN `status` IN (14) THEN 14
 		WHEN `status` IN (1) THEN 1
-		WHEN (`status` IN (3) and `type`=2 ) or (`type` = 5 and `consumer_code_status` in (1) ) THEN 3
-		WHEN (`status` IN (5) and `type`=2 ) or (`type` = 5 and `consumer_code_status` in (4,5,3))  THEN 5
-		WHEN (`status` IN (2) and `type`=2 ) or (`type` = 5 and `consumer_code_status` in (2) ) THEN 2
+		WHEN (`status` IN (3) and (`type`=2 or `type`=7)) or (`type` = 5 and `consumer_code_status` in (1) ) THEN 3
+		WHEN (`status` IN (5) and (`type`=2 or `type`=7) ) or (`type` = 5 and `consumer_code_status` in (4,5,3))  THEN 5
+		WHEN (`status` IN (2) and (`type`=2 or `type`=7) ) or (`type` = 5 and `consumer_code_status` in (2) ) THEN 2
 		WHEN `status` IN (4)  THEN 4
 		ELSE 0
 		END AS `status`,count(1) as `count` FROM trade_order
@@ -2997,15 +2999,19 @@
 		AND order_resource IN (0,1,3)
 		and `status` >= 0
 		<if test="type != null and type != ''">
-			AND type = #{type,jdbcType=TINYINT}
+			AND type IN
+			<foreach collection="type" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item}
+			</foreach>
 		</if>
 		GROUP BY
 		CASE
 		WHEN `status` IN (14) THEN 14
 		WHEN `status` IN (1) THEN 1
-		WHEN (`status` IN (3) and `type`=2 ) or (`type` = 5 and `consumer_code_status` in (1) ) THEN 3
-		WHEN (`status` IN (5) and `type`=2 ) or (`type` = 5 and `consumer_code_status` in (4,5,3))  THEN 5
-		WHEN (`status` IN (2) and `type`=2 ) or (`type` = 5 and `consumer_code_status` in (2) ) THEN 2
+		WHEN (`status` IN (3) and (`type`=2 or `type`=7) ) or (`type` = 5 and `consumer_code_status` in (1) ) THEN 3
+		WHEN (`status` IN (5) and (`type`=2 or `type`=7) ) or (`type` = 5 and `consumer_code_status` in (4,5,3))  THEN 5
+		WHEN (`status` IN (2) and (`type`=2 or `type`=7) ) or (`type` = 5 and `consumer_code_status` in (2) ) THEN 2
 		WHEN `status` IN (4)  THEN 4
 		ELSE 0
 		END
@@ -3317,16 +3323,15 @@
 		tp.id as pay_id,tp.pay_type,tp.pay_time,tr.invoice,tr.pick_up_time,tr.create_time,tr.type,tr.is_complete,
 		tr.consumer_code_status,tr.user_phone,tr.is_breach,tr.breach_percent,tr.breach_money,tr.accept_time,
 		tr.fare_preferential,tr.real_fare_preferential,tr.platform_preferential,tr.store_preferential,tr.fare_activity_id,
-		ti.id as invoice_id,ti.head,ti.context,it.service_assurance,
-		it.id as
-		item_id,it.store_sku_id,it.sku_name,it.main_pic_prl,it.unit_price,it.quantity,tr.reason,it.properties_indb,it.unit,it.total_amount as item_total_amount,
-		ol.id AS
-		logistics_id,ol.consignee_name,ol.mobile,ol.area,ol.address,ol.logistics_company_name,ol.logistics_no,ol.type
-		AS logisticsType,
+		tr.reason,tr.pin_money,
+		ti.id as invoice_id,ti.head,ti.context,
+		it.service_assurance,it.id as item_id,it.store_sku_id,it.sku_name,it.main_pic_prl,it.unit_price,it.quantity,
+		it.properties_indb,it.unit,it.total_amount as item_total_amount,
+		ol.id AS logistics_id,ol.consignee_name,ol.mobile,ol.area,ol.address,ol.logistics_company_name,ol.logistics_no,
+		ol.type	AS logisticsType,
 		tori.id AS refunds_item_id,
-		d.id as detail_id,d.consume_code,d.status as
-		detail_status,d.start_time,d.end_time,d.use_time,
-		refunds.refunds_status,tr.pin_money
+		d.id as detail_id,d.consume_code,d.status as detail_status,d.start_time,d.end_time,d.use_time,
+		refunds.refunds_status
 		FROM trade_order as tr
 		LEFT JOIN trade_order_pay AS tp on tr.id = tp.order_id
 		LEFT JOIN trade_order_invoice AS ti ON tr.id = ti.order_id
@@ -4905,6 +4910,7 @@
 		SELECT
 			toi.id AS id,
 			o.order_no AS orderNo,
+			o.order_resource AS orderResource,
 			c.`name` AS threeCategory,
 			toi.sku_name AS skuName,
 			toi.bar_code AS barCode,
@@ -4934,7 +4940,6 @@
 		LEFT JOIN sys_user u ON o.seller_id = u.id
 		LEFT JOIN trade_order_pay op ON op.order_id = o.id
 		WHERE o.store_id = #{storeId,jdbcType=VARCHAR} AND o.disabled = 0
-		AND o.order_resource = #{orderResource}
 		<if test="orderNo != null and orderNo != ''">
 			AND o.order_no LIKE CONCAT('%', #{orderNo,jdbcType=VARCHAR}, '%')
 		</if>
@@ -4942,6 +4947,17 @@
 		<if test="skuName != null and skuName != ''">
 			AND EXISTS(SELECT 1 FROM trade_order_item it WHERE it.order_id = o.id
 			AND it.sku_name LIKE CONCAT('%', #{skuName,jdbcType=VARCHAR}, '%'))
+		</if>
+		<if test="orderResource != null">
+			AND o.order_resource = #{orderResource, jdbcType=TINYINT}
+		</if>
+		<!-- 订单来源，多个时使用IN -->
+		<if test="null!=orderResources">
+			AND o.order_resource IN
+			<foreach collection="orderResources" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item}
+			</foreach>
 		</if>
 		<if test="startCreateTime != null">
 			AND o.create_time >= #{startCreateTime,jdbcType=TIMESTAMP}
@@ -5811,6 +5827,13 @@
 			<![CDATA[ AND trade.create_time <= #{endTime,jdbcType=VARCHAR}]]>
 		</if>
 		
+		<if test="updateStartTime != null and updateStartTime !='' ">
+			<![CDATA[AND trade.update_time  >= #{updateStartTime,jdbcType=VARCHAR}]]>
+		</if>
+		<if test="updateEndTime != null and updateEndTime !='' ">
+			<![CDATA[ AND trade.update_time <= #{updateEndTime,jdbcType=VARCHAR}]]>
+		</if>
+		
 		<if test="payWay != null">
 			AND trade.pay_way = #{payWay, jdbcType=TINYINT}
 		</if>
@@ -6202,6 +6225,13 @@
 				AND order_resource != #{notOrderResource,jdbcType=TINYINT}
 			</if>
 			
+			<!-- 限制订单类型 -->
+			<if test="orderTypeList != null and orderTypeList.size()>0">
+				AND type IN 
+				<foreach collection="orderTypeList" item="orderType" separator="," open="(" close=")">
+					#{orderType,jdbcType=TINYINT}
+				</foreach>
+			</if>
 			
 			<!-- 待使用订单查询 -->
 			<if test="status == '2'.toString()">
@@ -6236,7 +6266,7 @@
 		SELECT
 		tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.preferential_price,tr.fare,
 		tr.status,tr.consumer_code_status,tr.delivery_time,tr.type,tr.is_breach,tr.breach_money,
-		tr.create_time,tr.activity_type,tr.activity_id,tr.pick_up_time,
+		tr.create_time,tr.activity_type,tr.activity_id,tr.pick_up_time,tr.accept_time,
 		(select sum(ti.quantity) from trade_order_item as ti where ti.order_id
 		= tr.id) as goods_count,
 		(select count(id) from trade_order_item as ti where ti.order_id = tr.id) as
@@ -6249,7 +6279,7 @@
 		and disabled = 0
 		<!-- 状态 -->
 		<if test="status != null and status != '' and consumerCodeStatus !=null and consumerCodeStatus != '' ">
-			AND (tr.`type` = 2 and tr.`status` IN 
+			AND (tr.`type` in (2,7) and tr.`status` IN 
 			<foreach collection="status" index="index" item="item" open="("
 				close=")" separator=",">
 				#{item}
@@ -6260,7 +6290,6 @@
 						#{item}
 					</foreach>
 					)
-					
 			)
 		</if>
 		<if test="status != null and status != '' and consumerCodeStatus == null ">
@@ -6280,7 +6309,11 @@
 		</if>
 		<!-- 订单类型 -->
 		<if test="type != null and type != ''">
-			AND tr.type = #{type,jdbcType=TINYINT}
+			AND tr.type IN
+			<foreach collection="type" index="index" item="item"
+				open="(" close=")" separator=",">
+				#{item}
+			</foreach>
 		</if>
 		<!-- Begin V2.3.0 added by luosm 20170522 -->
 		<if test="null != startCreateTime">
@@ -6328,6 +6361,7 @@
 		tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.pick_up_type,
 		tr.preferential_price,tr.fare,tr.status,tr.delivery_time,tr.type,
 		tr.create_time,tr.activity_type,tr.activity_id,tr.update_time,
+		tr.store_preferential,
 		(select sum(ti.quantity) from trade_order_item as ti where ti.order_id
 		= tr.id) as goods_count,
 		(select count(id) from trade_order_item as ti where ti.order_id = tr.id) as
@@ -6408,8 +6442,8 @@
 	<update id="updateOrderType" parameterType="map">
 		UPDATE trade_order
 		SET type = 7,
-			accept_time = #{update_time,jdbcType=TIMESTAMP},
-			update_time = #{update_time,jdbcType=TIMESTAMP}
+			accept_time = #{updateTime,jdbcType=TIMESTAMP},
+			update_time = #{updateTime,jdbcType=TIMESTAMP}
 		WHERE id IN 
 		<foreach collection="orderIdList" item="orderId" separator="," open="(" close=")">
 			#{orderId}
@@ -6425,4 +6459,45 @@
 		</foreach>	
 	</select>
 	<!-- End V2.6.3 added by maojj 2017-10-12 -->
+	
+	<select id="findListForSend" parameterType="com.okdeer.mall.order.dto.TradeOrderQueryParamDto" resultMap="BaseResultMap">
+		SELECT 
+			t.* ,
+			store.store_name as storeName
+			FROM trade_order t 
+		left join store_info store on (store.id = t.store_id)
+		left join trade_order_pay pay on (t.id = pay.order_id)
+		where t.disabled = 0 
+		<if test="orderNo != null and orderNo != ''">
+			AND t.order_No like CONCAT('%',#{orderNo},'%')
+		</if>
+		<if test="userPhone != null and userPhone != ''">
+			AND t.user_phone like CONCAT('%',#{userPhone},'%')
+		</if>
+		<if test="status != null">
+			AND t.status = #{status, jdbcType=TINYINT}
+		</if>
+		<if test="storeName != null and storeName != ''">
+			AND store.store_name like CONCAT('%',#{storeName},'%')
+		</if>
+		<if test="startTime != null and startTime!=''">
+			<![CDATA[AND t.create_time  >= #{startTime,jdbcType=VARCHAR}]]>
+		</if>
+		<if test="endTime != null and endTime!=''">
+			<![CDATA[ AND t.create_time <= #{endTime,jdbcType=VARCHAR}]]>
+		</if>
+		<if test="payType != null">
+			AND pay.pay_type = #{payType, jdbcType=TINYINT}
+		</if>
+		<if test="type != null">
+			AND t.type = #{type, jdbcType=TINYINT}
+		</if>
+		<if test="idList != null and idList.size() > 0">
+			AND t.id in
+			<foreach collection="idList" index="index" item="item" open="("
+				separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+	</select>
 </mapper>

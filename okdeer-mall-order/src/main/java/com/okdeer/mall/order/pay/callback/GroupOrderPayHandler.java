@@ -13,12 +13,14 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
 import com.okdeer.archive.stock.dto.StockUpdateDto;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
+import com.okdeer.archive.store.service.IStoreInfoServiceExtServiceApi;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.jxc.common.utils.UuidUtils;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountGroup;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountGroupMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
+import com.okdeer.mall.order.bo.GroupOrderRemarkConst;
 import com.okdeer.mall.order.bo.TradeOrderGroupParamBo;
 import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.dto.CancelOrderParamDto;
@@ -76,6 +78,9 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuStockApi goodsStoreSkuStockApi;
+	
+	@Reference(version = "1.0.0", check = false)
+	private IStoreInfoServiceExtServiceApi storeInfoServiceExtServiceApi;
 
 	@Resource
 	private CancelOrderApi cancelOrderApi;
@@ -126,13 +131,15 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 	 * @param tradeOrder
 	 * @param orderGroupRel   
 	 * @author maojj
+	 * @throws Exception 
 	 * @date 2017年10月12日
 	 */
-	private void openGroup(TradeOrder tradeOrder, TradeOrderGroupRelation orderGroupRel) {
+	private void openGroup(TradeOrder tradeOrder, TradeOrderGroupRelation orderGroupRel) throws Exception {
 		// 查询团购活动信息
 		ActivityDiscount activityGroup = activityDiscountMapper.findById(tradeOrder.getActivityId());
 		// 查询团购商品信息
-		ActivityDiscountGroup groupSku = activityDiscountGroupMapper.findByActivityIdAndSkuId(tradeOrder.getActivityId(), tradeOrder.getActivityItemId());
+		ActivityDiscountGroup groupSku = activityDiscountGroupMapper
+				.findByActivityIdAndSkuId(tradeOrder.getActivityId(), tradeOrder.getActivityItemId());
 		// 保存团购订单
 		TradeOrderGroup orderGroup = saveGroupOrder(tradeOrder, activityGroup, groupSku);
 		if (orderGroupRel == null) {
@@ -142,6 +149,8 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 			// 参团订单开团，修改团单关系
 			updateGroupOrderRel(orderGroupRel, orderGroup.getId());
 		}
+		// 开团成功发送团单过期消息
+		sendGroupOutTimeMessage(orderGroup);
 	}
 
 	/**
@@ -218,6 +227,10 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 	private void updateGroupOrderRel(TradeOrderGroupRelation orderGroupRel, String groupOrderId) {
 		orderGroupRel.setGroupOrderIdHis(orderGroupRel.getGroupOrderId());
 		orderGroupRel.setGroupOrderId(groupOrderId);
+		// 订单身份由拼团转为开团
+		orderGroupRel.setType(GroupJoinTypeEnum.GROUP_OPEN);
+		// 关系状态由待入团改为已入团
+		orderGroupRel.setStatus(GroupJoinStatusEnum.JOIN_SUCCESS);
 		tradeOrderGroupRelationMapper.update(orderGroupRel);
 	}
 
@@ -232,15 +245,30 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 		orderGroupRel.setStatus(status);
 		tradeOrderGroupRelationMapper.update(orderGroupRel);
 	}
+	
+	/**
+	 * @Description: 发送团购订单拼团超时消息
+	 * @param orderGroup
+	 * @throws Exception   
+	 * @author maojj
+	 * @date 2017年10月17日
+	 */
+	private void sendGroupOutTimeMessage(TradeOrderGroup orderGroup) throws Exception {
+		Date expireTime = orderGroup.getExpireTime();
+		long delayTimeMillis = expireTime.getTime() - System.currentTimeMillis();
+		delayTimeMillis = delayTimeMillis > 0L ? delayTimeMillis : 0L;
+		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_group_timeout, orderGroup.getId(), delayTimeMillis);
+	}
 
 	/**
 	 * @Description: 入团
 	 * @param tradeOrder
 	 * @param orderGroupRel   
 	 * @author maojj
+	 * @throws Exception 
 	 * @date 2017年10月12日
 	 */
-	private void joinGroup(TradeOrder tradeOrder, TradeOrderGroupRelation orderGroupRel) {
+	private void joinGroup(TradeOrder tradeOrder, TradeOrderGroupRelation orderGroupRel) throws Exception {
 		// 查询关联的团购订单
 		TradeOrderGroup orderGroup = tradeOrderGroupMapper.findById(orderGroupRel.getGroupOrderId());
 		if (orderGroup.getStatus() != GroupOrderStatusEnum.UN_GROUP) {
@@ -291,8 +319,8 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 			paramBo.setActivityId(orderGroup.getActivityId());
 			paramBo.setStoreSkuId(paramBo.getStoreSkuId());
 			paramBo.setStatus(GroupOrderStatusEnum.GROUP_SUCCESS);
-			paramBo.setStartTime(DateUtils.getDateStart(currentDate));
-			paramBo.setEndTime(DateUtils.getDateEnd(currentDate));
+			paramBo.setGroupTimeStart(DateUtils.getDateStart(currentDate));
+			paramBo.setGroupTimeEnd(DateUtils.getDateEnd(currentDate));
 
 			int soldDayNum = tradeOrderGroupMapper.countGroupSkuNum(paramBo);
 			if (soldDayNum + orderGroup.getGroupCount() > groupSku.getGoodsDayCountLimit().intValue()) {
@@ -345,7 +373,7 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 		// 成团成功，发送通知消息
 		sendNotifyMessage(orderIdList);
 		// 成团成功，发送订单待发货超时消息
-		sendTimerMessage(orderIdList, orderGroup.getStoreId());
+		sendTimerMessage(orderIdList);
 	}
 
 	/**
@@ -359,7 +387,7 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 		// 修改团单状态为成团失败
 		orderGroup.setStatus(GroupOrderStatusEnum.GROUP_FAIL);
 		orderGroup.setEndTime(new Date());
-		orderGroup.setRemark("成团失败");
+		orderGroup.setRemark(GroupOrderRemarkConst.GROUP_FAIL);
 		tradeOrderGroupMapper.update(orderGroup);
 		// 对所有入团订单走订单取消流程
 		List<CancelOrderParamDto> cancelOrderList = Lists.newArrayList();
@@ -373,14 +401,10 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 		cancelOrderList.forEach(cancelOrder -> cancelOrderApi.cancelOrder(cancelOrder));
 	}
 
-	public void sendTimerMessage(List<String> orderIdList, String storeId) {
-		// 查询店铺设置信息
-		// TODO maojj
+	public void sendTimerMessage(List<String> orderIdList) {
 		try {
-			int limitTimeOutHour = 1;
 			for (String orderId : orderIdList) {
-				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_timeout, orderId,
-						limitTimeOutHour * 60 * 60L);
+				tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_delivery_group_timeout, orderId);
 			}
 		} catch (Exception e) {
 			logger.error("发送团购订单待发货超时消息异常", e);

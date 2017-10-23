@@ -8,6 +8,7 @@ package com.okdeer.mall.activity.discount.mapper;
 
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.bo.ActivityJoinRecParamBo;
+import com.okdeer.mall.order.entity.ActivityJoinRecord;
 
 public interface ActivityJoinRecordMapper extends IBaseMapper {
 
@@ -18,4 +19,13 @@ public interface ActivityJoinRecordMapper extends IBaseMapper {
 	 * @date 2017年10月11日
 	 */
 	int countActivityJoinNum(ActivityJoinRecParamBo paramBo);
+	
+	/**
+	 * @Description: 根据订单id修改活动参与记录
+	 * @param activityJoinRecord
+	 * @return   
+	 * @author maojj
+	 * @date 2017年10月17日
+	 */
+	int updateByOrderId(ActivityJoinRecord activityJoinRecord);
 }

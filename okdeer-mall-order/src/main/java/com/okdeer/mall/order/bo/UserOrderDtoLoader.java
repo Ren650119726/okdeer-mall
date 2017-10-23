@@ -3,27 +3,34 @@ package com.okdeer.mall.order.bo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.common.utils.EnumAdapter;
+import com.okdeer.common.utils.ImageCutUtils;
+import com.okdeer.common.utils.ImageTypeContants;
 import com.okdeer.mall.common.enums.LogisticsType;
 import com.okdeer.mall.order.dto.AppUserOrderDto;
 import com.okdeer.mall.order.dto.BaseUserOrderItemDto;
 import com.okdeer.mall.order.dto.UserOrderDto;
 import com.okdeer.mall.order.dto.UserOrderItemDto;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderGroupRelation;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
 import com.okdeer.mall.order.enums.AppOrderTypeEnum;
 import com.okdeer.mall.order.enums.OrderAppStatusAdaptor;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.system.utils.ConvertUtil;
 
 /**
@@ -44,6 +51,11 @@ public class UserOrderDtoLoader {
 	private Map<String,UserOrderDto> orderDtoMap = null;
 	
 	private List<String> orderIds = null;
+	
+	/**
+	 * 团购订单Id列表（只包括已经支付未成团的订单）
+	 */
+	private List<String> groupOrderIds = null;
 		
 	/**
 	 * 页面大小
@@ -57,9 +69,10 @@ public class UserOrderDtoLoader {
 	
 	
 	public UserOrderDtoLoader(int pageSize){
-		this.orderDtoList = new ArrayList<UserOrderDto>();
-		this.orderDtoMap = new HashMap<String,UserOrderDto>();
-		this.orderIds = new ArrayList<String>();
+		this.orderDtoList = Lists.newArrayList();
+		this.orderDtoMap = Maps.newHashMap();
+		this.orderIds = Lists.newArrayList();
+		this.groupOrderIds = Lists.newArrayList();
 		this.pageSize = pageSize;
 	}
 	
@@ -112,7 +125,10 @@ public class UserOrderDtoLoader {
 			orderDto = new UserOrderDto();
 			orderDto.setStoreId(order.getStoreId());
 			orderDto.setStoreName(order.getStoreName());
-			orderDto.setOrderId(order.getId());
+			orderDto.setTradeNum(order.getTradeNum());
+			orderDto.setActivityType(String.valueOf(order.getActivityType().ordinal()));
+			orderDto.setActivityId(order.getActivityId());
+			orderDto.setActivityItemId(order.getActivityItemId());
 			orderDto.setTotalAmount(ConvertUtil.format(order.getTotalAmount()));
 			orderDto.setActualAmount(ConvertUtil.format(order.getActualAmount()));
 			orderDto.setFare(ConvertUtil.format(order.getFare()));
@@ -146,7 +162,9 @@ public class UserOrderDtoLoader {
 					orderDto.setOrderStatus(order.getStatus().ordinal());
 					break;
 				case STORE_CONSUME_ORDER:
-					orderDto.setOrderStatus(OrderAppStatusAdaptor.convertAppStoreConsumeOrderStatus(order.getStatus(), order.getConsumerCodeStatus()).ordinal());
+					orderDto.setOrderStatus(OrderAppStatusAdaptor
+							.convertAppStoreConsumeOrderStatus(order.getStatus(), order.getConsumerCodeStatus())
+							.ordinal());
 					break;
 				case GROUP_ORDER:
 					// 如果是团购订单.已付款待发货状态，显示为：已付款
@@ -165,6 +183,9 @@ public class UserOrderDtoLoader {
 			this.orderIds.add(order.getId());
 			this.orderDtoList.add(orderDto);
 			this.orderDtoMap.put(order.getId(), orderDto);
+			if(order.getType() == OrderTypeEnum.GROUP_ORDER && order.getStatus() == OrderStatusEnum.DROPSHIPPING){
+				this.groupOrderIds.add(order.getId());
+			}
 		}
 	}
 	
@@ -174,7 +195,7 @@ public class UserOrderDtoLoader {
 	 * @author maojj
 	 * @date 2017年2月18日
 	 */
-	public void loadOrderItemList(List<TradeOrderItem> orderItemList){
+	public void loadOrderItemList(List<TradeOrderItem> orderItemList,String orderImagePrefix,String screen){
 		if(CollectionUtils.isEmpty(orderItemList)){
 			return;
 		}
@@ -188,13 +209,23 @@ public class UserOrderDtoLoader {
 			itemDto = new UserOrderItemDto();
 			itemDto.setItemId(orderItem.getId());
 			itemDto.setMainPicUrl(orderItem.getMainPicPrl());
+			if(StringUtils.isEmpty(orderItem.getMainPicPrl())){
+				itemDto.setMainPicUrl("");
+			}else{
+				itemDto.setMainPicUrl(ImageCutUtils.changeType(ImageTypeContants.BLDDPLBDPTP, String.format("%s%s", orderImagePrefix,orderItem.getMainPicPrl()), screen));
+			}
 			itemDto.setStoreSkuId(orderItem.getStoreSkuId());
 			itemDto.setSkuName(orderItem.getSkuName());
 			itemDto.setPropertiesIndb(ConvertUtil.format(orderItem.getPropertiesIndb()));
 			itemDto.setQuantity(orderItem.getQuantity()==null ? 0 : orderItem.getQuantity().intValue());
 			itemDto.setQuantityStr(orderItem.getQuantity()==null ? 
 					ConvertUtil.format(orderItem.getWeight()) : String.valueOf(orderItem.getQuantity()));
-			itemDto.setUnitPrice(ConvertUtil.format(orderItem.getUnitPrice()));
+			if(orderDto.getType() == AppOrderTypeEnum.GROUP_ORDER){
+				// 如果团购订单类型，商品价格显示为实际支付的价格。团购只能单件购买
+				itemDto.setUnitPrice(ConvertUtil.format(orderItem.getActualAmount()));
+			}else{
+				itemDto.setUnitPrice(ConvertUtil.format(orderItem.getUnitPrice()));
+			}
 			itemDto.setUnit(orderItem.getUnit());
 			itemDto.setRechargePhone(orderItem.getRechargeMobile());
 			
@@ -224,4 +255,22 @@ public class UserOrderDtoLoader {
 			}
 		}
 	}
+
+	// Begin V2.6.3 added by maojj 2017-10-19
+	public void loadGroupRelList(List<TradeOrderGroupRelation> groupRelList ,String groupShareLink){
+		if(CollectionUtils.isEmpty(groupRelList)){
+			return;
+		}
+		groupRelList.forEach(groupRel -> {
+			UserOrderDto orderDto = this.orderDtoMap.get(groupRel.getOrderId());
+			orderDto.setGroupShareUrl(String.format("%s%s", groupShareLink,groupRel.getGroupOrderId()));
+			orderDto.setGroupOrderId(groupRel.getGroupOrderId());
+		});
+	}
+	// End V2.6.3 added by maojj 2017-10-19
+	
+	public List<String> extraGroupOrderIds() {
+		return this.groupOrderIds;
+	}
+	
 }

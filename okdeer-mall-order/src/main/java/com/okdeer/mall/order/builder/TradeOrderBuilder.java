@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +61,7 @@ import com.okdeer.mall.order.enums.CompainStatusEnum;
 import com.okdeer.mall.order.enums.OrderIsShowEnum;
 import com.okdeer.mall.order.enums.OrderItemStatusEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.enums.PaymentStatusEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
@@ -210,6 +210,7 @@ public class TradeOrderBuilder {
 		tradeOrder.setUpdateTime(new Date());
 		tradeOrder.setClientVersion(paramDto.getVersion());
 		tradeOrder.setFareActivityId(parserBo.getFareActivityId());
+		tradeOrder.setShareUserId(paramDto.getShareUserId());
 		// 设置订单配送方式和佣金比率
 		if(storeInfo.getStoreInfoExt() != null){
 			//直接设置佣金方案为： A 
@@ -418,7 +419,7 @@ public class TradeOrderBuilder {
 		BigDecimal totalAmount = tradeOrder.getTotalAmount();
 		BigDecimal favourAmount = tradeOrder.getPreferentialPrice();
 		// 如果总金额<优惠金额，则实付为0，优惠为订单总金额，否则实付金额为总金额-优惠金额，优惠为优惠金额
-		if (totalAmount.compareTo(favourAmount) == -1) {
+		if (totalAmount.compareTo(favourAmount) < 0) {
 			tradeOrder.setActualAmount(BigDecimal.ZERO);
 			tradeOrder.setPreferentialPrice(totalAmount);
 			tradeOrder.setPinMoney(BigDecimal.ZERO);
@@ -546,6 +547,10 @@ public class TradeOrderBuilder {
 			tradeOrderItem.setCreateTime(new Date());
 			tradeOrderItem.setServiceAssurance(
 					StringUtils.isEmpty(skuBo.getGuaranteed()) ? 0 : Integer.valueOf(skuBo.getGuaranteed()));
+			if(tradeOrder.getType() == OrderTypeEnum.GROUP_ORDER){
+				// 如果是团购订单，服务保障默认为1天
+				tradeOrderItem.setServiceAssurance(1);
+			}
 			if(skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && skuBo.getSkuActQuantity() > 0){
 				tradeOrderItem.setStoreActivityType(ActivityTypeEnum.enumValueOf(skuBo.getActivityType()));
 				tradeOrderItem.setStoreActivityId(skuBo.getActivityId());
@@ -574,7 +579,7 @@ public class TradeOrderBuilder {
 			}else if(skuBo.getActivityType() == ActivityTypeEnum.SECKILL_ACTIVITY.ordinal()){
 				storeFavourItem = tradeOrder.getStorePreferential();
 			}
-			if (platformFavour.compareTo(referenceValue) == 1) {
+			if (platformFavour.compareTo(referenceValue) > 0) {
 				if(!parserBo.getHaveFavourGoodsMap().containsKey(skuBo.getId())){
 					// 如果有优惠的商品项不包含改商品，意味着该商品不享有平台优惠
 					favourItem = BigDecimal.valueOf(0.0);
@@ -588,13 +593,13 @@ public class TradeOrderBuilder {
 						favourItem = totalAmountOfItem.multiply(platformFavour).divide(totalAmount, 2,
 								BigDecimal.ROUND_FLOOR);
 					}
-					if (favourItem.compareTo(totalAmountOfItem.subtract(storeFavourItem)) == 1) {
+					if (favourItem.compareTo(totalAmountOfItem.subtract(storeFavourItem)) > 0) {
 						favourItem = totalAmountOfItem.subtract(storeFavourItem);
 					}
 					favourSum = favourSum.add(favourItem);
 				} else {
 					favourItem = platformFavour.subtract(favourSum);
-					if (favourItem.compareTo(totalAmountOfItem) == 1) {
+					if (favourItem.compareTo(totalAmountOfItem) > 0) {
 						favourItem = totalAmountOfItem;
 					}
 				}
@@ -655,7 +660,7 @@ public class TradeOrderBuilder {
 		// 订单项索引
 		int index = 0;
 		// 订单过滤实付金额为0的总数
-		int size = (int)orderItemList.stream().filter(orderItem -> orderItem.getActualAmount().compareTo(BigDecimal.ZERO) == 1).count();
+		int size = (int)orderItemList.stream().filter(orderItem -> orderItem.getActualAmount().compareTo(BigDecimal.ZERO) > 0).count();
 		// 订单项根据实付金额倒序序排列
 		ComparatorChain chain = new ComparatorChain();
 		chain.addComparator(new BeanComparator("actualAmount"), false);
@@ -670,7 +675,7 @@ public class TradeOrderBuilder {
 						BigDecimal.ROUND_FLOOR);
 				unAllocateMoney = unAllocateMoney.subtract(pinMoneyItem);
 			}else{
-				pinMoneyItem = orderItem.getActualAmount().compareTo(unAllocateMoney) == 1?unAllocateMoney:orderItem.getActualAmount();
+				pinMoneyItem = orderItem.getActualAmount().compareTo(unAllocateMoney) > 0?unAllocateMoney:orderItem.getActualAmount();
 			}
 			orderItem.setPreferentialPrice(orderItem.getPreferentialPrice().add(pinMoneyItem));
 			orderItem.setActualAmount(orderItem.getActualAmount().subtract(pinMoneyItem));

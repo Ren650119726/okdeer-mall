@@ -178,6 +178,7 @@ public abstract class AbstractPayResultHandler {
 		try {
 			//不是扫码购订单才返券
 			if(tradeOrder.getOrderResource() != OrderResourceEnum.SWEEP &&
+	        		tradeOrder.getOrderResource() != OrderResourceEnum.WECHAT_MIN &&
                     tradeOrder.getOrderResource() != OrderResourceEnum.MEMCARD){
 				orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
 				//下单赠送抽奖活动的抽奖次数  九月活动需求 改为已完成订单（原来为消费即可获取抽奖次数）

@@ -123,7 +123,8 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		ActivityTypeEnum activityType = paramDto.getActivityType();
 		StoreSkuParserBo parserBo = (StoreSkuParserBo)paramDto.get("parserBo");
 		// 刷新请求商品列表
-		if(paramDto.getChannel() != OrderResourceEnum.MEMCARD){
+		if(paramDto.getChannel() != OrderResourceEnum.MEMCARD && 
+				paramDto.getChannel() != OrderResourceEnum.WECHAT_MIN){
 			parserBo.refreshReqSkuList(paramDto);
 		}
 		boolean isValid = true;
@@ -175,7 +176,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		ActivityCoupons coupons = activityCouponsMapper.selectByPrimaryKey(couponsRecord.getCouponsId());
 		// 检查金额是否达到使用下限
 		if (paramDto.getEnjoyFavourTotalAmount().compareTo(BigDecimal.valueOf(0)) == 0
-				|| paramDto.getEnjoyFavourTotalAmount().compareTo(new BigDecimal(coupons.getArriveLimit())) == -1) {
+				|| paramDto.getEnjoyFavourTotalAmount().compareTo(new BigDecimal(coupons.getArriveLimit())) < 0) {
 			// 如果享受优惠的总金额为0或者享受优惠的总金额未达到优惠限制下限，则不符合优惠使用规则
 			logger.info("代金券使用检查不通过3：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
 			return false;
@@ -186,11 +187,11 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 			logger.info("代金券使用检查不通过4：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
 			return false;
 		}
-		if(!coupons.getActivityId().equals(paramDto.getActivityId()) || !coupons.getId().equals(paramDto.getActivityItemId())){
-			resp.setResult(ResultCodeEnum.ILLEGAL_PARAM);
-			logger.info("代金券使用检查不通过5：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
-			return false;
-		}
+//		if(!coupons.getActivityId().equals(paramDto.getActivityId()) || !coupons.getId().equals(paramDto.getActivityItemId())){
+//			resp.setResult(ResultCodeEnum.ILLEGAL_PARAM);
+//			logger.info("代金券使用检查不通过5：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
+//			return false;
+//		}
 		if(coupons.getUseUserType() == UseUserType.ONlY_NEW_USER){
 			// 仅限首单用户，检查当前用户是否为首单用户。
 			if(!isFirstOrderUser(paramDto.getUserId())){
@@ -228,7 +229,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 				}
 			}
 			if (totalAmount.compareTo(BigDecimal.valueOf(0.0)) == 0
-					|| totalAmount.compareTo(BigDecimal.valueOf(coupons.getArriveLimit())) == -1) {
+					|| totalAmount.compareTo(BigDecimal.valueOf(coupons.getArriveLimit())) < 0) {
 				// 如果享受优惠的商品总金额为0，标识没有指定分类的商品。如果享受优惠的商品总金额小于代金券的使用条件，也不能使用该代金券
 				resp.setResult(ResultCodeEnum.ACTIVITY_CATEGORY_LIMIT);
 				logger.info("代金券使用检查不通过8：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
@@ -401,7 +402,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 					}
 				}
 			}
-			if (totalAmount.compareTo(BigDecimal.valueOf(0.00)) == 0 || totalAmount.compareTo(condition.getArrive()) == -1) {
+			if (totalAmount.compareTo(BigDecimal.valueOf(0.00)) == 0 || totalAmount.compareTo(condition.getArrive()) < 0) {
 				return false;
 			}
 			parserBo.setHaveFavourGoodsMap(haveFavourGoodsMap);
@@ -424,14 +425,14 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 					}
 				}
 			}
-			if (totalAmount.compareTo(BigDecimal.valueOf(0.00)) == 0 || totalAmount.compareTo(condition.getArrive()) == -1) {
+			if (totalAmount.compareTo(BigDecimal.valueOf(0.00)) == 0 || totalAmount.compareTo(condition.getArrive()) < 0) {
 				return false;
 			}
 			parserBo.setHaveFavourGoodsMap(haveFavourGoodsMap);
 			parserBo.setTotalAmountHaveFavour(totalAmount);
 		} else {
 			// 商品没有任何限制，判定能够享受满减总金额是否达到满减条件的限制金额
-			if(parserBo.getTotalAmountHaveFavour().compareTo(condition.getArrive()) == -1){
+			if(parserBo.getTotalAmountHaveFavour().compareTo(condition.getArrive()) < 0){
 				return false;
 			}
 		}

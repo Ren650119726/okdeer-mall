@@ -72,6 +72,7 @@ import com.okdeer.mall.activity.service.MaxFavourStrategy;
 import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.common.utils.RobotUserUtil;
+import com.okdeer.mall.order.service.TradeOrderGroupApi;
 import com.okdeer.mall.order.vo.FullSubtract;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mall.system.utils.ConvertUtil;
@@ -132,6 +133,11 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	private MaxFavourStrategy genericMaxFavourStrategy;
 	@Resource
 	private ActivityDiscountGroupMapper activityDiscountGroupMapper;
+	
+	@Reference(version = "1.0.0",check=false)
+	private TradeOrderGroupApi tradeOrderGroupApi; 
+	
+	
 	@Override
 	public IBaseMapper getBaseMapper() {
 		return activityDiscountMapper;
@@ -165,6 +171,10 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		// 活动限制首单用户，默认用户参与总次数为1.
 		if(actInfo.getLimitUser() == UseUserType.ONlY_NEW_USER){
 			actInfo.setLimitTotalFreq(1);
+		}
+		//如果开始时间早于当前时间,活动直接进行中
+		if(actInfo.getStartTime().getTime() <= new Date().getTime()){
+			actInfo.setStatus(ActivityDiscountStatus.ing);
 		}
 		// 修改活动信息
 		activityDiscountMapper.update(actInfo);
@@ -217,6 +227,10 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		
 		// 活动状态默认为未开始
 		actInfo.setStatus(ActivityDiscountStatus.noStart);
+		//如果开始时间早于当前时间,活动直接进行中
+		if(actInfo.getStartTime().getTime() <= new Date().getTime()){
+			actInfo.setStatus(ActivityDiscountStatus.ing);
+		}
 		if(actInfo.getType() != ActivityDiscountType.PIN_MONEY){
 			actInfo.setGrantType(0);
 		}
@@ -463,6 +477,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		paramDto.setActivityIds(paramBo.getActivityIds());
 		// 检查需要关闭的活动状态
 		List<ActivityDiscount> actList = activityDiscountMapper.findListByParam(paramDto);
+		//进行循环检查
 		for(ActivityDiscount act : actList){
 			if(act.getStatus() != ActivityDiscountStatus.noStart 
 					&& act.getStatus() != ActivityDiscountStatus.ing){
@@ -471,12 +486,16 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 				retInfo.setMessage("选中的活动中存在已关闭活动，请重新选择!");
 				return retInfo;
 			}
-			// 释放原来商品活动库存 + 解除原商品关联关系
-			removeSkuAndStockRelation(act.getId());
 		}
 		// 关闭活动
 		activityDiscountMapper.updateStatus(paramBo);
 		
+		//逐个解除
+		for(ActivityDiscount act : actList){
+			// 释放原来商品活动库存 + 解除原商品关联关系
+			removeSkuAndStockRelation(act.getId());
+			tradeOrderGroupApi.updateByColseActivity(act.getId());
+		}
 		
 		return retInfo;
 	}
@@ -496,6 +515,10 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		ActivityInfoDto actInfoDto = new ActivityInfoDto();
 		actInfoDto.setActivityInfo(activityInfo);
 		actInfoDto.setActivityType(activityInfo.getType().ordinal());
+		//零花钱活动 定额发放时 将默认订单最小金额置0 
+		if(activityInfo.getType() == ActivityDiscountType.PIN_MONEY && activityInfo.getGrantType() == 2){
+			conditionList.get(0).setRate(0);
+		}
 		actInfoDto.setConditionList(conditionList);
 		actInfoDto.setGroupGoodsList(groupGoodsList);
 		if(limitBuilder != null){
@@ -662,7 +685,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 			}
 			conditionList = actInfoDto.getConditionList();
 			for(ActivityDiscountCondition condition : conditionList){
-				if(condition.getArrive().compareTo(paramBo.getTotalAmount()) == 1){
+				if(condition.getArrive().compareTo(paramBo.getTotalAmount()) > 0){
 					continue;
 				}
 				fullSubtract = new FullSubtract();

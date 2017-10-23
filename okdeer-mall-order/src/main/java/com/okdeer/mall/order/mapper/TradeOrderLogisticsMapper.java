@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseCrudMapper;
+import com.okdeer.mall.order.bo.TradeOrderLogisticsParamBo;
 import com.okdeer.mall.order.entity.TradeOrderLogistics;
 
 /**
@@ -52,4 +53,12 @@ public interface TradeOrderLogisticsMapper extends IBaseCrudMapper {
 	 */
 	void updateByOrderId(TradeOrderLogistics tradeOrderLogistics);
 	//End V2.1.0 added by luosm 20170215
+	/**
+	 * @Description: 根据条件查询列表
+	 * @param tradeOrderLogisticsParamBo
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年10月17日
+	 */
+	List<TradeOrderLogistics> findList(TradeOrderLogisticsParamBo tradeOrderLogisticsParamBo);
 }

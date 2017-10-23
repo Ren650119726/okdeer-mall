@@ -29,6 +29,7 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
@@ -39,10 +40,11 @@ import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountRecordService;
-import com.okdeer.mall.activity.group.service.ActivityGroupRecordService;
+import com.okdeer.mall.activity.discount.service.ActivityJoinRecordService;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
 import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
+import com.okdeer.mall.order.entity.ActivityJoinRecord;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderLog;
@@ -103,12 +105,6 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 	 */
 	@Autowired
 	private TradeOrderPayService tradeOrderPayService;
-
-	/**
-	 * 特惠活动Mapper
-	 */
-	@Autowired
-	private ActivityGroupRecordService activityGroupRecordService;
 
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceServiceApi goodsStoreSkuServiceService;
@@ -194,6 +190,9 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 	@Autowired
 	@Qualifier(value = "jxcSynTradeorderProcessLister")
 	private TradeorderProcessLister tradeorderProcessLister;
+	
+	@Resource
+	private ActivityJoinRecordService activityJoinRecordService;
 
 	/**
 	 * @Description: 取消订单
@@ -425,8 +424,8 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			}
 		} 
 		if (tradeOrder.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY) {
-			// 团购活动释放限购数量
-			activityGroupRecordService.updateDisabledByOrderId(tradeOrder.getId());
+			// 团购活动参与记录
+			activityJoinRecordService.updateByOrderId(new ActivityJoinRecord(tradeOrder.getId(), Disabled.invalid));
 		} 
 		if (tradeOrder.getActivityType() == ActivityTypeEnum.SECKILL_ACTIVITY) {
 			// 秒杀活动释放购买记录

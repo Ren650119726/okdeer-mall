@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -206,7 +207,6 @@ import com.okdeer.mall.order.mapper.TradeOrderCommentMapper;
 import com.okdeer.mall.order.mapper.TradeOrderComplainImageMapper;
 import com.okdeer.mall.order.mapper.TradeOrderComplainMapper;
 import com.okdeer.mall.order.mapper.TradeOrderExtSnapshotMapper;
-import com.okdeer.mall.order.mapper.TradeOrderGroupMapper;
 import com.okdeer.mall.order.mapper.TradeOrderGroupRelationMapper;
 import com.okdeer.mall.order.mapper.TradeOrderInvoiceMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
@@ -224,12 +224,14 @@ import com.okdeer.mall.order.service.PageCallBack;
 import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
+import com.okdeer.mall.order.service.TradeOrderGroupService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderRefundsServiceApi;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
+import com.okdeer.mall.order.service.TradePinMoneyUseService;
 import com.okdeer.mall.order.service.TradeorderProcessLister;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.PageQueryUtils;
@@ -258,8 +260,8 @@ import com.okdeer.mall.system.mapper.SysUserInvitationRecordMapper;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 import com.okdeer.mall.system.mq.StockMQProducer;
 import com.okdeer.mall.system.service.InvitationCodeServiceApi;
-import com.okdeer.mall.system.service.SysBuyerUserService;
 import com.okdeer.mall.system.utils.ConvertUtil;
+import com.okdeer.mall.util.SysConfigComponent;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
 
@@ -584,10 +586,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	private TradeOrderGroupRelationMapper tradeOrderGroupRelationMapper;
     
     @Resource
-    private TradeOrderGroupMapper tradeOrderGroupMapper;
-    
-    @Resource
-	private SysBuyerUserService sysBuyerUserService;
+   	private TradeOrderGroupService tradeOrderGroupService;
 
     // Begin Bug:13700 added by maojj 2016-10-10
     /**
@@ -657,13 +656,19 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	 * 会员卡零售调用api
 	 */
 	@Reference(version = "1.0.0", check = false)
-	HykPayOrderServiceApi hykPayOrderServiceApi;
+	private HykPayOrderServiceApi hykPayOrderServiceApi;
   	//End v2.6.1 tuzhd 2017-09-06
+	
+	@Autowired
+	private TradePinMoneyUseService tradePinMoneyUseService;
 
     //begin add wangf01 2017-08-10
     
     @Resource
 	private ActivityCouponsReceiveStrategy activityCouponsReceiveStrategy;
+    
+    @Resource
+    private SysConfigComponent sysConfigComponent;
 
     @Override
     public List<TradeOrder> selectByParam(TradeOrderParamDto param) throws Exception {
@@ -2194,7 +2199,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
         // 发送计时消息
         // Begin 重构4.1 add by wusw 20160801
-        if (storeInfo.getType() == StoreTypeEnum.SERVICE_STORE) {
+        if (tradeOrder.getType() == OrderTypeEnum.SERVICE_EXPRESS_ORDER){
+        	// 寄送服务订单确收超时为10天
+        	tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_group_timeout, tradeOrder.getId());
+        	// 寄送服务订单发货发送短信
+        	tradeMessageService.sendSmsByShipments(tradeOrder);
+        }else if (storeInfo.getType() == StoreTypeEnum.SERVICE_STORE) {
             Date serviceTime = DateUtils.parseDate(tradeOrder.getPickUpTime().substring(0, 16), "yyyy-MM-dd HH:mm");
             // 服务店订单，预约服务时间过后24小时未派单的自动确认收货
             // tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_confirm_server_timeout,
@@ -2234,17 +2244,22 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     public Integer updateOrderStatus(TradeOrder tradeOrder) throws ServiceException {
         //add by mengsj begin 扫码购另外处理 and tuzd 会员卡扫码付 
         if (tradeOrder.getOrderResource() == OrderResourceEnum.SWEEP || 
+        		tradeOrder.getOrderResource() == OrderResourceEnum.WECHAT_MIN ||
         		tradeOrder.getOrderResource() == OrderResourceEnum.MEMCARD) {
-        	//释放所有代金卷
-        	if(tradeOrder.getOrderResource() == OrderResourceEnum.MEMCARD && 
-        			tradeOrder.getStatus() == OrderStatusEnum.CANCELED){
+        	if(tradeOrder.getStatus() == OrderStatusEnum.CANCELED){
+        		//释放所有代金卷
         		activityCouponsRecordService.releaseConpons(tradeOrder);
-        		try{
-        			//新版会员卡支付通知零售取消订单
-        			hykPayOrderServiceApi.cancelOrder(tradeOrder.getId(), null);
-        		}catch(Exception e){
-        			logger.error("零售取消订单失败"+tradeOrder.getId(),e);
-        		}
+        		//释放零花钱
+        		tradePinMoneyUseService.releaseOrderOccupy(tradeOrder.getId());
+	        	//调用零售取消订单（会员卡订单）
+	        	if(tradeOrder.getOrderResource() == OrderResourceEnum.MEMCARD){
+	        		try{
+	        			//新版会员卡支付通知零售取消订单
+	        			hykPayOrderServiceApi.cancelOrder(tradeOrder.getId(), null);
+	        		}catch(Exception e){
+	        			logger.error("零售取消订单失败"+tradeOrder.getId(),e);
+	        		}
+	        	}
         	}
             return tradeOrderMapper.updateOrderStatus(tradeOrder);
         }
@@ -4036,7 +4051,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
    
 
     @Override
-    public JSONObject findUserOrderDetailList(String orderId) throws ServiceException {
+    public JSONObject findUserOrderDetailList(String orderId,String screen) throws ServiceException {
         if (StringUtils.isEmpty(orderId)) {
             throw new ServiceException("非法请求参数");
         }
@@ -4065,11 +4080,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     			setOrderItemExtJxc(json, orderId);
     		}
     		//如果为会员卡订单 end tuzhd 2017-09-06
-        
     		// Begin V2.6.3 added by maojj 2017-10-13
     		if(orders.getType() == OrderTypeEnum.GROUP_ORDER && orders.getStatus() == OrderStatusEnum.DROPSHIPPING){
     			// 如果是已付款的团购订单
-    			setGroupInfo(json,orderId);
+    			setGroupInfo(json,orderId,screen);
+    		}
+    		if(orders.getType() == OrderTypeEnum.SERVICE_EXPRESS_ORDER && orders.getStatus() == OrderStatusEnum.TO_BE_SIGNED){
+    			// 已发货的寄送服务订单，需要设置快递信息
+    			setExpressInfo(json,orderId);
     		}
     		// End V2.6.3 added by maojj 2017-10-13
         } catch (Exception e) {
@@ -4077,32 +4095,6 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             throw new ServiceException();
         }
         return json;
-    }
-    
-    private void setGroupInfo(JSONObject json,String orderId){
-    	// 查询团购订单关联关系
-    	TradeOrderGroupRelation groupRel = tradeOrderGroupRelationMapper.findByOrderId(orderId);
-    	// 查询团购订单信息
-    	TradeOrderGroup orderGroup = tradeOrderGroupMapper.findById(groupRel.getGroupOrderId());
-    	// 根据团购订单查询已经入团的关联关系
-    	List<TradeOrderGroupRelation> groupRelList = tradeOrderGroupRelationMapper.findByGroupOrderId(groupRel.getGroupOrderId());
-    	List<GroupJoinUserDto> joinUserList = Lists.newArrayList();
-    	groupRelList.forEach(item -> {
-			try {
-				SysBuyerUser buyerUser = sysBuyerUserService.findByPrimaryKey(item.getUserId());
-				GroupJoinUserDto joinUser = new GroupJoinUserDto();
-				joinUser.setNickName(ConvertUtil.format(buyerUser.getNickName()));
-				joinUser.setPicUrl(ConvertUtil.format(buyerUser.getPicUrl()));
-				joinUser.setJoinType(String.valueOf(item.getType().getCode()));
-				joinUserList.add(joinUser);
-			} catch (Exception e) {
-			    logger.error("查询用户信息失败：",item);
-			}
-		});
-    	
-    	json.put("groupExpireTime", orderGroup.getExpireTime().getTime() - System.currentTimeMillis());
-    	json.put("absentNum", orderGroup.getGroupCount() - joinUserList.size());
-    	json.put("joinUserList", JSONArray.fromObject(joinUserList));
     }
     
     /**
@@ -4154,8 +4146,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         JSONObject json = new JSONObject();
         // 1 订单信息
         json.put("orderId", orders.getId() == null ? "" : orders.getId());
-        json.put("orderStatus", OrderAppStatusAdaptor.convertAppOrderStatus(orders.getStatus()));
-
+        if(orders.getType() == OrderTypeEnum.GROUP_ORDER && orders.getStatus() == OrderStatusEnum.DROPSHIPPING){
+        	json.put("orderStatus", OrderStatusEnum.PAY_COMPLETE.ordinal());
+        }else{
+        	json.put("orderStatus", OrderAppStatusAdaptor.convertAppOrderStatus(orders.getStatus()));
+        }
         // 2 订单支付倒计时计算
         // Begin 14375 add by wusw 20161015
         if (orders.getStatus() != null && orders.getStatus().ordinal() == Constant.ZERO) {
@@ -4208,6 +4203,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             // 而低价优惠可以与代金券、满减一起使用。
             json.put("activityType", String.valueOf(ActivityTypeEnum.LOW_PRICE.ordinal()));
         }
+        json.put("activityId", ConvertUtil.format(orders.getActivityId()));
+        json.put("activityItemId", ConvertUtil.format(orders.getActivityItemId()));
         json.put("preferentialPrice",
                 orders.getPreferentialPrice().subtract(orders.getRealFarePreferential()).subtract(orders.getPinMoney()).toString());
         json.put("fare", orders.getFare() == null ? "" : orders.getFare().toString());
@@ -4291,10 +4288,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         	orderTypeDesc = AppOrderTypeEnum.MEMCARD_ORDER.getDesc();
             orderType = String.valueOf(AppOrderTypeEnum.MEMCARD_ORDER.getCode());
         }
+        if(orders.getType() == OrderTypeEnum.GROUP_ORDER || orders.getType() == OrderTypeEnum.SERVICE_EXPRESS_ORDER){
+        	orderType = String.valueOf(AppOrderTypeEnum.GROUP_ORDER.getCode());
+        	orderTypeDesc = AppOrderTypeEnum.GROUP_ORDER.getDesc();
+        }
         json.put("orderTypeDesc", orderTypeDesc);
         json.put("orderType", orderType);
         json.put("orderResource", orders.getOrderResource().ordinal());
-        json.put("platformPreferential", orders.getPlatformPreferential());
+        json.put("platformPreferential", orders.getPlatformPreferential().subtract(orders.getPinMoney()));
         json.put("storePreferential", orders.getStorePreferential());
         json.put("pinMoney", ConvertUtil.format(orders.getPinMoney()));
         // End V2.2 added by maojj 2017-03-20  + tuzhd 2017-8-1
@@ -4345,8 +4346,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                 item.put("unitPrice",
                         tradeOrderItem.getUnitPrice() == null ? "0" : tradeOrderItem.getUnitPrice().toString());
                 Integer quantity = tradeOrderItem.getQuantity();
-                item.put("quantity", quantity == null ? 0 : quantity);
-                item.put("quantityStr",quantity==null ? ConvertUtil.format(tradeOrderItem.getWeight()) : String.valueOf(quantity));
+                item.put("quantity", quantity == null ? ConvertUtil.format(tradeOrderItem.getWeight(),3,1) : quantity);
+                item.put("quantityStr",quantity==null ? ConvertUtil.format(tradeOrderItem.getWeight(),3,1) : String.valueOf(quantity));
                 item.put("skuTotalAmount", tradeOrderItem.getTotalAmount().toString());
                 item.put("skuActualAmount", tradeOrderItem.getActualAmount().toString());
                 item.put("preferentialPrice", tradeOrderItem.getPreferentialPrice() == null ? "0.00"
@@ -4520,7 +4521,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         json.put("orderNo", orders.getOrderNo() == null ? "" : orders.getOrderNo());
         json.put("tradeNum", orders.getTradeNum() == null ? "" : orders.getTradeNum());
         // 订单状态
-        json.put("orderStatus", OrderAppStatusAdaptor.convertAppOrderStatus(orders.getStatus()));
+        if(orders.getType() == OrderTypeEnum.GROUP_ORDER && orders.getStatus() == OrderStatusEnum.DROPSHIPPING){
+        	json.put("orderStatus", OrderStatusEnum.PAY_COMPLETE.ordinal());
+        }else{
+        	json.put("orderStatus", OrderAppStatusAdaptor.convertAppOrderStatus(orders.getStatus()));
+        }
         // 订单支付倒计时计算
 		/*
 		 * Integer remainingTime = orders.getRemainingTime(); if (remainingTime != null) { remainingTime = remainingTime
@@ -4702,6 +4707,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                     // 购买商品的数量
                     item.put("quantity", tradeOrderItem.getQuantity());
                     item.put("itemId", tradeOrderItem.getId());
+                    // Begin V2.6.3 added by maojj 2017-10-17
+                    // 服务保障
+                    String serviceAssurance = "0";
+                    if (orders.getIsComplete().ordinal() == 0) {
+                        serviceAssurance = getServiceAssurance(orders.getReceivedTime(), tradeOrderItem.getServiceAssurance());
+                    }
+                    item.put("serviceAssurance", serviceAssurance);
+                    // End V2.6.3 added by maojj 2017-10-17
                     // Begin V2.0.0 add by wusw 20170117
                     if (tradeOrderItem.getUnit() != null) {
                         item.put("unit", tradeOrderItem.getUnit());
@@ -5920,7 +5933,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService.get(activityId);
             return activityCollectCoupons.getName();
         } else if (activityType == ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES
-                || activityType == ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES) {
+                || activityType == ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES || activityType == ActivityTypeEnum.GROUP_ACTIVITY) {
             // 满减或满折活动
             ActivityDiscount activityDiscount = activityDiscountMapper.findById(activityId);
             return activityDiscount.getName();
@@ -5928,11 +5941,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             // 秒杀活动
             ActivitySeckill activitySeckill = activitySeckillMapper.findByPrimaryKey(activityId);
             return activitySeckill.getSeckillName();
-        } else if (activityType == ActivityTypeEnum.GROUP_ACTIVITY) {
-            // 团购活动
-            ActivityGroup activityGroup = activityGroupService.selectByPrimaryKey(activityId);
-            return activityGroup.getName();
-        } else {
+        }else {
             // 无活动
             return null;
         }
@@ -6625,7 +6634,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
      * @see com.okdeer.mall.order.service.TradeOrderServiceApi#findUserVisitServiceOrderDetail(java.lang.String)
      */
     @Override
-    public JSONObject findUserVisitServiceOrderDetail(String orderId) throws ServiceException {
+    public JSONObject findUserVisitServiceOrderDetail(String orderId,String screen) throws Exception {
         UserTradeOrderDetailVo orders = tradeOrderMapper.selectUserOrderServiceDetail(orderId);
         List<TradeOrderItem> tradeOrderItems = tradeOrderItemMapper.selectTradeOrderItemOrDetail(orderId);
         // 判断订单是否评价appraise大于0，已评价
@@ -6637,9 +6646,53 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
         orders.setItems(tradeOrderItems);
         JSONObject json = this.getServiceJsonObj(orders, appraise, storeInfoExt, true);
+        // Begin V2.6.3 added by maojj 2017-10-13
+		if(orders.getType() == OrderTypeEnum.GROUP_ORDER && orders.getStatus() == OrderStatusEnum.DROPSHIPPING){
+			// 如果是已付款的团购订单
+			setGroupInfo(json,orderId,screen);
+		}
+		if(orders.getType() == OrderTypeEnum.SERVICE_EXPRESS_ORDER && orders.getStatus() == OrderStatusEnum.TO_BE_SIGNED){
+			// 已发货的寄送服务订单，需要设置快递信息
+			setExpressInfo(json,orderId);
+		}
+		// End V2.6.3 added by maojj 2017-10-13
         return json;
     }
     // End V1.1.0 add by wusw 20160929
+    
+    // Begin V2.6.3 added by maojj 2017-10-17
+    /**
+     * @Description: 设置团购信息
+     * @param json
+     * @param orderId
+     * @param screen
+     * @throws Exception   
+     * @author maojj
+     * @date 2017年10月16日
+     */
+    private void setGroupInfo(JSONObject json,String orderId,String screen) throws Exception{
+    	// 查询团购订单关联关系
+    	TradeOrderGroupRelation groupRel = tradeOrderGroupRelationMapper.findByOrderId(orderId);
+    	// 查询团购订单信息
+    	TradeOrderGroup orderGroup = tradeOrderGroupService.findById(groupRel.getGroupOrderId());
+    	// 根据团购订单查询已经入团的关联关系
+    	List<GroupJoinUserDto> joinUserList = tradeOrderGroupService.findGroupJoinUserList(groupRel.getGroupOrderId(), screen);
+    	json.put("groupExpireTime", orderGroup.getExpireTime().getTime() - System.currentTimeMillis());
+    	json.put("absentNum", orderGroup.getGroupCount() - joinUserList.size());
+    	json.put("joinUserList", JSONArray.fromObject(joinUserList));
+    	json.put("groupShareUrl",String.format("%s%s", sysConfigComponent.getGroupShareLink(),groupRel.getGroupOrderId()));
+    	json.put("groupOrderId", groupRel.getGroupOrderId());
+    }
+    
+    private void setExpressInfo(JSONObject json,String orderId){
+    	TradeOrderLogistics logistics = tradeOrderLogisticsMapper.selectByOrderId(orderId);
+    	if(logistics == null){
+    		return;
+    	}
+    	json.put("logisticsCompanyName", ConvertUtils.convert(logistics.getLogisticsCompanyName()));
+    	json.put("logisticsNo",  ConvertUtils.convert(logistics.getLogisticsNo()));
+    }
+    // End V2.6.3 added by maojj 2017-10-17
 
     /**
      * 到店消费订单处理
@@ -7159,4 +7212,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         return tradeOrderMapper.selectConsumeTotalAmount(params);
     }
 
+    @Override
+	public PageUtils<TradeOrder> findListForSend(TradeOrderQueryParamDto dto, int pageNumber, int pageSize)
+			throws Exception {
+		 PageHelper.startPage(pageNumber, pageSize, true);
+		 List<TradeOrder> list = tradeOrderMapper.findListForSend(dto);
+		 return new PageUtils<TradeOrder>(list);
+    }
 }

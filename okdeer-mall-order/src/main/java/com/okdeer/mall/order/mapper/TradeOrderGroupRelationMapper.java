@@ -8,6 +8,8 @@ package com.okdeer.mall.order.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.order.entity.TradeOrderGroupRelation;
 
@@ -32,6 +34,15 @@ public interface TradeOrderGroupRelationMapper extends IBaseMapper {
 	 * @date 2017年10月12日
 	 */
 	TradeOrderGroupRelation findByOrderId(String orderId);
+	
+	/**
+	 * @Description: 根据订单id列表查询团购关联关系
+	 * @param orderIds
+	 * @return   
+	 * @author maojj
+	 * @date 2017年10月19日
+	 */
+	List<TradeOrderGroupRelation> findByOrderIds(@Param("orderIds")List<String> orderIds);
 	
 	/**
 	 * @Description: 查询已成功入团的团单关联关系

@@ -64,7 +64,6 @@ public class CheckGroupSkuServiceImpl implements RequestHandler<PlaceOrderParamD
 		// 缓存商品解析结果
 		paramDto.put("parserBo", parserBo);
 		parserBo.parseCurrentSku();
-		parserBo.loadBuySkuList(paramDto.getSkuList());
 		// 检查商品信息是否发生变化
 		ResultCodeEnum checkResult = isChange(skuList, parserBo);
 		resp.setResult(checkResult);

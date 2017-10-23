@@ -55,7 +55,8 @@ public class FavourParamBuilder {
 	 * @author maojj
 	 * @date 2017年2月15日
 	 */
-	public FavourParamBO build(PlaceOrderParamDto paramDto,PlaceOrderDto orderDto,Set<String> spuCategoryIds,List<PlaceOrderItemDto> goodsList){
+	public FavourParamBO build(PlaceOrderParamDto paramDto, PlaceOrderDto orderDto, Set<String> spuCategoryIds,
+			List<PlaceOrderItemDto> goodsList) {
 		FavourParamBO paramBO = new FavourParamBO();
 		// 获取店铺类型
 		StoreTypeEnum storeType = ((StoreInfo)paramDto.get("storeInfo")).getType();
@@ -160,7 +161,6 @@ public class FavourParamBuilder {
 		}
 		paramBO.setClientType(EnumAdapter.convert(req.getOrderResource()));
 		paramBO.setSpuCategoryIds((Set<String>)req.getContext().get("spuCategoryIds"));
-		List<PlaceOrderItemDto> goodsList = Lists.newArrayList();
 		paramBO.setChannel(req.getOrderResource());
 		paramBO.setDeviceId(reqDto.getDeviceId());
 		return paramBO;
@@ -187,7 +187,7 @@ public class FavourParamBuilder {
 				paramBO.setAddressId(orderReq.getAddressId());
 			}
 		}
-		List<String> skuIdList = new ArrayList<String>();
+		List<String> skuIdList = Lists.newArrayList();
 		skuIdList.add(orderReq.getSkuId());
 		paramBO.setSkuIdList(skuIdList);
 		paramBO.setDeviceId(orderReq.getDeviceId());

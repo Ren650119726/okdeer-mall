@@ -195,7 +195,7 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 			if (serviceExt != null && serviceExt.getIsShoppingCart() == 1 && serviceExt.getIsStartingPrice() == 1
 					&& serviceExt.getIsSupportPurchase() == 0) {
 				BigDecimal startingPrice = serviceExt.getStartingPrice();
-				if (totalAmount.compareTo(startingPrice) == -1) {
+				if (totalAmount.compareTo(startingPrice) < 0) {
 					checkResult = ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH;
 				}
 			}
@@ -207,7 +207,7 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 						// 已满起送价收取配送费
 						parserBo.setFare(BigDecimal.valueOf(serviceExt.getDistributionFee()));
 					} else {
-						if (totalAmount.compareTo(serviceExt.getStartingPrice()) == -1) {
+						if (totalAmount.compareTo(serviceExt.getStartingPrice()) < 0) {
 							// 设置运费
 							parserBo.setFare(BigDecimal.valueOf(serviceExt.getDistributionFee()));
 						}

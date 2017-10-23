@@ -19,6 +19,7 @@ import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.service.StockOperateService;
 
@@ -62,6 +63,10 @@ public class StockOperateServiceImpl implements StockOperateService {
 	 */
 	@Override
 	public void recycleStockByOrder(TradeOrder tradeOrder, List<String> rpcIdList) throws Exception {
+		if(tradeOrder.getType() == OrderTypeEnum.GROUP_ORDER){
+			// 团购订单没有发生库存扣减。只有当团购订单转为寄送服务订单时，才存在库存的扣减
+			return;
+		}
 		StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.build(tradeOrder);
 		rpcIdList.add(mallStockUpdate.getRpcId());
 		goodsStoreSkuStockApi.updateStock(mallStockUpdate);

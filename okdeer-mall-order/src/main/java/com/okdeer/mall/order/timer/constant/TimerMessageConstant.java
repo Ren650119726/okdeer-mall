@@ -59,15 +59,22 @@ public interface TimerMessageConstant {
          */
         tag_recharge_pay_timeout(30 * 60L),
         
+        // Begin V2.6.3 added by maojj 2017-10-17
+        /**
+         * 团购订单拼团超时处理，时间根据活动设置而定
+         */
+        tag_group_timeout(0L),
+        // End V2.6.3 added by maojj 2017-10-17
+        
         /**
          * 发货超时处理 3天
          */
         tag_delivery_timeout(1 * 24 * 60 * 60L),
 
         /**
-         * 发货超时处理(团购) 14天
+         * 发货超时处理(团购) 3天
          */
-        tag_delivery_group_timeout(14 * 24 * 60 * 60L),
+        tag_delivery_group_timeout(3 * 24 * 60 * 60L),
 
         //begin by wangf01 2016.07.21
         /**
@@ -94,9 +101,9 @@ public interface TimerMessageConstant {
         tag_take_goods_timeout(3 * 24 * 60 * 60L),
 
         /**
-         * 收货超时处理(团购) 7天
+         * 收货超时处理(团购) 10天
          */
-        tag_confirm_group_timeout(7 * 24 * 60 * 60L),
+        tag_confirm_group_timeout(10 * 24 * 60 * 60L),
 
         //begin by wangf01 2016.07.21
         /**
@@ -111,9 +118,9 @@ public interface TimerMessageConstant {
         tag_finish_timeout(1 * 24 * 60 * 60L),
 
         /**
-         * 订单完成超时未售后处理,并送积分(团购) 7天
+         * 团购订单完成超时未售后处理,并送积分(团购) 1天
          */
-        tag_finish_group_timeout(7 * 24 * 60 * 60L),
+        tag_finish_group_timeout(1 * 24 * 60 * 60L),
 
         /**
          * 订单完成超时自动好评 3天

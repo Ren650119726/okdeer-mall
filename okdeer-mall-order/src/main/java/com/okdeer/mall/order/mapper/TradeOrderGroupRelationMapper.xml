@@ -12,7 +12,7 @@
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, order_id, group_order_id, group_order_id_his, type, status
+        id, order_id, group_order_id, group_order_id_his, user_id, type, status
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="string" >
@@ -36,6 +36,9 @@
             <if test="groupOrderIdHis != null" >
                 group_order_id_his,
             </if>
+            <if test="userId != null" >
+                user_id,
+            </if>
             <if test="type != null" >
                 type,
             </if>
@@ -56,6 +59,9 @@
             <if test="groupOrderIdHis != null" >
                 #{groupOrderIdHis,jdbcType=VARCHAR},
             </if>
+            <if test="userId != null" >
+                #{userId,jdbcType=VARCHAR},
+            </if>
             <if test="type != null" >
                 #{type,jdbcType=TINYINT},
             </if>
@@ -73,6 +79,9 @@
             </if>
             <if test="groupOrderIdHis != null" >
                 group_order_id_his = #{groupOrderIdHis,jdbcType=VARCHAR},
+            </if>
+            <if test="userId != null" >
+                user_id = #{userId,jdbcType=VARCHAR},
             </if>
             <if test="type != null" >
                 type = #{type,jdbcType=TINYINT},
@@ -95,6 +104,16 @@
         FROM trade_order_group_relation
         WHERE order_id =  #{orderId,jdbcType=VARCHAR};
     </select>
+    
+    <!-- 根据订单id列表查询关联关系 -->
+    <select id="findByOrderIds" resultMap="BaseResultMap" parameterType="list" >
+        SELECT <include refid="Base_Column_List" />
+        FROM trade_order_group_relation
+        WHERE order_id IN
+        <foreach collection="orderIds" item="orderId" separator="," open="(" close=")">
+        	#{orderId,jdbcType=VARCHAR}
+        </foreach>
+    </select>
 	
 	<!-- 查询已成功入团的团单关联关系 -->
 	<select id="findByGroupOrderId" parameterType="string" resultMap="BaseResultMap">
@@ -102,6 +121,7 @@
 		FROM trade_order_group_relation
 		WHERE group_order_id = #{groupOrderId}
 		AND status = 1
+		ORDER BY type ASC
 	</select>
 
 	<!-- 统计成功入团的数量 -->

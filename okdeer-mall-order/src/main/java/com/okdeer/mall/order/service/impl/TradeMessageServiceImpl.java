@@ -473,7 +473,11 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		// 查询用户电话号码
 		String mobile = sysBuyerUserService.selectMemberMobile(order.getUserId());
 		if (StringUtils.isNotBlank(mobile)) {
-			this.sendSms(mobile, tradeMessageProperties.smsShipmentsStyle1, params);
+			if(order.getType() == OrderTypeEnum.SERVICE_EXPRESS_ORDER){
+				this.sendSms(mobile, tradeMessageProperties.smsGroupShipmentStyle, params);
+			}else{
+				this.sendSms(mobile, tradeMessageProperties.smsShipmentsStyle1, params);
+			}
 		} else {
 			logger.error("订单号：[" + order.getOrderNo() + "]的用户ID:[" + order.getUserId() + "]手机号码为空");
 		}
@@ -486,7 +490,16 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 	@Override
 	public void sendSmsByCancel(TradeOrder order, OrderStatusEnum status) {
 		// 取消订单发送短信
-		if (status == OrderStatusEnum.DROPSHIPPING || status == OrderStatusEnum.WAIT_RECEIVE_ORDER) {
+		if (order.getType() == OrderTypeEnum.GROUP_ORDER && status == OrderStatusEnum.DROPSHIPPING){
+			// 如果是团购订单，待发货取消，标识该团购订单拼团失败，短信内容为拼团失败的短信内容
+			Map<String, String> params = Maps.newHashMap();
+			params.put("#1", order.getOrderNo());
+			String mobile = order.getUserPhone();
+			if(StringUtils.isEmpty(mobile)){
+				sysBuyerUserService.selectMemberMobile(order.getUserId());
+			}
+			this.sendSms(mobile, tradeMessageProperties.smsGroupFailStyle, params);		
+		} else if (status == OrderStatusEnum.DROPSHIPPING || status == OrderStatusEnum.WAIT_RECEIVE_ORDER) {
 			Map<String, String> params = Maps.newHashMap();
 			params.put("#1", order.getOrderNo());
 			params.put("#2", order.getReason());
@@ -749,6 +762,11 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 				params.put("#4", servicePhone);
 			}
 
+		}else if(tradeOrder.getType() == OrderTypeEnum.SERVICE_EXPRESS_ORDER){
+			// 如果是寄送服务订单标示团购订单拼团成功
+			smsTempate = tradeMessageProperties.smsGroupSuccessStyle;
+			// 订单编号
+			params.put("#1", tradeOrder.getOrderNo());
 		}
 		// 如果没有短信模板，直接返回
 		if (StringUtils.isBlank(smsTempate)) {

@@ -119,12 +119,12 @@ public class StoreExtProcessServiceImpl implements StoreExtProcessService {
 		// End added by maojj 2016-08-16
 		// V2.0版本，返回出参startMoney为店铺免费送费起送价格
 		resp.setStartMoney(freeFarePrice);
-		if (totalAmount.compareTo(startPrice) == -1) {
+		if (totalAmount.compareTo(startPrice) < 0) {
 			resp.setFare(fare);
 		} else {
 			resp.setFare(new BigDecimal(0.0));
 		}
-		if(totalAmount.compareTo(startPrice) == -1){
+		if(totalAmount.compareTo(startPrice) < 0){
 			// 未达到起送价，提交订单失败。
 			respDto.setFlag(false);
 			respDto.setMessage(ResultCodeEnum.SERV_ORDER_AMOUT_NOT_ENOUGH.getDesc());

@@ -1,6 +1,9 @@
 package com.okdeer.mall.order.bo;
 
+import java.util.List;
+
 import com.okdeer.mall.order.enums.OrderResourceEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 
 
 /**
@@ -50,6 +53,13 @@ public class UserOrderParamBo {
 	 * 不查询订单来源 0:友门鹿App,1:微信,2:pos 3.友门鹿便利店  4.便利店扫码购 5.会员卡扫码付
 	 */
 	private OrderResourceEnum notOrderResource;
+	
+	/**
+	 * 订单类型列表
+	 */
+	private List<OrderTypeEnum> orderTypeList;
+	
+	private String screen;
 
 	public String getUserId() {
 		return userId;
@@ -99,15 +109,28 @@ public class UserOrderParamBo {
 		this.keyword = keyword;
 	}
 
-	
 	public OrderResourceEnum getNotOrderResource() {
 		return notOrderResource;
 	}
 
-	
 	public void setNotOrderResource(OrderResourceEnum notOrderResource) {
 		this.notOrderResource = notOrderResource;
 	}
 
+	public List<OrderTypeEnum> getOrderTypeList() {
+		return orderTypeList;
+	}
+
+	public void setOrderTypeList(List<OrderTypeEnum> orderTypeList) {
+		this.orderTypeList = orderTypeList;
+	}
+
+	public String getScreen() {
+		return screen;
+	}
+
+	public void setScreen(String screen) {
+		this.screen = screen;
+	}
 
 }

@@ -265,7 +265,7 @@ public class AppAdapter {
 			for (String invalidTime : invalidDateArr) {
 				invalidIndex ++ ;
 				invalidMonth = invalidTime.substring(0, 6);
-				if (determineMonth.compareTo(invalidMonth) == -1) {
+				if (determineMonth.compareTo(invalidMonth) < 0) {
 					// 如果当前月份小于不可用日期限制的月份，则当前日期一定可用
 					validDays++;
 					break;
@@ -282,7 +282,7 @@ public class AppAdapter {
 						validDays++;
 						break;
 					}
-				} else if (determineMonth.compareTo(invalidMonth) == 1) {
+				} else if (determineMonth.compareTo(invalidMonth) > 0) {
 					// 如果当前月份大于不可用日期限制的月份，如果不可用日期还存在，则循环跳入下一个月份限制进行判定，否则当前日期可用，直接跳出。
 					if(invalidIndex == invalidDateArr.length){
 						validDays++;

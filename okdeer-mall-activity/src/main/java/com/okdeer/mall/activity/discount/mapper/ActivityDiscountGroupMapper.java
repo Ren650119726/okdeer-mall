@@ -7,11 +7,15 @@
 package com.okdeer.mall.activity.discount.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
+import com.okdeer.archive.goods.base.entity.GoodsSpuCategory;
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.mall.activity.discount.dto.ActivityGoodsGroupSkuDto;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountGroup;
+import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
 /**
  * ClassName: ActivityDiscountGroupMapper 
  * @Description: 团购商品关联表实体操作类
@@ -58,5 +62,23 @@ public interface ActivityDiscountGroupMapper extends IBaseMapper {
 	 * @date 2017年10月13日
 	 */
 	ActivityDiscountGroup findByActivityIdAndSkuId(@Param("activityId")String activityId,@Param("storeSkuId")String storeSkuId);
+	
+	/**
+	 * @Description: 根据开团状态查询团购商品的分类
+	 * @param status
+	 * @author tuzhd
+	 * @date 2017年10月17日
+	 */
+	List<GoodsSpuCategory> findGroupGoodsCategory(@Param("status")ActivityDiscountStatus status);
+	
+	/**
+	 * @Description: 根据开团状态查询团购商品的分类
+	 * @param status
+	 * @author tuzhd
+	 * @date 2017年10月17日
+	 */
+	List<ActivityGoodsGroupSkuDto> findGroupGoodsList(Map<String,Object> param);
+	
+	
 
 }
