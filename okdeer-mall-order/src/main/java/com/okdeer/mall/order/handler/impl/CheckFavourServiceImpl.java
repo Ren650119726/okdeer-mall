@@ -124,6 +124,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		StoreSkuParserBo parserBo = (StoreSkuParserBo)paramDto.get("parserBo");
 		// 刷新请求商品列表
 		if(paramDto.getChannel() != OrderResourceEnum.MEMCARD && 
+				paramDto.getChannel() != OrderResourceEnum.SWEEP && 
 				paramDto.getChannel() != OrderResourceEnum.WECHAT_MIN){
 			parserBo.refreshReqSkuList(paramDto);
 		}

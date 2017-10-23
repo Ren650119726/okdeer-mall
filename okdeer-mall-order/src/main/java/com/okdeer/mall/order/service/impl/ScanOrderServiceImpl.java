@@ -179,7 +179,7 @@ public class ScanOrderServiceImpl implements ScanOrderService {
 		//将订单状态标记为：等待买家付款
 		persity.setStatus(OrderStatusEnum.UNPAID);
 		//将订单来源标记为：自助买单
-		persity.setOrderResource(OrderResourceEnum.SWEEP);
+		persity.setOrderResource(vo.getOrderResource());
 		//保存订单
 		tradeOrderService.insertTradeOrder(persity);
 		

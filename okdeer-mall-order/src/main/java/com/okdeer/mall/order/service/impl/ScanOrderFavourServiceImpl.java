@@ -70,7 +70,7 @@ public class ScanOrderFavourServiceImpl implements ScanOrderFavourService{
 	@Override
 	public void appendFavour(ScanOrderDto orderDetail, RequestParams requestParams) throws Exception {
 
-		if(OrderResourceEnum.WECHAT_MIN.ordinal() == Integer.valueOf(orderDetail.getOrderResource())){
+		if(OrderResourceEnum.WECHAT_MIN == orderDetail.getOrderResource()){
 			return;
 		}
 		//设置为使用才进行查询优惠信息  并设置优惠信息
