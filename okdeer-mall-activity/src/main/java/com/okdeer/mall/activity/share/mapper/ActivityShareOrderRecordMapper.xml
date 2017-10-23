@@ -6,11 +6,12 @@
         <result column="order_id" property="orderId" jdbcType="VARCHAR" />
         <result column="share_id" property="shareId" jdbcType="VARCHAR" />
         <result column="type" property="type" jdbcType="TINYINT"  />
+        <result column="status" property="status" jdbcType="TINYINT"  />
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     </resultMap>
 
     <sql id="Base_Column_List" >
-        id, order_id, share_id, type, create_time
+        id, order_id, share_id, type,status, create_time
     </sql>
 
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -35,6 +36,9 @@
             <if test="type != null" >
                 type,
             </if>
+            <if test="status != null" >
+                status,
+            </if>
             <if test="createTime != null" >
                 create_time,
             </if>
@@ -51,6 +55,9 @@
             </if>
             <if test="type != null" >
                 #{type,jdbcType=TINYINT},
+            </if>
+             <if test="status != null" >
+             	#{status,jdbcType=TINYINT},
             </if>
             <if test="createTime != null" >
                 #{createTime,jdbcType=TIMESTAMP},
@@ -69,6 +76,9 @@
             </if>
             <if test="type != null" >
                 type = #{type,jdbcType=TINYINT},
+            </if>
+            <if test="status != null" >
+             	status = #{status,jdbcType=TINYINT},
             </if>
             <if test="createTime != null" >
                 create_time = #{createTime,jdbcType=TIMESTAMP},

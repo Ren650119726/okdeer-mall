@@ -45,8 +45,11 @@ import com.okdeer.mall.order.dto.StoreConsumerApplyDto;
 import com.okdeer.mall.order.dto.StoreConsumerApplyParamDto;
 import com.okdeer.mall.order.dto.TradeOrderApplyRefundParamDto;
 import com.okdeer.mall.order.dto.TradeOrderApplyRefundResultDto;
+import com.okdeer.mall.order.dto.TradeOrderDto;
 import com.okdeer.mall.order.dto.TradeOrderItemDetailDto;
 import com.okdeer.mall.order.dto.TradeOrderItemDto;
+import com.okdeer.mall.order.dto.TradeOrderRefundsDto;
+import com.okdeer.mall.order.dto.TradeOrderRefundsParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -946,10 +949,37 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 		}
 
 	}
-	
+
 	@Override
-	public Response<TradeOrderApplyRefundResultDto> applyRefund(TradeOrderApplyRefundParamDto tradeOrderApplyRefundParamDto) throws MallApiException{
+	public Response<TradeOrderApplyRefundResultDto> applyRefund(
+			TradeOrderApplyRefundParamDto tradeOrderApplyRefundParamDto) throws MallApiException {
 		return tradeOrderRefundsService.processApplyRefund(tradeOrderApplyRefundParamDto);
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public PageUtils<TradeOrderRefundsDto> findList(TradeOrderRefundsParamDto tradeOrderRefundsParam, int pageNum,
+			int pageSize) throws MallApiException {
+		PageUtils<TradeOrderRefunds> pages = tradeOrderRefundsService.findList(tradeOrderRefundsParam, pageNum,
+				pageSize);
+		PageUtils<TradeOrderRefundsDto> dtoPages = pages.toBean(TradeOrderRefundsDto.class);
+		if (tradeOrderRefundsParam.isJoinOrder()) {
+			List<TradeOrderRefundsDto> tradeOrderRefundsList = dtoPages.getList();
+			if (CollectionUtils.isEmpty(tradeOrderRefundsList)) {
+				return dtoPages;
+			}
+			try {
+				for (TradeOrderRefundsDto tradeOrderRefundsDto : tradeOrderRefundsList) {
+					TradeOrder tradeOrder = tradeOrderService.selectById(tradeOrderRefundsDto.getOrderId());
+					if(tradeOrder != null){
+						tradeOrderRefundsDto.setTradeOrderDto(BeanMapper.map(tradeOrder, TradeOrderDto.class));
+					}
+				}
+			} catch (ServiceException e) {
+				throw new MallApiException(e);
+			}
+		}
+		return dtoPages;
 	}
 
 }

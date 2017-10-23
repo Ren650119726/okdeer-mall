@@ -10,6 +10,7 @@ import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.order.dto.OrderRefundQueryParamDto;
 import com.okdeer.mall.order.dto.TradeOrderApplyRefundParamDto;
 import com.okdeer.mall.order.dto.TradeOrderApplyRefundResultDto;
+import com.okdeer.mall.order.dto.TradeOrderRefundsParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsLogistics;
@@ -381,4 +382,13 @@ public interface TradeOrderRefundsService {
 	
 	
 	void insertRechargeRefunds(TradeOrder tradeOrder) throws Exception;
+	
+	/**
+	 * @Description: 查询退款单列表
+	 * @param tradeOrderRefundsParam 查询参数
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年10月23日
+	 */
+	PageUtils<TradeOrderRefunds> findList(TradeOrderRefundsParamDto tradeOrderRefundsParam,int pageNum,int pageSize);
 }

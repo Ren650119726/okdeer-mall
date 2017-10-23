@@ -38,6 +38,11 @@ public class ActivityShareOrderRecord {
 	private Integer type;
 
 	/**
+	 * 状态 0:创建订单 1:已经发货 2 已经完成
+	 */
+	private Integer status;
+
+	/**
 	 * 创建时间
 	 */
 	private Date createTime;
@@ -80,6 +85,14 @@ public class ActivityShareOrderRecord {
 
 	public void setCreateTime(Date createTime) {
 		this.createTime = createTime;
+	}
+
+	public Integer getStatus() {
+		return status;
+	}
+
+	public void setStatus(Integer status) {
+		this.status = status;
 	}
 
 }

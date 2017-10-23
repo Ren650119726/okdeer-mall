@@ -42,6 +42,7 @@ import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.dto.OrderRefundQueryParamDto;
 import com.okdeer.mall.order.dto.TradeOrderApplyRefundParamDto;
 import com.okdeer.mall.order.dto.TradeOrderApplyRefundResultDto;
+import com.okdeer.mall.order.dto.TradeOrderRefundsParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItemDetail;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
@@ -1119,6 +1120,13 @@ public class TradeOrderRefundsServiceImpl extends AbstractTradeOrderRefundsServi
 		} else {
 			logger.error("退款成功,订单id{},订单号:{}", tradeOrder.getId(), tradeOrder.getOrderNo());
 		}
+	}
+
+	@Override
+	public PageUtils<TradeOrderRefunds> findList(TradeOrderRefundsParamDto tradeOrderRefundsParam,int pageNum,int pageSize) {
+		PageHelper.startPage(pageNum, pageSize, true);
+		List<TradeOrderRefunds> tradeOrderRefundsList = tradeOrderRefundsMapper.findList(tradeOrderRefundsParam);
+		return new PageUtils<>(tradeOrderRefundsList);
 	}
 
 }

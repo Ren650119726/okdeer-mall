@@ -75,6 +75,13 @@
     disabled, total_income,store_preferential
   </sql>
   
+  <sql id="Refunds_Column_List" >
+    refunds.id, refunds.user_id, refunds.store_id, refunds.type, refunds.refund_no,refunds.order_id, refunds.order_no, refunds.trade_num, refunds.payment_method, refunds.status, 
+    refunds.total_amount,refunds.total_preferential_price, refunds.create_time, refunds.update_time,refunds.refunds_reason, 
+    refunds.refuse_reson, refunds.memo, refunds.operator, refunds.refunds_status, refunds.order_resource, refunds.logistics_type, refunds.refund_money_time, 
+    refunds.disabled, refunds.total_income,refunds.store_preferential
+  </sql>
+  
   <sql id="condition" >
     <if test="null!=params" >
       <if test="null!=params.queryCondition and ''!=params.queryCondition" >
@@ -1906,5 +1913,71 @@
 		LEFT JOIN store_info store ON store.id
 		= refunds.store_id
 		WHERE refunds.id = #{refundId,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="findList" parameterType="com.okdeer.mall.order.dto.TradeOrderRefundsParamDto" resultMap="BaseResultMap">
+		SELECT 
+		<include refid="Refunds_Column_List" />
+		FROM trade_order_refunds  refunds
+		<if test="isJoinOrder">
+			LEFT JOIN trade_order tr ON refunds.order_id = tr.id
+		</if>
+		<where>
+			<if test="idList != null and idList.size() > 0">
+				AND refunds.id in
+				<foreach collection="idList" open="(" close=")" item="item" separator="," >
+					#{item,jdbcType=VARCHAR}
+				</foreach>				
+			</if>
+			<if test="orderIdList != null and orderIdList.size() > 0">
+				AND refunds.order_id in
+				<foreach collection="orderIdList" open="(" close=")" item="item" separator="," >
+					#{item,jdbcType=VARCHAR}
+				</foreach>				
+			</if>
+			<if test="createStartTime != null and createStartTime != '' ">
+				<![CDATA[AND refunds.create_time >= #{createStartTime,jdbcType=VARCHAR}]]>
+			</if>
+			<if test="createEndTime != null and createEndTime != '' ">
+				<![CDATA[AND refunds.create_time <= #{createEndTime,jdbcType=VARCHAR}]]>
+			</if>
+			<if test="refundMoneyStartTime != null and refundMoneyStartTime != '' ">
+				<![CDATA[AND refunds.refund_money_time >= #{refundMoneyStartTime,jdbcType=VARCHAR}]]>
+			</if>
+			<if test="refundMoneyEndTime != null and refundMoneyEndTime != '' ">
+				<![CDATA[AND refunds.refund_money_time <= #{refundMoneyEndTime,jdbcType=VARCHAR}]]>
+			</if>
+			<if test="refundsStatus != null">
+				AND refunds.refunds_status = #{refundsStatus,jdbcType=TINYINT}
+			</if>
+			<if test="refundsStatusList != null and refundsStatusList.size() > 0">
+				AND refunds.refunds_status in
+				<foreach collection="refundsStatusList" open="(" close=")" item="item" separator="," >
+					${item,jdbcType=TINYINT}
+				</foreach>				
+			</if>
+			<if test="orderId != null and orderId != '' ">
+				AND refunds.orderId = #{orderId,jdbcType=VARCHAR}
+			</if>
+			<if test="orderNo != null and orderNo != '' ">
+				AND refunds.order_no  like  CONCAT('%',#{orderNo,jdbcType=VARCHAR},'%') 
+			</if>
+			<if test="refundNo != null and refundNo != '' ">
+				AND refunds.refund_no like  CONCAT('%',#{refundNo,jdbcType=VARCHAR},'%') 
+			</if>
+			<if test="storeId != null and storeId != '' ">
+				AND refunds.store_id = #{storeId,jdbcType=VARCHAR}
+			</if>
+			<if test="userPhoneNo != null and userPhoneNo !='' ">
+				AND tr.user_phone  like  CONCAT(#{userPhoneNo,jdbcType=VARCHAR},'%')
+			</if>
+			<if test="createOrderStartTime != null and createOrderStartTime != '' ">
+				<![CDATA[AND tr.create_time >= #{createOrderStartTime,jdbcType=VARCHAR}]]>
+			</if>
+			<if test="createOrderEndTime != null and createOrderEndTime != '' ">
+				<![CDATA[AND tr.create_time <= #{createOrderEndTime,jdbcType=VARCHAR}]]>
+			</if>
+		</where>
+		ORDER BY refunds.create_time DESC
 	</select>
 </mapper>
