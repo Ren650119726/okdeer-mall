@@ -122,9 +122,15 @@ public class UserOrderDtoLoader {
 		totalNum += orderList.getTotal();
 		UserOrderDto orderDto = null;
 		for(TradeOrder order : orderListTemp){
-			orderDto = BeanMapper.map(order, UserOrderDto.class);
+			orderDto = new UserOrderDto();
+			//设置订单ID 
 			orderDto.setOrderId(order.getId());
+			orderDto.setStoreId(order.getStoreId());
+			orderDto.setStoreName(order.getStoreName());
+			orderDto.setTradeNum(order.getTradeNum());
 			orderDto.setActivityType(String.valueOf(order.getActivityType().ordinal()));
+			orderDto.setActivityId(order.getActivityId());
+			orderDto.setActivityItemId(order.getActivityItemId());
 			orderDto.setTotalAmount(ConvertUtil.format(order.getTotalAmount()));
 			orderDto.setActualAmount(ConvertUtil.format(order.getActualAmount()));
 			orderDto.setFare(ConvertUtil.format(order.getFare()));
