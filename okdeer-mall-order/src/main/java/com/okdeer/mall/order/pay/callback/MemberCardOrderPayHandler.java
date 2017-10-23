@@ -8,7 +8,7 @@ import com.okdeer.mall.order.enums.OrderStatusEnum;
 
 /**
  * ClassName: ScanOrderPayHandler 
- * @Description: 扫码够订单支付成功后处理
+ * @Description: 会员卡自助订单支付成功后处理
  * @author zengjizu
  * @date 2017年3月24日
  *
