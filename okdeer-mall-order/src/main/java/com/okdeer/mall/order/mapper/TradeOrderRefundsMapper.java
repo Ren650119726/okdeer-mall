@@ -11,6 +11,7 @@ import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.order.dto.OrderRefundQueryParamDto;
+import com.okdeer.mall.order.dto.TradeOrderRefundsParamDto;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsImage;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
@@ -357,5 +358,6 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	
 	TradeOrderRefunds findStoreConsumeOrderDetailById(String refundId);
 
+	List<TradeOrderRefunds> findList(TradeOrderRefundsParamDto tradeOrderRefundsParam);
 	// end v1.1.0 add by zengjz 20160914
 }
