@@ -140,7 +140,7 @@ public class ScanOrderApiImpl implements ScanOrderApi {
     	RespSelfJson resp = selfPayOrderServiceApi.settlementOrder(prepayDto);
     	//验证返回结果
     	ScanOrderDto orderDetail = new ScanOrderDto();
-    	orderDetail.setOrderResource(scanOrderDto.getOrderResource());
+    	orderDetail.setOrderResource(OrderResourceEnum.enumValueOf(Integer.valueOf(scanOrderDto.getOrderResource())));
 		if(Integer.valueOf(resp.get(RespSelfJson.KEY_CODE).toString()) != 0){
 			orderDetail.setCode(Integer.valueOf(resp.get(RespSelfJson.KEY_CODE).toString()));
 			logger.error("扫码购确认订单失败，code:{},原因：{}",resp.get(RespSelfJson.KEY_CODE),resp.get(RespSelfJson.KEY_MESSAGE));
@@ -169,28 +169,29 @@ public class ScanOrderApiImpl implements ScanOrderApi {
     	//共用实物订单代金券校验
 		StoreSkuParserBo bo = new StoreSkuParserBo(Lists.newArrayList());
 		orderParamDto.getCacheMap().put("parserBo", bo);
-		orderParamDto.setChannel(String.valueOf(OrderResourceEnum.WECHAT_MIN.ordinal()));
+		ScanOrderDto cacheOrderDetail = (ScanOrderDto) redisTemplateWrapper.get(SCAN_ORDER_PRDFIX+orderParamDto.getOrderId());
+		orderParamDto.setChannel(String.valueOf(cacheOrderDetail.getOrderResource().ordinal()));
 		if(orderParamDto.getActivityType() == null){
 			orderParamDto.setActivityType(String.valueOf(ActivityTypeEnum.NO_ACTIVITY.ordinal()));
-		}else{
-			ScanOrderDto orderDetail = (ScanOrderDto) redisTemplateWrapper.get(SCAN_ORDER_PRDFIX+orderParamDto.getOrderId());
+		} else if (ActivityTypeEnum.NO_ACTIVITY != orderParamDto.getActivityType()) {
 			PlaceOrderItemDto item = new PlaceOrderItemDto();
 			//设置可优惠金额 用于代金券校验，设置可以优惠金额到订单项中，由于优惠校验
-			item.setTotalAmount(orderDetail.getTotalAmount());
-			item.setSkuPrice(orderDetail.getTotalAmount());
+			item.setTotalAmount(cacheOrderDetail.getTotalAmount());
+			item.setSkuPrice(cacheOrderDetail.getTotalAmount());
 			item.setQuantity(1);
 			item.setSkuActType(ActivityTypeEnum.NO_ACTIVITY.ordinal());
 			item.setSkuActType(0);
 			List<PlaceOrderItemDto> list= Lists.newArrayList();
 			list.add(item);
 			reqDto.getData().setSkuList(list);
-			bo.setTotalAmountHaveFavour(orderDetail.getAllowDiscountsAmount());
+			bo.setTotalAmountHaveFavour(cacheOrderDetail.getAllowDiscountsAmount());
+			
+			//检查代金券
+			checkFavourService.process(reqDto, resp);
+			if(!resp.isSuccess()){
+				return resp;
+			}
 		}
-		//检查代金券
-    	checkFavourService.process(reqDto, resp);
-    	if(!resp.isSuccess()){
-    		return resp;
-    	}
     	//检查零花钱
     	checkPinMoneyService.process(reqDto, resp);
     	if(!resp.isSuccess()){
@@ -208,6 +209,7 @@ public class ScanOrderApiImpl implements ScanOrderApi {
     	orderDetail.setCouponsId(orderParamDto.getActivityItemId());
 		//保存扫描购订单信息
 		orderDetail.setRecordId(reqDto.getData().getRecordId());
+		orderDetail.setOrderResource(orderParamDto.getChannel());
 		scanOrderService.saveScanOrder(orderDetail, orderDetail.getBranchId(),requestParams);
 		//填充返回信息
 		fillResponse(resp,orderDetail);

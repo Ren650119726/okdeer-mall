@@ -9,6 +9,8 @@ package com.okdeer.mall.order.handler.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +38,7 @@ import com.site.lookup.util.StringUtils;
 @Service("checkPinMoneyService")
 public class CheckPinMoneyServiceImpl implements RequestHandler<PlaceOrderParamDto, PlaceOrderDto> {
 
+	private Logger logger = LoggerFactory.getLogger(CheckPinMoneyServiceImpl.class);
 	@Autowired
 	private TradePinMoneyObtainService tradePinMoneyObtainService;
 	
@@ -49,6 +52,7 @@ public class CheckPinMoneyServiceImpl implements RequestHandler<PlaceOrderParamD
 			BigDecimal myUsable = tradePinMoneyObtainService.findMyUsableTotal(req.getData().getUserId(),new Date());
 			BigDecimal pinMoney = new BigDecimal( paramDto.getPinMoney());
 			if (pinMoney.compareTo(myUsable) > 0) {
+				logger.info("pinMoney:{},myUsable:{}",pinMoney,myUsable);
 				resp.setResult(ResultCodeEnum.TRADE_LIMIT_PIN_MONEY);
 				return;
 			}
