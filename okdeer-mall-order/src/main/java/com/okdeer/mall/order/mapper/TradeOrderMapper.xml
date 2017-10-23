@@ -6230,6 +6230,9 @@
 			<if test="notOrderResource != null">
 				AND order_resource != #{notOrderResource,jdbcType=TINYINT}
 			</if>
+			<if test="orderResource != null">
+				AND order_resource == #{orderResource,jdbcType=TINYINT}
+			</if>
 			
 			<!-- 限制订单类型 -->
 			<if test="orderTypeList != null and orderTypeList.size()>0">

@@ -26,6 +26,7 @@ import com.okdeer.archive.goods.store.service.GoodsStoreSkuPictureServiceApi;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.model.RequestParams;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.redis.IRedisTemplateWrapper;
 import com.okdeer.common.utils.ImageCutUtils;
 import com.okdeer.common.utils.ImageTypeContants;
@@ -33,7 +34,6 @@ import com.okdeer.common.utils.JsonDateUtil;
 import com.okdeer.jxc.branch.entity.Branches;
 import com.okdeer.jxc.branch.service.BranchesServiceApi;
 import com.okdeer.jxc.common.result.RespSelfJson;
-import com.okdeer.jxc.common.utils.JsonMapper;
 import com.okdeer.jxc.pos.service.SelfPayOrderServiceApi;
 import com.okdeer.jxc.pos.vo.SelfOrderVo;
 import com.okdeer.jxc.pos.vo.SelfPayTradeInfoVo;
@@ -148,6 +148,7 @@ public class ScanOrderApiImpl implements ScanOrderApi {
 		}
 		SelfPayTradeInfoVo tradeInfoVo = (SelfPayTradeInfoVo) resp.get(RespSelfJson.DATA);
 		BeanMapper.copy(tradeInfoVo, orderDetail);
+		logger.info("订单详情：{}",JsonMapper.nonDefaultMapper().toJson(orderDetail));
     	scanOrderFavourService.appendFavour(orderDetail, requestParams);
     	for (ScanOrderItemDto item : orderDetail.getList()) {
     		item.setSkuPic(findSkuPic(item.getSkuId(), requestParams.getScreen()));
