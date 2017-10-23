@@ -58,7 +58,7 @@ class TradeOrderRefundsCertificateServiceImpl implements TradeOrderRefundsCertif
 		List<TradeOrderRefundsCertificateImg> certificateImgs = certificate.getTradeOrderRefundsCertificateImg();
 		if (certificateImgs != null) {
 			for (TradeOrderRefundsCertificateImg certificateImg : certificateImgs) {
-				tradeOrderRefundsCertificateImgMapper.insert(certificateImg);
+				tradeOrderRefundsCertificateImgMapper.add(certificateImg);
 			}
 		}
 	}

@@ -6,26 +6,17 @@
     <result column="certificate_id" property="certificateId" jdbcType="VARCHAR" />
     <result column="image_path" property="imagePath" jdbcType="VARCHAR" />
   </resultMap>
-  <sql id="condition" >
-    <if test="null!=params" >
-      <if test="null!=params.queryCondition and ''!=params.queryCondition" >
-        ${params.queryCondition}
-      </if>
-    </if>
-  </sql>
-  <select id="selectByParams" resultMap="BaseResultMap" parameterType="map" >
-    SELECT 
+  
+  <sql id="Base_Columns">
     id, certificate_id, image_path
-     FROM trade_order_refunds_certificate_img WHERE 1=1 
-    <include refid="condition" />
+  </sql>
+ 	
+ 	
+  <select id="findByCertificateId" parameterType="java.lang.String"  resultMap="BaseResultMap">
+	  SELECT <include refid="Base_Columns" /> FROM trade_order_refunds_certificate_img WHERE certificate_id = #{certificateId,jdbcType=VARCHAR}
   </select>
-  <insert id="insert" parameterType="com.okdeer.mall.order.entity.TradeOrderRefundsCertificateImg" >
-    insert into trade_order_refunds_certificate_img (id, certificate_id, image_path
-      )
-    values (#{id,jdbcType=VARCHAR}, #{certificateId,jdbcType=VARCHAR}, #{imagePath,jdbcType=VARCHAR}
-      )
-  </insert>
-  <insert id="insertSelective" parameterType="com.okdeer.mall.order.entity.TradeOrderRefundsCertificateImg" >
+  
+  <insert id="add" parameterType="com.okdeer.mall.order.entity.TradeOrderRefundsCertificateImg" >
     insert into trade_order_refunds_certificate_img
     <trim prefix="(" suffix=")" suffixOverrides="," >
       <if test="id != null" >

@@ -49,7 +49,10 @@ import com.okdeer.mall.order.dto.TradeOrderDto;
 import com.okdeer.mall.order.dto.TradeOrderItemDetailDto;
 import com.okdeer.mall.order.dto.TradeOrderItemDto;
 import com.okdeer.mall.order.dto.TradeOrderRefundsDto;
+import com.okdeer.mall.order.dto.TradeOrderRefundsItemDto;
+import com.okdeer.mall.order.dto.TradeOrderRefundsLogisticsDto;
 import com.okdeer.mall.order.dto.TradeOrderRefundsParamDto;
+import com.okdeer.mall.order.dto.TradeOrderRefundsQueryCdtDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderInvoice;
 import com.okdeer.mall.order.entity.TradeOrderItem;
@@ -58,6 +61,7 @@ import com.okdeer.mall.order.entity.TradeOrderPay;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsCertificateImg;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
+import com.okdeer.mall.order.entity.TradeOrderRefundsLogistics;
 import com.okdeer.mall.order.enums.ConsumeStatusEnum;
 import com.okdeer.mall.order.enums.OrderItemStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
@@ -76,6 +80,7 @@ import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderRefundsApi;
 import com.okdeer.mall.order.service.TradeOrderRefundsCertificateService;
 import com.okdeer.mall.order.service.TradeOrderRefundsItemService;
+import com.okdeer.mall.order.service.TradeOrderRefundsLogisticsService;
 import com.okdeer.mall.order.service.TradeOrderRefundsService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.vo.TradeOrderRefundsCertificateVo;
@@ -155,6 +160,10 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 
 	@Autowired
 	private TradeOrderRefundsItemService tradeOrderRefundsItemService;
+
+	@Autowired
+	private TradeOrderRefundsLogisticsService tradeOrderRefundsLogisticsService;
+	
 
 	@Reference(version = "1.0.0", check = false)
 	private StoreInfoServiceApi storeInfoService;
@@ -893,15 +902,15 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 	@Override
 	public <T> String applyRefund(T request, RefundOrderTypeEnum refundtype) throws Exception {
 		switch (refundtype) {
-			case PHYSICAL_ORDER:
-				// 实物订单处理
-				PhysOrderApplyRefundParamDto applyRefundParamDto = (PhysOrderApplyRefundParamDto) request;
-				return physOrderApplyRefund(applyRefundParamDto);
-			case STORE_CONSUMER:
-				// 到店消费订单处理
+		case PHYSICAL_ORDER:
+			// 实物订单处理
+			PhysOrderApplyRefundParamDto applyRefundParamDto = (PhysOrderApplyRefundParamDto) request;
+			return physOrderApplyRefund(applyRefundParamDto);
+		case STORE_CONSUMER:
+			// 到店消费订单处理
 
-			default:
-				break;
+		default:
+			break;
 		}
 		return null;
 
@@ -971,7 +980,7 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 			try {
 				for (TradeOrderRefundsDto tradeOrderRefundsDto : tradeOrderRefundsList) {
 					TradeOrder tradeOrder = tradeOrderService.selectById(tradeOrderRefundsDto.getOrderId());
-					if(tradeOrder != null){
+					if (tradeOrder != null) {
 						tradeOrderRefundsDto.setTradeOrderDto(BeanMapper.map(tradeOrder, TradeOrderDto.class));
 					}
 				}
@@ -980,6 +989,64 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 			}
 		}
 		return dtoPages;
+	}
+
+	@Override
+	public TradeOrderRefundsDto findById(String refundsId, TradeOrderRefundsQueryCdtDto tradeOrderRefundsQueryCdtDto)
+			throws MallApiException {
+		TradeOrderRefunds tradeOrderRefunds = tradeOrderRefundsService.findById(refundsId);
+		if (tradeOrderRefunds == null) {
+			return null;
+		}
+		TradeOrderRefundsDto tradeOrderRefundsDto = BeanMapper.map(tradeOrderRefunds, TradeOrderRefundsDto.class);
+
+		if (tradeOrderRefundsQueryCdtDto.isQueryRefundsItem()) {
+			//查询退款单项信息
+			List<TradeOrderRefundsItem> refundItemList = tradeOrderRefundsItemService
+					.getTradeOrderRefundsItemByRefundsId(refundsId);
+			if (refundItemList != null) {
+				tradeOrderRefundsDto.setRefundItemList(BeanMapper.mapList(refundItemList, TradeOrderRefundsItemDto.class));
+			}
+		}
+		if (tradeOrderRefundsQueryCdtDto.isQueryOrder()) {
+			//查询订单信息
+			try {
+				TradeOrder tradeOrder = tradeOrderService.selectById(tradeOrderRefunds.getOrderId());
+				if (tradeOrder != null) {
+					tradeOrderRefundsDto.setTradeOrderDto(BeanMapper.map(tradeOrder, TradeOrderDto.class));
+				}
+			} catch (ServiceException e) {
+				logger.error("查询订单信息出错", e);
+				throw new MallApiException(e);
+			}
+		}
+
+		if (tradeOrderRefundsQueryCdtDto.isQueryRefundsLogistics()) {
+			// 查询物流信息
+			TradeOrderRefundsLogistics tradeOrderRefundsLogistics = tradeOrderRefundsLogisticsService
+					.findByRefundsId(tradeOrderRefunds.getId());
+			if (tradeOrderRefundsLogistics != null) {
+				tradeOrderRefundsDto.setTradeOrderRefundsLogistics(
+						BeanMapper.map(tradeOrderRefundsLogistics, TradeOrderRefundsLogisticsDto.class));
+			}
+		}
+		
+		if(tradeOrderRefundsQueryCdtDto.isQueryCertificate()){
+			//查询凭证信息
+			List<TradeOrderRefundsCertificateVo> certificateList = Lists.newArrayList();
+			List<TradeOrderRefundsCertificateVo> certificateVos = tradeOrderRefundsCertificateService.findByRefundsId(refundsId);
+			if(StringUtils.isEmpty(tradeOrderRefundsQueryCdtDto.getCertificateUserId())){
+				tradeOrderRefundsDto.setCertificateList(certificateVos);
+			}else{
+				for (TradeOrderRefundsCertificateVo tradeOrderRefundsCertificateVo : certificateVos) {
+					if(tradeOrderRefundsCertificateVo.getOperator().equals(tradeOrderRefundsQueryCdtDto.getCertificateUserId())){
+						certificateList.add(tradeOrderRefundsCertificateVo);
+					}
+				}
+				tradeOrderRefundsDto.setCertificateList(certificateList);
+			}
+		}
+		return tradeOrderRefundsDto;
 	}
 
 }
