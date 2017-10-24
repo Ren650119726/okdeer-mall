@@ -220,7 +220,15 @@ public class FindUserAddrServiceImpl implements RequestHandler<PlaceOrderParamDt
 		filterCondition.setActivityId(actInfo.getId());
 		List<UserAddressVo> userAddrList = memberConsigneeAddressService.findUserAddrList(paramDto.getUserId(),
 				filterCondition, groupUserAddrFilterStrategy);
-		return CollectionUtils.isEmpty(userAddrList) ? null : userAddrList.get(0);
+		if(CollectionUtils.isEmpty(userAddrList)){
+			return null;
+		}
+		for(UserAddressVo userAddr : userAddrList){
+			if(Integer.valueOf(0).equals(userAddr.getIsOutRange())){
+				return userAddr;
+			}
+		}
+		return null;
 	}
 	// End V2.6.3 added by maojj 2017-10-11
 }

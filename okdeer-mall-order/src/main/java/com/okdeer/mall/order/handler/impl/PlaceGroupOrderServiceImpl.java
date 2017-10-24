@@ -8,11 +8,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.enums.Disabled;
+import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.jxc.common.utils.UuidUtils;
 import com.okdeer.mall.activity.discount.mapper.ActivityJoinRecordMapper;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
+import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
+import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.order.builder.TradeOrderBuilder;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
@@ -49,6 +53,9 @@ public class PlaceGroupOrderServiceImpl implements RequestHandler<PlaceOrderPara
 	
 	@Resource
 	private TradeOrderTimer tradeOrderTimer;
+	
+	@Resource
+	private MemberConsigneeAddressMapper memberConsigneeAddressMapper;
 
 	@Override
 	@Transactional
@@ -56,6 +63,11 @@ public class PlaceGroupOrderServiceImpl implements RequestHandler<PlaceOrderPara
 		PlaceOrderParamDto paramDto = req.getData();
 		// 根据请求构建订单
 		TradeOrder tradeOrder = tradeOrderBoBuilder.build(paramDto);
+		MemberConsigneeAddress userUseAddr = (MemberConsigneeAddress) paramDto.get("userUseAddr");
+		if (userUseAddr == null) {
+			resp.setResult(ResultCodeEnum.ADDRESS_NOT_EXSITS);
+			return;
+		}
 		// 保存订单
 		tradeOrderSerive.insertTradeOrder(tradeOrder);
 		// 保存订单日志
@@ -65,6 +77,8 @@ public class PlaceGroupOrderServiceImpl implements RequestHandler<PlaceOrderPara
 		saveActivityJoinRec(paramDto, tradeOrder.getId());
 		// 保存订单团单关联关系
 		saveGroupOrderRel(paramDto, tradeOrder.getId());
+		// 更新用户最后使用的地址
+		updateLastUseAddr(userUseAddr);
 		// 发送订单超时未支付的消息
 		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_pay_timeout, tradeOrder.getId());
 		
@@ -118,5 +132,16 @@ public class PlaceGroupOrderServiceImpl implements RequestHandler<PlaceOrderPara
 		orderGroupRel.setType(GroupJoinTypeEnum.GROUP_JOIN);
 		orderGroupRel.setStatus(GroupJoinStatusEnum.WAIT_JOIN);
 		tradeOrderGroupRelationMapper.add(orderGroupRel);
+	}
+	
+	/**
+	 * @Description: 更新最后一次用户使用的地址
+	 * @param userUseAddr   
+	 * @author maojj
+	 * @date 2017年3月15日
+	 */
+	public void updateLastUseAddr(MemberConsigneeAddress userUseAddr) {
+		userUseAddr.setUseTime(DateUtils.getSysDate());
+		memberConsigneeAddressMapper.updateByPrimaryKeySelective(userUseAddr);
 	}
 }
