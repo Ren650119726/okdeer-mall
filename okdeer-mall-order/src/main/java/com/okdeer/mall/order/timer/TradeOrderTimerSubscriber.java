@@ -788,7 +788,7 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 	 * @author maojj
 	 * @date 2017年10月17日
 	 */
-	private ConsumeConcurrentlyStatus processGroupTimeout(String content, Tag tag){
+	public ConsumeConcurrentlyStatus processGroupTimeout(String content, Tag tag){
 		long currentTime = System.currentTimeMillis();
 		TimeoutMessage timeoutMsg = JsonMapper.nonEmptyMapper().fromJson(content, TimeoutMessage.class);
 		// 根据团购订单id查询团购订单
@@ -802,11 +802,11 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 				}
 				if(orderGroup.getExpireTime().getTime() - currentTime > MIN_INTERVAL){
 					// 如果团购订单过期时间-当前时间>最小时间间隔，则发送推迟执行消息，知道超时时间达到再进行消费
-					tradeOrderTimer.sendAfreshTimerMessage(tag, timeoutMsg, orderGroup.getExpireTime().getTime());
+					tradeOrderTimer.sendAfreshTimerMessage(tag, timeoutMsg, currentTime, orderGroup.getExpireTime().getTime());
 					return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 				}
 				if (orderGroup.getStatus() != GroupOrderStatusEnum.UN_GROUP
-						|| orderGroup.getStatus() != GroupOrderStatusEnum.GROUP_CLOSE) {
+						&& orderGroup.getStatus() != GroupOrderStatusEnum.GROUP_CLOSE) {
 					// 如果状态已经发生变更，则不做处理
 					return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 				}
