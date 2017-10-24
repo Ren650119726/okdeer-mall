@@ -1,5 +1,7 @@
 package com.okdeer.mall.order.pay.callback;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +11,8 @@ import com.okdeer.mall.order.enums.OrderTypeEnum;
 
 @Service
 public class PayResultHandlerFactory {
+	
+	private static final Logger logger = LoggerFactory.getLogger(PayResultHandlerFactory.class);
 
 	@Autowired
 	private AbstractPayResultHandler physicalOrderPayHandler;
@@ -81,6 +85,7 @@ public class PayResultHandlerFactory {
 				OrderResourceEnum.WECHAT_MIN == tradeOrder.getOrderResource() ||
 				OrderResourceEnum.MEMCARD == tradeOrder.getOrderResource() )){
 			//如果是扫码够或会员卡订单使用其对应handler tuzhd 修改 2018-08-08
+			logger.info("订单类型：{},订单来源：{}",tradeOrder.getType(),tradeOrder.getOrderResource());
 			handler = getByOrderResource(tradeOrder.getOrderResource());
 		}else{
 			//根据订单类型来获取handler
