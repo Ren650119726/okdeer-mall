@@ -61,6 +61,7 @@ import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.ScanOrderApi;
 import com.okdeer.mall.order.service.ScanOrderFavourService;
 import com.okdeer.mall.order.service.ScanOrderService;
+import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.site.lookup.util.StringUtils;
 
 /**
@@ -115,6 +116,12 @@ public class ScanOrderApiImpl implements ScanOrderApi {
     
     @Autowired
     private ScanOrderService scanOrderService;
+    
+	/**
+	 * 订单超时计时器
+	 */
+	@Resource
+	private TradeOrderTimer tradeOrderTimer;
     
     /**
  	 * 优惠信息校验
@@ -211,6 +218,8 @@ public class ScanOrderApiImpl implements ScanOrderApi {
 		orderDetail.setRecordId(reqDto.getData().getRecordId());
 		orderDetail.setOrderResource(orderParamDto.getChannel());
 		scanOrderService.saveScanOrder(orderDetail, orderDetail.getBranchId(),requestParams);
+		// 发送超时自动处理消息
+		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_pay_timeout, orderDetail.getOrderId());
 		//填充返回信息
 		fillResponse(resp,orderDetail);
 		return resp;
