@@ -99,6 +99,7 @@ import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.consts.PointConstants;
+import com.okdeer.common.exception.MallApiException;
 import com.okdeer.common.utils.JsonDateUtil;
 import com.okdeer.jxc.bill.service.HykPayOrderServiceApi;
 import com.okdeer.jxc.sale.order.po.MemberOrderDetailPo;
@@ -223,6 +224,7 @@ import com.okdeer.mall.order.mq.constants.TradeOrderTopic;
 import com.okdeer.mall.order.service.PageCallBack;
 import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderActivityService;
+import com.okdeer.mall.order.service.TradeOrderChangeListeners;
 import com.okdeer.mall.order.service.TradeOrderCompleteProcessService;
 import com.okdeer.mall.order.service.TradeOrderGroupService;
 import com.okdeer.mall.order.service.TradeOrderLogService;
@@ -669,6 +671,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     
     @Resource
     private SysConfigComponent sysConfigComponent;
+    
+    @Resource
+    private TradeOrderChangeListeners tradeOrderChangeListeners;
 
     @Override
     public List<TradeOrder> selectByParam(TradeOrderParamDto param) throws Exception {
@@ -2265,6 +2270,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         }
         //add by mengsj end 扫码购另外处理 and tuzd 会员卡扫码付
         // 保存订单轨迹
+        TradeOrderContext tradeOrderContext = new TradeOrderContext();
+        tradeOrderContext.setTradeOrder(tradeOrder);
+        try {
+			tradeOrderChangeListeners.tradeOrderChanged(tradeOrderContext);
+		} catch (MallApiException e) {
+			logger.error("订单监听处理失败",e);
+			throw new ServiceException(e);
+		}
         tradeOrderTraceService.saveOrderTrace(tradeOrder);
         return tradeOrderMapper.updateOrderStatus(tradeOrder);
     }

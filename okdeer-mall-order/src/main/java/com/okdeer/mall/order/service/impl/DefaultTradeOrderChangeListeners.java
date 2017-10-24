@@ -3,6 +3,10 @@ package com.okdeer.mall.order.service.impl;
 
 import java.util.List;
 
+import javax.annotation.Resource;
+
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
@@ -23,7 +27,10 @@ import com.okdeer.mall.order.service.TradeOrderChangeListeners;
  *
  */
 @Service
-public class DefaultTradeOrderChangeListeners implements TradeOrderChangeListeners {
+public class DefaultTradeOrderChangeListeners implements TradeOrderChangeListeners, InitializingBean, DisposableBean {
+
+	@Resource(name = "activityProcess")
+	private TradeOrderChangeListener activityProcess;
 
 	private List<TradeOrderChangeListener> listeners = Lists.newArrayList();
 
@@ -47,5 +54,16 @@ public class DefaultTradeOrderChangeListeners implements TradeOrderChangeListene
 			throw new RuntimeException("该监听器已经添加过了..");
 		}
 		listeners.add(tradeOrderChangeListener);
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		listeners.add(activityProcess);
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		listeners.clear();
+		listeners = null;
 	}
 }

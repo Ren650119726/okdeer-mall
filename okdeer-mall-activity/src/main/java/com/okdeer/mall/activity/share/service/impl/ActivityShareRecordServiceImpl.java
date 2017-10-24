@@ -10,6 +10,7 @@ import com.github.pagehelper.PageHelper;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.mall.activity.share.bo.ActivityShareRecordNumParamBo;
 import com.okdeer.mall.activity.share.dto.ActivityShareRecordParamDto;
 import com.okdeer.mall.activity.share.entity.ActivityShareRecord;
 import com.okdeer.mall.activity.share.mapper.ActivityShareRecordMapper;
@@ -33,6 +34,15 @@ public class ActivityShareRecordServiceImpl extends BaseServiceImpl implements A
 		List<ActivityShareRecord> list = activityShareRecordMapper.findList(activityShareRecordParamDto);
 		return new PageUtils<>(list);
 	}
-	
+
+	@Override
+	public List<ActivityShareRecord> findList(ActivityShareRecordParamDto activityShareRecordParamDto) {
+		return activityShareRecordMapper.findList(activityShareRecordParamDto);
+	}
+
+	@Override
+	public int updateNum(ActivityShareRecordNumParamBo activityShareRecordNumParamBo) {
+		return activityShareRecordMapper.updateNum(activityShareRecordNumParamBo);
+	}
 
 }
