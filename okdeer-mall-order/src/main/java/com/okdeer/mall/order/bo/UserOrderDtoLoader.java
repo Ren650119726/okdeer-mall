@@ -265,7 +265,7 @@ public class UserOrderDtoLoader {
 		}
 		groupRelList.forEach(groupRel -> {
 			UserOrderDto orderDto = this.orderDtoMap.get(groupRel.getOrderId());
-			orderDto.setGroupShareUrl(String.format("%s%s?uid=%s", groupShareLink,groupRel.getGroupOrderId(),groupRel.getUserId()));
+			orderDto.setGroupShareUrl(String.format("%s%s", groupShareLink,groupRel.getGroupOrderId()));
 			orderDto.setGroupOrderId(groupRel.getGroupOrderId());
 		});
 	}
