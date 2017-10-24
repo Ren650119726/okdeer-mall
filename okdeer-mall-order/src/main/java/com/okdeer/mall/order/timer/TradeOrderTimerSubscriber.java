@@ -788,7 +788,7 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 	 * @author maojj
 	 * @date 2017年10月17日
 	 */
-	private ConsumeConcurrentlyStatus processGroupTimeout(String content, Tag tag){
+	public ConsumeConcurrentlyStatus processGroupTimeout(String content, Tag tag){
 		long currentTime = System.currentTimeMillis();
 		TimeoutMessage timeoutMsg = JsonMapper.nonEmptyMapper().fromJson(content, TimeoutMessage.class);
 		// 根据团购订单id查询团购订单
@@ -806,7 +806,7 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 					return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 				}
 				if (orderGroup.getStatus() != GroupOrderStatusEnum.UN_GROUP
-						|| orderGroup.getStatus() != GroupOrderStatusEnum.GROUP_CLOSE) {
+						&& orderGroup.getStatus() != GroupOrderStatusEnum.GROUP_CLOSE) {
 					// 如果状态已经发生变更，则不做处理
 					return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 				}
