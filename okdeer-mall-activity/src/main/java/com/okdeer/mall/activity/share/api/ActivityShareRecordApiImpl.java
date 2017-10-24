@@ -2,7 +2,9 @@
 package com.okdeer.mall.activity.share.api;
 
 import java.util.Date;
+import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +60,15 @@ public class ActivityShareRecordApiImpl implements ActivityShareRecordApi {
 			SysBuyerUser sysBuyerUser = sysBuyerUserService.findByPrimaryKey(sysUserId);
 			if (sysBuyerUser == null) {
 				throw new MallApiException("用户不存在");
+			}
+			
+			ActivityShareRecordParamDto activityShareRecordParamDto = new ActivityShareRecordParamDto();
+			activityShareRecordParamDto.setActivityId(activityId);
+			activityShareRecordParamDto.setSysUserId(sysUserId);
+			activityShareRecordParamDto.setStoreSkuId(storeSkuId);
+			List<ActivityShareRecord> activityShareRecordList = activityShareRecordService.findList(activityShareRecordParamDto);
+			if(CollectionUtils.isNotEmpty(activityShareRecordList)){
+				return ;
 			}
 			ActivityShareRecord activityShareRecord = new ActivityShareRecord();
 			activityShareRecord.setActivityId(activityId);

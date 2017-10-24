@@ -1,9 +1,11 @@
 
 package com.okdeer.mall.order.service.impl;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,8 @@ import com.alibaba.rocketmq.client.producer.SendResult;
 import com.alibaba.rocketmq.client.producer.SendStatus;
 import com.google.common.collect.Maps;
 import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.base.common.utils.StringUtils;
+import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
@@ -24,13 +28,25 @@ import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
+import com.okdeer.mall.activity.share.bo.ActivityShareOrderRecordParamBo;
+import com.okdeer.mall.activity.share.bo.ActivityShareRecordNumParamBo;
+import com.okdeer.mall.activity.share.dto.ActivityShareRecordParamDto;
+import com.okdeer.mall.activity.share.entity.ActivityShareOrderRecord;
+import com.okdeer.mall.activity.share.entity.ActivityShareRecord;
+import com.okdeer.mall.activity.share.service.ActivityShareOrderRecordService;
+import com.okdeer.mall.activity.share.service.ActivityShareRecordService;
 import com.okdeer.mall.member.points.dto.RefundPointParamDto;
+import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.bo.TradeOrderRefundContextBo;
 import com.okdeer.mall.order.dto.TradeOrderApplyRefundParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
+import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
+import com.okdeer.mall.order.service.TradeOrderChangeListener;
 import com.okdeer.mall.order.service.TradeOrderRefundsListener;
 
 /**
@@ -45,7 +61,7 @@ import com.okdeer.mall.order.service.TradeOrderRefundsListener;
  *
  */
 @Service("activityProcess")
-public class ActivityProcess implements TradeOrderRefundsListener {
+public class ActivityProcess implements TradeOrderRefundsListener, TradeOrderChangeListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(ActivityProcess.class);
 
@@ -64,6 +80,12 @@ public class ActivityProcess implements TradeOrderRefundsListener {
 	@Autowired
 	private ActivityCouponsMapper activityCouponsMapper;
 
+	@Autowired
+	private ActivityShareOrderRecordService activityShareOrderRecordService;
+
+	@Autowired
+	private ActivityShareRecordService activityShareRecordService;
+
 	@Override
 	public void beforeTradeOrderRefundsCrteate(TradeOrderApplyRefundParamDto tradeOrderApplyRefundParamDto,
 			TradeOrderRefundContextBo tradeOrderRefundContext) throws MallApiException {
@@ -74,9 +96,11 @@ public class ActivityProcess implements TradeOrderRefundsListener {
 	@Override
 	public void afterTradeOrderRefundsCrteated(TradeOrderRefundContextBo tradeOrderRefundContext)
 			throws MallApiException {
-		// do nothing
-
+		Assert.notNull(tradeOrderRefundContext.getTradeOrderRefunds(),"退款单信息不能为空");
+		addRefundActivityShareOrderRecord(tradeOrderRefundContext);
 	}
+
+	
 
 	@Override
 	public void beforeTradeOrderRefundsChanged(TradeOrderRefundContextBo tradeOrderRefundContext)
@@ -109,7 +133,7 @@ public class ActivityProcess implements TradeOrderRefundsListener {
 			returnVoncher(tradeOrderRefundContext);
 		}
 	}
-	
+
 	private void returnActivitySale(TradeOrderRefundContextBo tradeOrderRefundContext) {
 		TradeOrderRefunds tradeOrderRefunds = tradeOrderRefundContext.getTradeOrderRefunds();
 		for (TradeOrderRefundsItem refundsItem : tradeOrderRefundContext.getTradeOrderRefundsItemList()) {
@@ -165,4 +189,132 @@ public class ActivityProcess implements TradeOrderRefundsListener {
 		}
 	}
 
+	@Override
+	public void tradeOrderCreated(TradeOrderContext tradeOrderContext) throws MallApiException {
+		Assert.notNull(tradeOrderContext.getTradeOrder(), "订单信息不能为空");
+		// 添加订单分享记录
+		addActivityShareOrderRecord(tradeOrderContext);
+	}
+
+	@Override
+	public void tradeOrderChanged(TradeOrderContext tradeOrderContext) throws MallApiException {
+		Assert.notNull(tradeOrderContext.getTradeOrder(), "订单信息不能为空");
+		// 更新分享记录
+		updateActivityShareOrderRecord(tradeOrderContext);
+	}
+
+	/**
+	 * @Description: 添加活动下单
+	 * @param tradeOrderContext
+	 * @author zengjizu
+	 * @date 2017年10月24日
+	 */
+	private void addActivityShareOrderRecord(TradeOrderContext tradeOrderContext) throws MallApiException {
+		TradeOrder tradeOrder = tradeOrderContext.getTradeOrder();
+		List<TradeOrderItem> tradeOrderItems = tradeOrderContext.getItemList();
+		Assert.notEmpty(tradeOrderItems, "订单项信息不能为空");
+		if (tradeOrder.getType() != OrderTypeEnum.GROUP_ORDER || StringUtils.isEmpty(tradeOrder.getShareUserId())) {
+			return;
+		}
+		try {
+			ActivityShareRecordParamDto activityShareRecordParamDto = new ActivityShareRecordParamDto();
+			activityShareRecordParamDto.setActivityId(tradeOrder.getActivityId());
+			activityShareRecordParamDto.setStoreSkuId(tradeOrderItems.get(0).getStoreSkuId());
+			activityShareRecordParamDto.setSysUserId(tradeOrder.getShareUserId());
+			activityShareRecordParamDto.setOrderBy(false);
+			List<ActivityShareRecord> activityShareRecordList = activityShareRecordService
+					.findList(activityShareRecordParamDto);
+
+			if (CollectionUtils.isEmpty(activityShareRecordList) || activityShareRecordList.size() > 1) {
+				logger.error("用户分享记录有误，有多条同样的分享记录或者无分享记录，无法增加统计信息");
+				return;
+			}
+			ActivityShareRecord activityShareRecord = activityShareRecordList.get(0);
+			addActivityShareOrderRecord(tradeOrder.getId(),activityShareRecord.getId(),0);
+		} catch (Exception e) {
+			throw new MallApiException(e);
+		}
+	}
+
+	private void addActivityShareOrderRecord(String orderId, String shareId,int type) throws MallApiException {
+		ActivityShareOrderRecord activityShareOrderRecord = new ActivityShareOrderRecord();
+		activityShareOrderRecord.setCreateTime(new Date());
+		activityShareOrderRecord.setId(UuidUtils.getUuid());
+		activityShareOrderRecord.setOrderId(orderId);
+		activityShareOrderRecord.setShareId(shareId);
+		activityShareOrderRecord.setType(type);
+		activityShareOrderRecord.setStatus(0);
+		try {
+			activityShareOrderRecordService.add(activityShareOrderRecord);
+		} catch (Exception e) {
+			logger.error("保存分享订单记录出错",e);
+			throw new MallApiException(e);
+		}
+	}
+
+	private void updateActivityShareOrderRecord(TradeOrderContext tradeOrderContext) throws MallApiException {
+		TradeOrder tradeOrder = tradeOrderContext.getTradeOrder();
+		if (!(tradeOrder.getStatus() == OrderStatusEnum.TO_BE_SIGNED
+				|| tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED)
+				|| tradeOrder.getType() != OrderTypeEnum.SERVICE_EXPRESS_ORDER) {
+			return;
+		}
+		try {
+			ActivityShareOrderRecordParamBo activityShareOrderRecordParam = new ActivityShareOrderRecordParamBo();
+			activityShareOrderRecordParam.setOrderId(tradeOrder.getId());
+			activityShareOrderRecordParam.setOrderBy(false);
+			List<ActivityShareOrderRecord> list = activityShareOrderRecordService
+					.findList(activityShareOrderRecordParam);
+			if (CollectionUtils.isEmpty(list) || list.size() > 1) {
+				logger.debug("团购商品分享下单记录没有");
+				return;
+			}
+			ActivityShareOrderRecord activityShareOrderRecord = list.get(0);
+
+			ActivityShareRecord activityShareRecord = activityShareRecordService
+					.findById(activityShareOrderRecord.getShareId());
+			if (activityShareRecord == null) {
+				logger.error("订单分享记录对应的分享记录不存在");
+				return;
+			}
+
+			ActivityShareRecordNumParamBo activityShareRecordNumParamBo = new ActivityShareRecordNumParamBo();
+			activityShareRecordNumParamBo.setId(activityShareRecord.getId());
+			if (tradeOrder.getStatus() == OrderStatusEnum.TO_BE_SIGNED) {
+				activityShareOrderRecord.setStatus(1);
+				activityShareRecordNumParamBo.setDeliveryNum(1);
+				activityShareRecordService.updateNum(activityShareRecordNumParamBo);
+			} else if (tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED) {
+				activityShareOrderRecord.setStatus(2);
+				activityShareRecordNumParamBo.setCompleteNum(1);
+				activityShareRecordService.updateNum(activityShareRecordNumParamBo);
+			}
+			activityShareOrderRecordService.update(activityShareOrderRecord);
+		} catch (Exception e) {
+			logger.error("修改分享记录订单信息出错", e);
+			throw new MallApiException(e);
+		}
+	}
+
+	private void addRefundActivityShareOrderRecord(TradeOrderRefundContextBo tradeOrderRefundContext) throws MallApiException {
+		TradeOrderRefunds tradeOrderRefunds = tradeOrderRefundContext.getTradeOrderRefunds();
+		if (tradeOrderRefunds.getType() != OrderTypeEnum.SERVICE_EXPRESS_ORDER) {
+			return;
+		}
+		ActivityShareOrderRecordParamBo activityShareOrderRecordParam = new ActivityShareOrderRecordParamBo();
+		activityShareOrderRecordParam.setOrderId(tradeOrderRefunds.getOrderId());
+		activityShareOrderRecordParam.setOrderBy(false);
+		List<ActivityShareOrderRecord> list = activityShareOrderRecordService
+				.findList(activityShareOrderRecordParam);
+		if (CollectionUtils.isEmpty(list) || list.size() > 1) {
+			logger.debug("团购商品分享下单记录没有");
+			return;
+		}
+		ActivityShareOrderRecord activityShareOrderRecord = list.get(0);
+		addActivityShareOrderRecord(tradeOrderRefunds.getId(),activityShareOrderRecord.getShareId(),1);
+		ActivityShareRecordNumParamBo activityShareRecordNumParamBo = new ActivityShareRecordNumParamBo();
+		activityShareRecordNumParamBo.setId(activityShareOrderRecord.getShareId());
+		activityShareRecordNumParamBo.setRefundNum(1);
+		activityShareRecordService.updateNum(activityShareRecordNumParamBo);
+	}
 }

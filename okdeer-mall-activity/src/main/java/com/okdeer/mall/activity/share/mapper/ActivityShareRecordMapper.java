@@ -10,11 +10,14 @@ package com.okdeer.mall.activity.share.mapper;
 import java.util.List;
 
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.mall.activity.share.bo.ActivityShareRecordNumParamBo;
 import com.okdeer.mall.activity.share.dto.ActivityShareRecordParamDto;
 import com.okdeer.mall.activity.share.entity.ActivityShareRecord;
 
 public interface ActivityShareRecordMapper extends IBaseMapper {
 	
 	List<ActivityShareRecord> findList(ActivityShareRecordParamDto activityShareRecordParamDto);
+
+	int updateNum(ActivityShareRecordNumParamBo activityShareRecordNumParamBo);
 
 }
