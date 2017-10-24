@@ -107,7 +107,7 @@
         		AND type = #{type,jdbcType=TINYINT}
         	</if>
         </where>
-        <if test="isOrderBy">
+        <if test="isOrderBy == true">
         	ORDER BY create_time DESC
         </if>
     </select>
