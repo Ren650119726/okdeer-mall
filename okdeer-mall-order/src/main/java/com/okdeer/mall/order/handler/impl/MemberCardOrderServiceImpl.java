@@ -216,7 +216,6 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 			BigDecimal myUsable = tradePinMoneyObtainService.findMyUsableTotal(vo.getUserId(),new Date());
 			if (myUsable.compareTo(BigDecimal.ZERO) > 0 && paymentAmount.compareTo(BigDecimal.ZERO) > 0) {
 				usePinMoney = paymentAmount.compareTo(myUsable) >= 0 ? myUsable : paymentAmount;
-				platDiscountAmount = platDiscountAmount.add(usePinMoney);
 				paymentAmount = paymentAmount.subtract(usePinMoney);
 			}
 			vo.setPlatDiscountAmount(platDiscountAmount);
