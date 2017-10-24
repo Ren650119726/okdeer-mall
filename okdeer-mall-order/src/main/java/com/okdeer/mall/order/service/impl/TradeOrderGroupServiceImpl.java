@@ -145,6 +145,7 @@ public class TradeOrderGroupServiceImpl extends BaseServiceImpl implements Trade
 		dto.setAllGroupTotal(tradeOrderGroupMapper.countGroupNum(paramBo));
 		//查询总数后再查询 开团未成团记录
 		paramBo.setStatus(GroupOrderStatusEnum.UN_GROUP);
+		paramBo.setExpireTime(new Date());
 		PageHelper.startPage(1, 5, true);
 		PageUtils<TradeOrderGroupGoodsDto> openGroup = new PageUtils<>(tradeOrderGroupMapper.findOrderGroupList(paramBo));
 		//循环处理用户头像
@@ -173,6 +174,7 @@ public class TradeOrderGroupServiceImpl extends BaseServiceImpl implements Trade
 	@Override
 	public PageUtils<TradeOrderGroupGoodsDto> findOrderGroupList(TradeOrderGroupParamBo paramBo,Integer pageNumber,Integer pageSize){
 		PageHelper.startPage(pageNumber, pageSize, true);
+		paramBo.setExpireTime(new Date());
 		PageUtils<TradeOrderGroupGoodsDto> page = new PageUtils<>(tradeOrderGroupMapper.findOrderGroupList(paramBo));
 		//循环处理用户头像
 		if(CollectionUtils.isNotEmpty(page.getList())){
