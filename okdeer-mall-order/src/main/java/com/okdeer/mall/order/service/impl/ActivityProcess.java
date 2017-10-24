@@ -222,7 +222,7 @@ public class ActivityProcess implements TradeOrderRefundsListener, TradeOrderCha
 			activityShareRecordParamDto.setActivityId(tradeOrder.getActivityId());
 			activityShareRecordParamDto.setStoreSkuId(tradeOrderItems.get(0).getStoreSkuId());
 			activityShareRecordParamDto.setSysUserId(tradeOrder.getShareUserId());
-			activityShareRecordParamDto.setOrderBy(false);
+			activityShareRecordParamDto.setSort(false);
 			List<ActivityShareRecord> activityShareRecordList = activityShareRecordService
 					.findList(activityShareRecordParamDto);
 
@@ -263,7 +263,7 @@ public class ActivityProcess implements TradeOrderRefundsListener, TradeOrderCha
 		try {
 			ActivityShareOrderRecordParamBo activityShareOrderRecordParam = new ActivityShareOrderRecordParamBo();
 			activityShareOrderRecordParam.setOrderId(tradeOrder.getId());
-			activityShareOrderRecordParam.setOrderBy(false);
+			activityShareOrderRecordParam.setSort(false);
 			List<ActivityShareOrderRecord> list = activityShareOrderRecordService
 					.findList(activityShareOrderRecordParam);
 			if (CollectionUtils.isEmpty(list) || list.size() > 1) {
@@ -305,7 +305,7 @@ public class ActivityProcess implements TradeOrderRefundsListener, TradeOrderCha
 		}
 		ActivityShareOrderRecordParamBo activityShareOrderRecordParam = new ActivityShareOrderRecordParamBo();
 		activityShareOrderRecordParam.setOrderId(tradeOrderRefunds.getOrderId());
-		activityShareOrderRecordParam.setOrderBy(false);
+		activityShareOrderRecordParam.setSort(false);
 		List<ActivityShareOrderRecord> list = activityShareOrderRecordService.findList(activityShareOrderRecordParam);
 		if (CollectionUtils.isEmpty(list) || list.size() > 1) {
 			logger.debug("团购商品分享下单记录没有");

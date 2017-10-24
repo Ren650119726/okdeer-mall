@@ -23,7 +23,7 @@ public class ActivityShareOrderRecordParamBo implements Serializable {
 	/**
 	 * 是否排序,默认排序,排序字段为 create_time
 	 */
-	private boolean isOrderBy = true;
+	private boolean isSort = true;
 
 	public String getOrderId() {
 		return orderId;
@@ -49,12 +49,14 @@ public class ActivityShareOrderRecordParamBo implements Serializable {
 		this.type = type;
 	}
 
-	public boolean isOrderBy() {
-		return isOrderBy;
+	
+	public boolean isSort() {
+		return isSort;
 	}
 
-	public void setOrderBy(boolean isOrderBy) {
-		this.isOrderBy = isOrderBy;
+	
+	public void setSort(boolean isSort) {
+		this.isSort = isSort;
 	}
 
 }

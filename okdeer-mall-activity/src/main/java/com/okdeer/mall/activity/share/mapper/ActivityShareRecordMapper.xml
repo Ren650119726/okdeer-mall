@@ -209,7 +209,7 @@
 				AND store_sku_id = #{storeSkuId,jdbcType=VARCHAR}
 			</if>
 		</where>
-		<if test="isOrderBy">
+		<if test="isSort">
 			ORDER BY create_time DESC
 		</if>
 	</select>
