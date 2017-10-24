@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import com.alibaba.rocketmq.client.producer.SendResult;
@@ -94,13 +95,12 @@ public class ActivityProcess implements TradeOrderRefundsListener, TradeOrderCha
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void afterTradeOrderRefundsCrteated(TradeOrderRefundContextBo tradeOrderRefundContext)
 			throws MallApiException {
-		Assert.notNull(tradeOrderRefundContext.getTradeOrderRefunds(),"退款单信息不能为空");
+		Assert.notNull(tradeOrderRefundContext.getTradeOrderRefunds(), "退款单信息不能为空");
 		addRefundActivityShareOrderRecord(tradeOrderRefundContext);
 	}
-
-	
 
 	@Override
 	public void beforeTradeOrderRefundsChanged(TradeOrderRefundContextBo tradeOrderRefundContext)
@@ -110,6 +110,7 @@ public class ActivityProcess implements TradeOrderRefundsListener, TradeOrderCha
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void afterOrderRefundsChanged(TradeOrderRefundContextBo tradeOrderRefundContext) throws MallApiException {
 		// do nothing
 		TradeOrderRefunds tradeOrderRefunds = tradeOrderRefundContext.getTradeOrderRefunds();
@@ -230,13 +231,13 @@ public class ActivityProcess implements TradeOrderRefundsListener, TradeOrderCha
 				return;
 			}
 			ActivityShareRecord activityShareRecord = activityShareRecordList.get(0);
-			addActivityShareOrderRecord(tradeOrder.getId(),activityShareRecord.getId(),0);
+			addActivityShareOrderRecord(tradeOrder.getId(), activityShareRecord.getId(), 0);
 		} catch (Exception e) {
 			throw new MallApiException(e);
 		}
 	}
 
-	private void addActivityShareOrderRecord(String orderId, String shareId,int type) throws MallApiException {
+	private void addActivityShareOrderRecord(String orderId, String shareId, int type) throws MallApiException {
 		ActivityShareOrderRecord activityShareOrderRecord = new ActivityShareOrderRecord();
 		activityShareOrderRecord.setCreateTime(new Date());
 		activityShareOrderRecord.setId(UuidUtils.getUuid());
@@ -247,7 +248,7 @@ public class ActivityProcess implements TradeOrderRefundsListener, TradeOrderCha
 		try {
 			activityShareOrderRecordService.add(activityShareOrderRecord);
 		} catch (Exception e) {
-			logger.error("保存分享订单记录出错",e);
+			logger.error("保存分享订单记录出错", e);
 			throw new MallApiException(e);
 		}
 	}
@@ -296,7 +297,8 @@ public class ActivityProcess implements TradeOrderRefundsListener, TradeOrderCha
 		}
 	}
 
-	private void addRefundActivityShareOrderRecord(TradeOrderRefundContextBo tradeOrderRefundContext) throws MallApiException {
+	private void addRefundActivityShareOrderRecord(TradeOrderRefundContextBo tradeOrderRefundContext)
+			throws MallApiException {
 		TradeOrderRefunds tradeOrderRefunds = tradeOrderRefundContext.getTradeOrderRefunds();
 		if (tradeOrderRefunds.getType() != OrderTypeEnum.SERVICE_EXPRESS_ORDER) {
 			return;
@@ -304,14 +306,13 @@ public class ActivityProcess implements TradeOrderRefundsListener, TradeOrderCha
 		ActivityShareOrderRecordParamBo activityShareOrderRecordParam = new ActivityShareOrderRecordParamBo();
 		activityShareOrderRecordParam.setOrderId(tradeOrderRefunds.getOrderId());
 		activityShareOrderRecordParam.setOrderBy(false);
-		List<ActivityShareOrderRecord> list = activityShareOrderRecordService
-				.findList(activityShareOrderRecordParam);
+		List<ActivityShareOrderRecord> list = activityShareOrderRecordService.findList(activityShareOrderRecordParam);
 		if (CollectionUtils.isEmpty(list) || list.size() > 1) {
 			logger.debug("团购商品分享下单记录没有");
 			return;
 		}
 		ActivityShareOrderRecord activityShareOrderRecord = list.get(0);
-		addActivityShareOrderRecord(tradeOrderRefunds.getId(),activityShareOrderRecord.getShareId(),1);
+		addActivityShareOrderRecord(tradeOrderRefunds.getId(), activityShareOrderRecord.getShareId(), 1);
 		ActivityShareRecordNumParamBo activityShareRecordNumParamBo = new ActivityShareRecordNumParamBo();
 		activityShareRecordNumParamBo.setId(activityShareOrderRecord.getShareId());
 		activityShareRecordNumParamBo.setRefundNum(1);
