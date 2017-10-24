@@ -6680,7 +6680,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     	json.put("groupExpireTime", orderGroup.getExpireTime().getTime() - System.currentTimeMillis());
     	json.put("absentNum", orderGroup.getGroupCount() - joinUserList.size());
     	json.put("joinUserList", JSONArray.fromObject(joinUserList));
-    	json.put("groupShareUrl",String.format("%s%s", sysConfigComponent.getGroupShareLink(),groupRel.getGroupOrderId()));
+		json.put("groupShareUrl", String.format("%s%s?uid=%s", sysConfigComponent.getGroupShareLink(),
+				groupRel.getGroupOrderId(), groupRel.getUserId()));
     	json.put("groupOrderId", groupRel.getGroupOrderId());
     }
     
