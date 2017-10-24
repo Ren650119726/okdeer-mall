@@ -931,5 +931,6 @@
     WHERE user_id = #{userId,jdbcType=VARCHAR}
     AND disabled = 0 
     AND source = 1
+    ORDER BY use_time desc
   </select>
 </mapper>
