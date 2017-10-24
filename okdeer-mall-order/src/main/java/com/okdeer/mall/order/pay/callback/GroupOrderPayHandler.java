@@ -255,7 +255,7 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 	 */
 	private void sendGroupOutTimeMessage(TradeOrderGroup orderGroup) throws Exception {
 		Date expireTime = orderGroup.getExpireTime();
-		long delayTimeMillis = expireTime.getTime() - System.currentTimeMillis();
+		long delayTimeMillis = (expireTime.getTime() - System.currentTimeMillis())/1000;
 		delayTimeMillis = delayTimeMillis > 0L ? delayTimeMillis : 0L;
 		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_group_timeout, orderGroup.getId(), delayTimeMillis);
 	}

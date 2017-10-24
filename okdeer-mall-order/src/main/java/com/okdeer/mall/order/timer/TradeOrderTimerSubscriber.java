@@ -802,7 +802,7 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 				}
 				if(orderGroup.getExpireTime().getTime() - currentTime > MIN_INTERVAL){
 					// 如果团购订单过期时间-当前时间>最小时间间隔，则发送推迟执行消息，知道超时时间达到再进行消费
-					tradeOrderTimer.sendAfreshTimerMessage(tag, timeoutMsg, orderGroup.getExpireTime().getTime());
+					tradeOrderTimer.sendAfreshTimerMessage(tag, timeoutMsg, currentTime, orderGroup.getExpireTime().getTime());
 					return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 				}
 				if (orderGroup.getStatus() != GroupOrderStatusEnum.UN_GROUP
