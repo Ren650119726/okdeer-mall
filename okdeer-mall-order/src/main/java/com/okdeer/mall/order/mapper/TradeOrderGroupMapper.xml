@@ -69,7 +69,7 @@
 				AND g.status = #{status,jdbcType=TINYINT}
 			</if>
 			<if test="expireTime != null" >
-                AND g.expire_time > #{expireTime,jdbcType=TIMESTAMP},
+                AND g.expire_time &gt; #{expireTime,jdbcType=TIMESTAMP}
             </if>
 		</where>
 		GROUP BY g.id
