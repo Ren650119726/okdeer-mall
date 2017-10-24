@@ -14,6 +14,7 @@ import com.okdeer.mall.activity.bo.ActivityJoinRecParamBo;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountGroup;
+import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountGroupMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityJoinRecordMapper;
@@ -97,13 +98,17 @@ public class CheckGroupActivityServiceImpl implements RequestHandler<PlaceOrderP
 		// 团购活动id
 		String groupActId = storeSkuBo.getActivityId();
 		// 检查团购活动是否结束
-		if("0".equals(groupActId) || storeSkuBo.getActivityType() != ActivityTypeEnum.GROUP_ACTIVITY.ordinal()){
+		if("0".equals(groupActId)){
 			// 如果商品关联的活动id为0，或者关联的活动类型不为团购活动，标识团购活动已经结束或者关闭
 			resp.setResult(ResultCodeEnum.ACTIVITY_IS_END);
 			return;
 		}
 		// 查询团购活动信息
 		ActivityDiscount activityGroup = activityDiscountMapper.findById(groupActId);
+		if(activityGroup == null || activityGroup.getType() != ActivityDiscountType.GROUP_PURCHASE){
+			resp.setResult(ResultCodeEnum.ACTIVITY_IS_END);
+			return;
+		}
 		// 如果参团类型为加入则需要检查团购用户限制
 		if(isOutOfLimitUserType(paramDto,activityGroup)){
 			resp.setResult(ResultCodeEnum.GROUP_OPEN_NOT_SUPPORT);
