@@ -264,10 +264,7 @@ public class StoreSkuParserBo {
 				currentSku.setMainPicUrl(storeSku.getGoodsStoreSkuPicture().getUrl());
 			}
 			
-			if(storeSku.getActivityType() == StoreActivityTypeEnum.GROUP_BY){
-				currentSku.setActivityType(ActivityTypeEnum.GROUP_ACTIVITY.ordinal());
-				currentSku.setOnlinePrice(storeSku.getOnlinePrice());
-			} else if (this.currentActivitySkuMap.containsKey(storeSku.getId())) {
+			if (this.currentActivitySkuMap.containsKey(storeSku.getId())) {
 				ActivitySaleGoods actGoods = this.currentActivitySkuMap.get(storeSku.getId());
 				ActivitySale actInfo = this.activityMap.get(actGoods.getSaleId());
 				currentSku.setActivityType(actInfo.getType().ordinal());
@@ -378,6 +375,7 @@ public class StoreSkuParserBo {
 					storeSkuBo.setSellable(stock.getLocked());
 					break;
 				default:
+					storeSkuBo.setSellable(stock.getSellable());
 					break;
 			}
 		}
