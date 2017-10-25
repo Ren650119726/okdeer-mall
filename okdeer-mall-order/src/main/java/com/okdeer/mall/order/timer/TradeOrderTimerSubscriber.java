@@ -800,14 +800,17 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 					logger.warn(timeoutMsg.getKey() + "：团购订单不存在");
 					return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 				}
-				if(orderGroup.getExpireTime().getTime() - currentTime > MIN_INTERVAL){
-					// 如果团购订单过期时间-当前时间>最小时间间隔，则发送推迟执行消息，知道超时时间达到再进行消费
-					tradeOrderTimer.sendAfreshTimerMessage(tag, timeoutMsg, currentTime, orderGroup.getExpireTime().getTime());
-					return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-				}
 				if (orderGroup.getStatus() != GroupOrderStatusEnum.UN_GROUP
 						&& orderGroup.getStatus() != GroupOrderStatusEnum.GROUP_CLOSE) {
 					// 如果状态已经发生变更，则不做处理
+					return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+				}
+				if (orderGroup.getStatus() == GroupOrderStatusEnum.UN_GROUP
+						&& orderGroup.getExpireTime().getTime() - currentTime > MIN_INTERVAL) {
+					// 如果是团购活动关闭则无需此判断，直接走团取消
+					// 如果团购订单过期时间-当前时间>最小时间间隔，则发送推迟执行消息，知道超时时间达到再进行消费
+					tradeOrderTimer.sendAfreshTimerMessage(tag, timeoutMsg, currentTime,
+							orderGroup.getExpireTime().getTime());
 					return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 				}
 				// 修改团单状态为成团过期取消
