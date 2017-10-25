@@ -492,9 +492,12 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		
 		//逐个解除
 		for(ActivityDiscount act : actList){
-			// 释放原来商品活动库存 + 解除原商品关联关系
-			removeSkuAndStockRelation(act.getId());
-			tradeOrderGroupApi.updateByColseActivity(act.getId());
+			//团购活动的关系需要执行解除
+			if(act.getType() == ActivityDiscountType.GROUP_PURCHASE){
+				// 释放原来商品活动库存 + 解除原商品关联关系
+				removeSkuAndStockRelation(act.getId());
+				tradeOrderGroupApi.updateByColseActivity(act.getId());
+			}
 		}
 		
 		return retInfo;
