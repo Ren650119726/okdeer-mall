@@ -6,6 +6,8 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.okdeer.archive.store.enums.ResultCodeEnum;
@@ -47,6 +49,8 @@ import com.okdeer.mall.system.service.SysBuyerFirstOrderRecordService;
  */
 @Service("checkGroupActivityService")
 public class CheckGroupActivityServiceImpl implements RequestHandler<PlaceOrderParamDto, PlaceOrderDto> {
+	
+	private static final Logger logger = LoggerFactory.getLogger(CheckGroupActivityServiceImpl.class);
 
 	@Resource
 	private ActivityJoinRecordMapper activityJoinRecordMapper;
@@ -114,8 +118,7 @@ public class CheckGroupActivityServiceImpl implements RequestHandler<PlaceOrderP
 			return;
 		}
 		// 检查是否可以入团
-		if(!isJoinGroupEnabled(paramDto,resp.getData())){
-			resp.setResult(ResultCodeEnum.GROUP_IS_ENOUGH);
+		if(!isJoinGroupEnabled(paramDto,resp)){
 			return;
 		}
 		// 查询团购商品信息
@@ -174,15 +177,22 @@ public class CheckGroupActivityServiceImpl implements RequestHandler<PlaceOrderP
 	}
 	
 	
-	private boolean isJoinGroupEnabled(PlaceOrderParamDto paramDto,PlaceOrderDto respDto){
+	private boolean isJoinGroupEnabled(PlaceOrderParamDto paramDto,Response<PlaceOrderDto> resp){
 		if(paramDto.getGroupJoinType() == GroupJoinTypeEnum.GROUP_OPEN){
 			return true;
 		}
 		// 如果是参团，查看参团订单的信息
 		TradeOrderGroup orderGroup = tradeOrderGroupMapper.findById(paramDto.getGroupOrderId());
-		if (orderGroup.getStatus() != GroupOrderStatusEnum.UN_GROUP) {
+		if(!orderGroup.getStoreId().equals(paramDto.getStoreId())){
+			logger.warn("团购订单{}的所属店铺id与请求店铺id{}不一致",orderGroup.getId(),paramDto.getStoreId());
+			resp.setResult(ResultCodeEnum.ILLEGAL_PARAM);
 			return false;
 		}
+		if (orderGroup.getStatus() != GroupOrderStatusEnum.UN_GROUP) {
+			resp.setResult(ResultCodeEnum.GROUP_IS_ENOUGH);
+			return false;
+		}
+		PlaceOrderDto respDto = resp.getData();
 		respDto.setGroupExpireTime(orderGroup.getExpireTime().getTime() - System.currentTimeMillis());
 		respDto.setAbsentNum(orderGroup.getGroupCount());
 		return true;
