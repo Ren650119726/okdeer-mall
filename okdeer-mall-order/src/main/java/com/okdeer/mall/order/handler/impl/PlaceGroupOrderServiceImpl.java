@@ -4,6 +4,8 @@ import java.util.Date;
 
 import javax.annotation.Resource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,11 +14,14 @@ import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.jxc.common.utils.UuidUtils;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.mapper.ActivityJoinRecordMapper;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
+import com.okdeer.mall.member.bo.UserAddressFilterCondition;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
+import com.okdeer.mall.member.service.impl.GroupUserAddrFilterStrategy;
 import com.okdeer.mall.order.builder.TradeOrderBuilder;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
@@ -35,6 +40,8 @@ import com.okdeer.mall.system.utils.ConvertUtil;
 
 @Service("placeGroupOrderService")
 public class PlaceGroupOrderServiceImpl implements RequestHandler<PlaceOrderParamDto, PlaceOrderDto> {
+	
+	private static final Logger logger = LoggerFactory.getLogger(PlaceGroupOrderServiceImpl.class);
 	
 	@Autowired
 	private TradeOrderBuilder tradeOrderBoBuilder;
@@ -56,6 +63,9 @@ public class PlaceGroupOrderServiceImpl implements RequestHandler<PlaceOrderPara
 	
 	@Resource
 	private MemberConsigneeAddressMapper memberConsigneeAddressMapper;
+	
+	@Resource
+	private GroupUserAddrFilterStrategy groupUserAddrFilterStrategy;
 
 	@Override
 	@Transactional
@@ -64,8 +74,8 @@ public class PlaceGroupOrderServiceImpl implements RequestHandler<PlaceOrderPara
 		// 根据请求构建订单
 		TradeOrder tradeOrder = tradeOrderBoBuilder.build(paramDto);
 		MemberConsigneeAddress userUseAddr = (MemberConsigneeAddress) paramDto.get("userUseAddr");
-		if (userUseAddr == null) {
-			resp.setResult(ResultCodeEnum.ADDRESS_NOT_EXSITS);
+		// 检查用户地址
+		if(!checkUserAddr(userUseAddr, paramDto, resp)){
 			return;
 		}
 		// 保存订单
@@ -88,6 +98,23 @@ public class PlaceGroupOrderServiceImpl implements RequestHandler<PlaceOrderPara
 		resp.getData().setTradeNum(tradeOrder.getTradeNum());
 		// 订单倒计时
 		resp.getData().setLimitTime(60 * 30);
+	}
+	
+	private boolean checkUserAddr(MemberConsigneeAddress userUseAddr,PlaceOrderParamDto paramDto,Response<PlaceOrderDto> resp){
+		if (userUseAddr == null) {
+			resp.setResult(ResultCodeEnum.ADDRESS_NOT_EXSITS);
+			return false;
+		}
+		UserAddressFilterCondition filterCondition = new UserAddressFilterCondition();
+		ActivityDiscount actInfo = (ActivityDiscount) paramDto.get("activityGroup");
+		filterCondition.setActivityInfo(actInfo);
+		filterCondition.setActivityId(actInfo.getId());
+		if (groupUserAddrFilterStrategy.isOutRange(userUseAddr, filterCondition)){
+			logger.warn("团购订单使用的用户地址{}超出服务范围",userUseAddr.getId());
+			resp.setResult(ResultCodeEnum.ILLEGAL_PARAM);
+			return false;
+		}
+		return true;
 	}
 
 	/**

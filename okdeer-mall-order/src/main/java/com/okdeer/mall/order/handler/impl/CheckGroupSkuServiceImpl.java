@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -32,6 +34,7 @@ import com.okdeer.mall.order.handler.RequestHandler;
 @Service("checkGroupSkuService")
 public class CheckGroupSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, PlaceOrderDto> {
 
+	private static final Logger logger = LoggerFactory.getLogger(CheckGroupSkuServiceImpl.class);
 	/**
 	 * 店铺商品Api
 	 */
@@ -46,6 +49,7 @@ public class CheckGroupSkuServiceImpl implements RequestHandler<PlaceOrderParamD
 		List<PlaceOrderItemDto> skuList = paramDto.getSkuList();
 		// 团购一次性只能购买一个商品
 		if (CollectionUtils.isEmpty(skuList) || skuList.size() > 1) {
+			logger.warn("团购订单只能购买一个商品");
 			resp.setResult(ResultCodeEnum.ILLEGAL_PARAM);
 			return;
 		}
@@ -56,7 +60,14 @@ public class CheckGroupSkuServiceImpl implements RequestHandler<PlaceOrderParamD
 		// 检查商品信息是否存在
 		if (CollectionUtils.isEmpty(currentSkuList)) {
 			// 数据库中未查找到商品信息
+			logger.warn("团购订单商品不存在");
 			resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
+			return;
+		}
+		if(!currentSkuList.get(0).getStoreId().equals(paramDto.getStoreId())){
+			// 如果商品和店铺信息不一致
+			logger.warn("商品所属店铺{}与请求店铺{}不一致",currentSkuList.get(0).getStoreId(),paramDto.getStoreId());
+			resp.setResult(ResultCodeEnum.STORE_SKU_INCONSISTENT);
 			return;
 		}
 		StoreSkuParserBo parserBo = new StoreSkuParserBo(currentSkuList);
