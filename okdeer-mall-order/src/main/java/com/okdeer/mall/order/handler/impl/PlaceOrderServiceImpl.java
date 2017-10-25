@@ -3,7 +3,6 @@ package com.okdeer.mall.order.handler.impl;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.dto.StockUpdateDto;
@@ -29,7 +27,6 @@ import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.UuidUtils;
-import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.mall.activity.coupons.bo.ActivityCouponsBo;
@@ -51,23 +48,21 @@ import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
+import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.builder.TradeOrderBuilder;
-import com.okdeer.mall.order.constant.PinMoneyStatusConstant;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderLog;
-import com.okdeer.mall.order.entity.TradePinMoneyObtain;
-import com.okdeer.mall.order.entity.TradePinMoneyUse;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.OrderReturnCouponsService;
+import com.okdeer.mall.order.service.TradeOrderChangeListeners;
 import com.okdeer.mall.order.service.TradeOrderLogService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderService;
-import com.okdeer.mall.order.service.TradePinMoneyObtainService;
 import com.okdeer.mall.order.service.TradePinMoneyUseService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.system.utils.ConvertUtil;
@@ -171,6 +166,9 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	
 	@Autowired
 	private RocketMQProducer rocketMQProducer;
+	
+	@Autowired
+	private TradeOrderChangeListeners tradeOrderChangeListeners;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -214,6 +212,14 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 			// 如果支付方式为货到付款，则下单时，给邀请人返回邀请注册活动代金券。
 			orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
 		}
+		
+		//begin add by zengjz 2017-10-25 添加创建订单监听
+		TradeOrderContext tradeOrderContext = new TradeOrderContext();
+		tradeOrderContext.setTradeOrder(tradeOrder);
+		tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
+		tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+		tradeOrderChangeListeners.tradeOrderCreated(tradeOrderContext);
+		//end add by zengjz 2017-10-25
 		resp.getData().setOrderId(tradeOrder.getId());
 		resp.getData().setOrderNo(tradeOrder.getOrderNo());
 		resp.getData().setOrderPrice(ConvertUtil.format(tradeOrder.getActualAmount()));
