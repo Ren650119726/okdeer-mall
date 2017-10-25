@@ -61,6 +61,7 @@ import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.ScanOrderApi;
 import com.okdeer.mall.order.service.ScanOrderFavourService;
 import com.okdeer.mall.order.service.ScanOrderService;
+import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.site.lookup.util.StringUtils;
 
 /**
@@ -116,6 +117,12 @@ public class ScanOrderApiImpl implements ScanOrderApi {
     @Autowired
     private ScanOrderService scanOrderService;
     
+	/**
+	 * 订单超时计时器
+	 */
+	@Resource
+	private TradeOrderTimer tradeOrderTimer;
+    
     /**
  	 * 优惠信息校验
  	 */
@@ -134,27 +141,29 @@ public class ScanOrderApiImpl implements ScanOrderApi {
      */
     @Override
     public ScanOrderDto confirmOrder(ScanOrderParamDto scanOrderDto, RequestParams requestParams) throws Exception {
-    	SelfPrepayVo prepayDto = BeanMapper.map(scanOrderDto, SelfPrepayVo.class);
-    	prepayDto.setSerialNum(TradeNumUtil.getTradeNum());
-    	//调用零售确认订单接口
-    	RespSelfJson resp = selfPayOrderServiceApi.settlementOrder(prepayDto);
-    	//验证返回结果
-    	ScanOrderDto orderDetail = new ScanOrderDto();
-    	orderDetail.setOrderResource(OrderResourceEnum.enumValueOf(Integer.valueOf(scanOrderDto.getOrderResource())));
-		if(Integer.valueOf(resp.get(RespSelfJson.KEY_CODE).toString()) != 0){
+		SelfPrepayVo prepayDto = BeanMapper.map(scanOrderDto, SelfPrepayVo.class);
+		prepayDto.setSerialNum(TradeNumUtil.getTradeNum());
+		// 调用零售确认订单接口
+		RespSelfJson resp = selfPayOrderServiceApi.settlementOrder(prepayDto);
+		// 验证返回结果
+		ScanOrderDto orderDetail = new ScanOrderDto();
+		orderDetail.setOrderResource(OrderResourceEnum.enumValueOf(Integer.valueOf(scanOrderDto.getOrderResource())));
+		if (Integer.valueOf(resp.get(RespSelfJson.KEY_CODE).toString()) != 0) {
 			orderDetail.setCode(Integer.valueOf(resp.get(RespSelfJson.KEY_CODE).toString()));
-			logger.error("扫码购确认订单失败，code:{},原因：{}",resp.get(RespSelfJson.KEY_CODE),resp.get(RespSelfJson.KEY_MESSAGE));
+			logger.error("扫码购确认订单失败，code:{},原因：{}", resp.get(RespSelfJson.KEY_CODE),
+					resp.get(RespSelfJson.KEY_MESSAGE));
 			return orderDetail;
 		}
 		SelfPayTradeInfoVo tradeInfoVo = (SelfPayTradeInfoVo) resp.get(RespSelfJson.DATA);
 		BeanMapper.copy(tradeInfoVo, orderDetail);
-		logger.info("订单详情：{}",JsonMapper.nonDefaultMapper().toJson(orderDetail));
-    	scanOrderFavourService.appendFavour(orderDetail, requestParams);
-    	for (ScanOrderItemDto item : orderDetail.getList()) {
-    		item.setSkuPic(findSkuPic(item.getSkuId(), requestParams.getScreen()));
-    	}
-    	redisTemplateWrapper.set(SCAN_ORDER_PRDFIX+orderDetail.getOrderId(), orderDetail, TIME_OUT_MINUTES, TimeUnit.MINUTES);
-    	return orderDetail;
+		logger.info("订单详情：{}", JsonMapper.nonDefaultMapper().toJson(orderDetail));
+		scanOrderFavourService.appendFavour(orderDetail, requestParams);
+		for (ScanOrderItemDto item : orderDetail.getList()) {
+			item.setSkuPic(findSkuPic(item.getSkuId(), requestParams.getScreen()));
+		}
+		redisTemplateWrapper.set(SCAN_ORDER_PRDFIX + orderDetail.getOrderId(), orderDetail, TIME_OUT_MINUTES,
+				TimeUnit.MINUTES);
+		return orderDetail;
     }
     
     
@@ -199,7 +208,7 @@ public class ScanOrderApiImpl implements ScanOrderApi {
     	}
     	
 		//构建请求参数
-		SelfOrderVo orderParam = builderParams(reqDto.getData(),bo.getPlatformPreferential());
+		SelfOrderVo orderParam = builderParams(reqDto.getData(),cacheOrderDetail,bo.getPlatformPreferential());
 		// 调用零售提交订单接口 
 		RespSelfJson jxcResp = selfPayOrderServiceApi.getOrderInfo(orderParam );
     	SelfPayTradeInfoVo tradeInfoVo = (SelfPayTradeInfoVo) jxcResp.get(RespSelfJson.DATA);
@@ -211,6 +220,8 @@ public class ScanOrderApiImpl implements ScanOrderApi {
 		orderDetail.setRecordId(reqDto.getData().getRecordId());
 		orderDetail.setOrderResource(orderParamDto.getChannel());
 		scanOrderService.saveScanOrder(orderDetail, orderDetail.getBranchId(),requestParams);
+		// 发送超时自动处理消息
+		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_pay_timeout, orderDetail.getOrderId());
 		//填充返回信息
 		fillResponse(resp,orderDetail);
 		return resp;
@@ -222,13 +233,15 @@ public class ScanOrderApiImpl implements ScanOrderApi {
 	 * @author guocp
 	 * @date 2017年10月17日
 	 */
-	private SelfOrderVo builderParams(PlaceOrderParamDto orderParam,BigDecimal platDiscountsAmount) {
+	private SelfOrderVo builderParams(PlaceOrderParamDto orderParam,ScanOrderDto cacheOrderDetail,BigDecimal platDiscountsAmount) {
 		SelfOrderVo scanOrderParam = new SelfOrderVo();
 		scanOrderParam.setOrderId(orderParam.getOrderId());		
 		BigDecimal pinAmount = orderParam.getPinMoney() == null ? BigDecimal.ZERO
 				: new BigDecimal(orderParam.getPinMoney());
 		scanOrderParam.setPinAmount(pinAmount);
 		scanOrderParam.setPlatDiscountAmount(platDiscountsAmount);
+		scanOrderParam.setOrderResource(orderParam.getChannel().ordinal());
+		scanOrderParam.setTradeNum(cacheOrderDetail.getTradeNum());
 		return scanOrderParam;
 	}
 
