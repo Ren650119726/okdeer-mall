@@ -404,7 +404,15 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		});
 		
 		//在线上查找是否有对应商品，在推送的时候已经放入
-		persity.setTradeOrderItem(BeanMapper.mapList(vo.getList(),TradeOrderItem.class));
+//		persity.setTradeOrderItem(BeanMapper.mapList(vo.getList(),TradeOrderItem.class));
+		List<TradeOrderItem> items = Lists.newArrayList();
+		vo.getList().forEach((itemVo)->{
+			TradeOrderItem item = BeanMapper.map(itemVo,TradeOrderItem.class);
+			item.setIncome(itemVo.getActualAmount());
+			item.setServiceAssurance(0);
+			items.add(item);
+		});
+		persity.setTradeOrderItem(items);
 		//将订单状态标记为：等待买家付款
 		persity.setStatus(OrderStatusEnum.UNPAID);
 		
