@@ -278,14 +278,6 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 			if (TradeErrorEnum.TRADE_REPEAT.name().equals(result.getCode())) {
 				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 			}
-
-			TradeOrder tradeOrder = tradeOrderService.getByTradeNum(result.getTradeNum());
-			if (result.getCode().equals(TradeErrorEnum.SUCCESS.getName())) {
-				tradeOrder.setStatus(OrderStatusEnum.HAS_BEEN_SIGNED);
-				tradeOrderService.updateOrderStatus(tradeOrder);
-			} else {
-				logger.error("确认收货支付结果同步消息处理失败,订单编号为：" + tradeOrder.getOrderNo() + "，问题原因" + result.getMsg());
-			}
 		} catch (Exception e) {
 			logger.error("确认收货支付结果同步消息处理失败", e);
 			return ConsumeConcurrentlyStatus.RECONSUME_LATER;

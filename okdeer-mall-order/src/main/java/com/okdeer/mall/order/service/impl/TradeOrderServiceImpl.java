@@ -1993,18 +1993,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                     }
                 }
                 // End V2.3 added by maojj 2017-04-24
-                TradeOrderContext tradeOrderContext = new TradeOrderContext();
-                tradeOrderContext.setTradeOrder(tradeOrder);
-                tradeOrderContext.setTradeOrder(tradeOrder);
-                tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
-                tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
-                tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
-                try {
-        			tradeOrderChangeListeners.tradeOrderChanged(tradeOrderContext);
-        		} catch (MallApiException e) {
-        			logger.error("订单监听处理失败",e);
-        			throw new ServiceException(e);
-        		}
+              
                 // 给卖家打款
                 // begin modify by zengjz 判断是否是服务店订单
                 if (OrderTypeEnum.SERVICE_STORE_ORDER == tradeOrder.getType()) {
@@ -2016,6 +2005,12 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                 // begin modify by zengjz 判断是否是服务店订单
 
                 //add by  zhangkeneng  和左文明对接丢消息
+                TradeOrderContext tradeOrderContext = new TradeOrderContext();
+                tradeOrderContext.setTradeOrder(tradeOrder);
+                tradeOrderContext.setTradeOrder(tradeOrder);
+                tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
+                tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+                tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
                 tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
             }
         } catch (Exception e) {
@@ -2277,6 +2272,18 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         //add by mengsj end 扫码购另外处理 and tuzd 会员卡扫码付
         // 保存订单轨迹
         tradeOrderTraceService.saveOrderTrace(tradeOrder);
+        TradeOrderContext tradeOrderContext = new TradeOrderContext();
+        tradeOrderContext.setTradeOrder(tradeOrder);
+        tradeOrderContext.setTradeOrder(tradeOrder);
+        tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
+        tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+        tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
+        try {
+			tradeOrderChangeListeners.tradeOrderChanged(tradeOrderContext);
+		} catch (MallApiException e) {
+			logger.error("订单监听处理失败",e);
+			throw new ServiceException(e);
+		}
         return tradeOrderMapper.updateOrderStatus(tradeOrder);
     }
 
