@@ -5834,10 +5834,10 @@
 			<![CDATA[ AND trade.update_time <= #{updateEndTime,jdbcType=VARCHAR}]]>
 		</if>
 		<if test="deliveryStartTime != null and deliveryStartTime !='' ">
-			<![CDATA[AND trade.delivery_time  >= #{updateStartTime,jdbcType=VARCHAR}]]>
+			<![CDATA[AND trade.delivery_time  >= #{deliveryStartTime,jdbcType=VARCHAR}]]>
 		</if>
 		<if test="deliveryEndTime != null and deliveryEndTime !='' ">
-			<![CDATA[ AND trade.delivery_time <= #{updateEndTime,jdbcType=VARCHAR}]]>
+			<![CDATA[ AND trade.delivery_time <= #{deliveryEndTime,jdbcType=VARCHAR}]]>
 		</if>
 		
 		<if test="payWay != null">
