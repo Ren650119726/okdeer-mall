@@ -136,6 +136,8 @@ public class ScanOrderServiceImpl implements ScanOrderService {
 		persity.setPinMoney(pinMoney);
 		//平台优惠字段
 		persity.setPlatformPreferential(prefer.add(pinMoney));
+		//店铺收入字段
+		persity.setIncome(persity.getActualAmount().add(persity.getPlatformPreferential()));
 		persity.setCreateTime(new Date());
 		persity.setUpdateTime(persity.getCreateTime());
 		//设置显示
@@ -172,8 +174,11 @@ public class ScanOrderServiceImpl implements ScanOrderService {
 				//优惠金额
 				item.setPreferentialPrice(map.getDiscountAmount());
 				item.setUnitPrice(map.getSalePrice());
+//				item.setIncome(income);
 				//商品数量
 				item.setQuantity((int)map.getSaleNum().doubleValue());
+				//不支持售后
+				item.setServiceAssurance(0);
 		}
 		persity.setTradeOrderItem(items);
 		//将订单状态标记为：等待买家付款
