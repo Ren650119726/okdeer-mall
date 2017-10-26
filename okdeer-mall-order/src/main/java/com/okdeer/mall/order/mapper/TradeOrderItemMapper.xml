@@ -93,6 +93,7 @@
 			jdbcType="TINYINT" javaType="com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum" />
 	<result column="store_activity_id" property="storeActivityId" jdbcType="VARCHAR" />
 	<result column="bind_type" property="bindType" jdbcType="TINYINT" javaType="com.okdeer.archive.goods.spu.enums.SkuBindType"/>
+    <result column="income" property="income" jdbcType="DECIMAL" />
   </resultMap>
   
   <sql id="Base_Column_List" >
@@ -655,9 +656,9 @@
  <!-- 根据日期查询便利店线上完成订单商品项数据  tuzhd-->
   <select id="findCompletedOrderItem" parameterType="map" resultMap="OrderItemResultMap">
  	SELECT 
- 		 item.id, 		item.order_id, 	item.store_sku_id, 
- 		 item.sku_name, item.spu_type,	item.main_pic_prl,
- 		 item.bar_code,	item.weight, 	item.properties_indb, 
+ 		 item.id,item.income, item.order_id, item.store_sku_id, 
+ 		 item.sku_name, item.spu_type, item.main_pic_prl,
+ 		 item.bar_code,	item.weight, item.properties_indb, 
    		 item.quantity,	item.unit_price,item.total_amount, 
    		 item.actual_amount, item.preferential_price, 
    		 item.status, item.appraise, item.create_time,
