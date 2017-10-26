@@ -106,6 +106,15 @@
         	<if test="type != null">
         		AND type = #{type,jdbcType=TINYINT}
         	</if>
+        	<if test="status != null">
+        		AND status = #{status,jdbcType=TINYINT}
+        	</if>
+        	<if test="statusList != null and statusList.size() >0 ">
+        		AND status IN
+        		<foreach collection="statusList" item="item" open="(" close=")" separator=",">
+        			#{item,jdbcType=TINYINT}
+        		</foreach>
+        	</if>
         </where>
         <if test="isSort">
         	ORDER BY create_time DESC
