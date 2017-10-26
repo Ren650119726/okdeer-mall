@@ -174,7 +174,7 @@ public class ScanOrderServiceImpl implements ScanOrderService {
 				//优惠金额
 				item.setPreferentialPrice(map.getDiscountAmount());
 				item.setUnitPrice(map.getSalePrice());
-//				item.setIncome(income);
+				item.setIncome(map.getSaleAmount());
 				//商品数量
 				item.setQuantity((int)map.getSaleNum().doubleValue());
 				//不支持售后
