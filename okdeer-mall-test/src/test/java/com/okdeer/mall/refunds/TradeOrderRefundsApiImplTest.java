@@ -166,36 +166,7 @@ public class TradeOrderRefundsApiImplTest extends BaseServiceTest {
 		return initParams;
 	}
 	
-	@Test
-	@Rollback
-	@Transactional(propagation=Propagation.REQUIRES_NEW)
-	public void physicalOrderApplyRefunds() throws Exception {
-		beforeMethod(this, "physicalOrderApplyRefunds");
-		//查询充值退款列表（用于财务系统，不分页）
-		PhysicalOrderApplyDto dto = tradeOrderRefundsApiImpl.physicalOrderApplyRefunds(physicalParam);
-		Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),dto.getRefundId());
-		afterTestMethod(this, "physicalOrderApplyRefunds");
-	}
 	
-	@Test
-	@Rollback(true)
-	@Transactional(propagation=Propagation.REQUIRES_NEW)
-	public void storeConsumerApplyRefunds() throws Exception {
-		beforeMethod(this, "storeConsumerApplyRefunds");
-		given(tradeOrderItemDetailService.findById("8a80808558d780180158d7cebaaa000c")).willReturn(tradeOrderItemDetailList.get(index));
-		
-		given(tradeOrderItemDetailMapper.updateStatusWithRefundById("8a80808558d780180158d7cebaaa000c")).willReturn(1);
-		
-		
-		//查询充值退款列表（用于财务系统，不分页）
-		StoreConsumerApplyDto dto = tradeOrderRefundsApiImpl.storeConsumerApplyRefunds(storeParamDto);
-		if(tradeOrderItemDetailList.get(index).getStatus() != ConsumeStatusEnum.noConsume){
-			Assert.assertEquals(ResultCodeEnum.SUCCESS.getDesc(), DescriptConstants.CONSUME_CODE_INVALID, dto.getMsg());
-		}else{
-			Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),dto.getRefundId());
-		}
-		afterTestMethod(this, "storeConsumerApplyRefunds");
-	}
 	
 	@Test
 	@Rollback(true)
@@ -218,27 +189,7 @@ public class TradeOrderRefundsApiImplTest extends BaseServiceTest {
 		afterTestMethod(this, "updateRefundsStatus");
 	}
 	
-	@Test
-	@Rollback(true)
-	@Transactional(propagation=Propagation.REQUIRES_NEW)
-	public void applyRefund() throws Exception {
-		beforeMethod(this, "applyRefund");
-		PhysOrderApplyRefundParamDto applyRefundParamDto=new PhysOrderApplyRefundParamDto();
-		Map<String,Object> param  = new HashMap<String,Object>();
-		param.put("storeId", "56583c03276511e6aaff00163e010eb1");
-		param.put("status", 5);
-		List<TradeOrder> order = tradeOrderMapper.selectByParams(param);
-		List<TradeOrderItem> items = tradeOrderItemMapper.selectOrderItemListById(order.get(0).getId());
-		order.get(0).setUserId("141577260798e5eb9e1b8a0645b486c7");
-		applyRefundParamDto.setTradeOrder(order.get(0));
-		applyRefundParamDto.setTradeOrderItem(items.get(0));
-		applyRefundParamDto.setMemo("1111");
-		applyRefundParamDto.setReason("22222");
-		applyRefundParamDto.setOrderResource(OrderResourceEnum.YSCAPP);
-		//查询充值退款列表
-		Assert.assertNotNull(tradeOrderRefundsApiImpl.applyRefund(applyRefundParamDto, RefundOrderTypeEnum.PHYSICAL_ORDER));
-		afterTestMethod(this, "applyRefund");
-	}
+	
 	
 	@Test
 	@Rollback(true)
