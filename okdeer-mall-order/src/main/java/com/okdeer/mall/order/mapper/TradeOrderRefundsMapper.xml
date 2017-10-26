@@ -1178,6 +1178,16 @@
 				<if test="tabs == 'rejected' or tabs == 'agree' or tabs == 'done'">
 					ORDER BY tr.update_time desc
 				</if>
+				
+				<!-- v2.6.3按照下单时间排序 -->
+				<if test="fieldSort != null and fieldSort != ''">
+					<if test="fieldSort == '0'.toString() ">
+					 order by tr.create_time desc 
+					</if>
+					<if test="fieldSort == '1'.toString() ">
+					 order by tr.create_time asc 
+					</if>
+				</if>
 			</if>
 			<!-- 默认排序 -->
 			<if test="tabs == null or tabs == ''">
