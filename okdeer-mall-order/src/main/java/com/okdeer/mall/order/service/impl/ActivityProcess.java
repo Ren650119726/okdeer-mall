@@ -289,10 +289,14 @@ public class ActivityProcess implements TradeOrderRefundsListener, TradeOrderCha
 				activityShareRecordService.updateNum(activityShareRecordNumParamBo);
 			} else if (tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED) {
 				activityShareOrderRecord.setStatus(2);
+				
 				activityShareRecordNumParamBo.setCompleteNum(1);
 				activityShareRecordService.updateNum(activityShareRecordNumParamBo);
 			}
-			activityShareOrderRecordService.update(activityShareOrderRecord);
+			int result = activityShareOrderRecordService.update(activityShareOrderRecord);
+			if(result <1){
+				throw new MallApiException("重复更新状态");
+			}
 		} catch (Exception e) {
 			logger.error("修改分享记录订单信息出错", e);
 			throw new MallApiException(e);
