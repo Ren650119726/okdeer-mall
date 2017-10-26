@@ -16,6 +16,7 @@
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
         <result column="disabled" property="disabled" jdbcType="VARCHAR" javaType="com.okdeer.base.common.enums.Disabled" />
         <result column="is_default_weight" property="isDefaultWeight" javaType="com.okdeer.base.common.enums.WhetherEnum" jdbcType="TINYINT"/>
+        <result column="activityCollectName" property="activityCollectName" jdbcType="VARCHAR" />
     </resultMap> 
  	<resultMap id="prizeRecordList" type="com.okdeer.mall.activity.prize.entity.ActivityPrizeWeightVo" >
         <id column="id" property="id" jdbcType="VARCHAR" />
@@ -49,10 +50,12 @@
     <!--begin xuzq 20170413 根据抽奖设置表id查询所有奖品的比重信息 按顺序查询 顺序与奖品对应 -->
 	<select id="findPrizesByLuckDrawId" resultMap="BaseResultMap">
         select 
-        <include refid="Base_Column_List" />
-        from activity_prize_weight
-        where disabled=0 and luck_draw_id = #{luckDrawId,jdbcType=VARCHAR}
-        ORDER BY order_no
+         	w.id, w.prize_name, w.weight, w.weight_deno,w.prize_number,w.activity_collect_id, w.create_user_id, w.create_time,
+        	w.update_user_id,w.luck_draw_id,w.order_no, w.update_time, w.disabled,w.is_default_weight,c.name activityCollectName
+        from activity_prize_weight w 
+        	 LEFT JOIN activity_collect_coupons c on w.activity_collect_id = c.id
+        where w.disabled=0 and w.luck_draw_id = #{luckDrawId,jdbcType=VARCHAR}
+        ORDER BY w.order_no
     </select>
     <!--end xuzq 20170413 根据抽奖设置表id查询所有奖品的比重信息 按顺序查询 顺序与奖品对应 -->
      
