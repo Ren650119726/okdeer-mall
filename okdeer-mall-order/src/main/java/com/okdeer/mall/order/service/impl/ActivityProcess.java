@@ -191,6 +191,7 @@ public class ActivityProcess implements TradeOrderRefundsListener, TradeOrderCha
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void tradeOrderCreated(TradeOrderContext tradeOrderContext) throws MallApiException {
 		Assert.notNull(tradeOrderContext.getTradeOrder(), "订单信息不能为空");
 		// 添加订单分享记录
@@ -198,6 +199,7 @@ public class ActivityProcess implements TradeOrderRefundsListener, TradeOrderCha
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void tradeOrderChanged(TradeOrderContext tradeOrderContext) throws MallApiException {
 		Assert.notNull(tradeOrderContext.getTradeOrder(), "订单信息不能为空");
 		// 更新分享记录

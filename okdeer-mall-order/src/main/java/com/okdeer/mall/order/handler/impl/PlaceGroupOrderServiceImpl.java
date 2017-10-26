@@ -22,6 +22,7 @@ import com.okdeer.mall.member.bo.UserAddressFilterCondition;
 import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.member.service.impl.GroupUserAddrFilterStrategy;
+import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.builder.TradeOrderBuilder;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
@@ -33,6 +34,7 @@ import com.okdeer.mall.order.enums.GroupJoinStatusEnum;
 import com.okdeer.mall.order.enums.GroupJoinTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.mapper.TradeOrderGroupRelationMapper;
+import com.okdeer.mall.order.service.TradeOrderChangeListeners;
 import com.okdeer.mall.order.service.TradeOrderLogService;
 import com.okdeer.mall.order.service.TradeOrderService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
@@ -67,6 +69,9 @@ public class PlaceGroupOrderServiceImpl implements RequestHandler<PlaceOrderPara
 	@Resource
 	private GroupUserAddrFilterStrategy groupUserAddrFilterStrategy;
 
+	@Autowired
+	private TradeOrderChangeListeners tradeOrderChangeListeners;
+	
 	@Override
 	@Transactional
 	public void process(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) throws Exception {
@@ -89,6 +94,14 @@ public class PlaceGroupOrderServiceImpl implements RequestHandler<PlaceOrderPara
 		saveGroupOrderRel(paramDto, tradeOrder.getId());
 		// 更新用户最后使用的地址
 		updateLastUseAddr(userUseAddr);
+		//begin add by zengjz 2017-10-25 添加创建订单监听
+		TradeOrderContext tradeOrderContext = new TradeOrderContext();
+		tradeOrderContext.setTradeOrder(tradeOrder);
+		tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
+		tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+		tradeOrderChangeListeners.tradeOrderCreated(tradeOrderContext);
+		//end add by zengjz 2017-10-25
+		
 		// 发送订单超时未支付的消息
 		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_pay_timeout, tradeOrder.getId());
 		
