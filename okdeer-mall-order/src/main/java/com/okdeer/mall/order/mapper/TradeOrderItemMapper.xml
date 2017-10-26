@@ -656,7 +656,7 @@
  <!-- 根据日期查询便利店线上完成订单商品项数据  tuzhd-->
   <select id="findCompletedOrderItem" parameterType="map" resultMap="OrderItemResultMap">
  	SELECT 
- 		 item.id, item.income, item.order_id, item.store_sku_id, 
+ 		 item.id,item.income, item.order_id, item.store_sku_id, 
  		 item.sku_name, item.spu_type, item.main_pic_prl,
  		 item.bar_code,	item.weight, item.properties_indb, 
    		 item.quantity,	item.unit_price,item.total_amount, 
