@@ -2267,6 +2267,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	        		}
 	        	}
         	}
+        	//订单完成记录收货时间 便于统计
+        	if(tradeOrder.getStatus() == OrderStatusEnum.HAS_BEEN_SIGNED){
+        		tradeOrder.setReceivedTime(new Date());
+        	}
             return tradeOrderMapper.updateOrderStatus(tradeOrder);
         }
         //add by mengsj end 扫码购另外处理 and tuzd 会员卡扫码付
