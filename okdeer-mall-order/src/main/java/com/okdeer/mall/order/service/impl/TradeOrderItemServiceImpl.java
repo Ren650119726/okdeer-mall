@@ -102,6 +102,7 @@ class TradeOrderItemServiceImpl implements TradeOrderItemService, TradeOrderItem
 		list.add(OrderResourceEnum.WECHAT);
 		list.add(OrderResourceEnum.CVSAPP);
 		list.add(OrderResourceEnum.SWEEP);
+		list.add(OrderResourceEnum.WECHAT_MIN);
 		//线上订单来源
 		map.put("orderResource", list); 
 		//实物订单
