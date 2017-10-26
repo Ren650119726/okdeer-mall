@@ -54,6 +54,7 @@ import com.okdeer.common.utils.JsonDateUtil;
 import com.okdeer.mall.common.enums.IsRead;
 import com.okdeer.mall.common.enums.MsgType;
 import com.okdeer.mall.common.utils.RobotUserUtil;
+import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.bo.TradeOrderRefundContextBo;
 import com.okdeer.mall.order.constant.text.OrderMsgConstant;
 import com.okdeer.mall.order.dto.TradeOrderApplyRefundParamDto;
@@ -73,6 +74,7 @@ import com.okdeer.mall.order.enums.SendMsgType;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeMessageServiceApi;
+import com.okdeer.mall.order.service.TradeOrderChangeListener;
 import com.okdeer.mall.order.service.TradeOrderComplainService;
 import com.okdeer.mall.order.service.TradeOrderItemDetailService;
 import com.okdeer.mall.order.service.TradeOrderItemService;
@@ -108,7 +110,7 @@ import com.okdeer.mcm.service.ISmsService;
  *    V2.3.0			20170419				wangf01			新增推送语音提示文件名
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.order.service.TradeMessageServiceApi")
-public class TradeMessageServiceImpl implements TradeMessageService, TradeMessageServiceApi, TradeOrderRefundsListener {
+public class TradeMessageServiceImpl implements TradeMessageService, TradeMessageServiceApi, TradeOrderRefundsListener,TradeOrderChangeListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(TradeMessageServiceImpl.class);
 
@@ -968,5 +970,16 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 			return "余额";
 		}
 		return payTypeDesc;
+	}
+
+	@Override
+	public void tradeOrderCreated(TradeOrderContext tradeOrderContext) throws MallApiException {
+		//订单创建
+	}
+
+	@Override
+	public void tradeOrderChanged(TradeOrderContext tradeOrderContext) throws MallApiException {
+		//订单状态改变
+		
 	}
 }

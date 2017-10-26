@@ -65,8 +65,6 @@ import com.okdeer.mall.order.service.TradePinMoneyObtainService;
 import com.okdeer.mall.order.service.TradePinMoneyUseService;
 import com.okdeer.mall.order.service.TradeorderProcessLister;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
-import com.okdeer.mcm.entity.SmsVO;
-import com.okdeer.mcm.service.ISmsService;
 
 /**
  * ClassName: CancelOrderServiceImpl 
@@ -157,23 +155,6 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 	@Resource
 	private ActivityDiscountRecordService activityDiscountRecordService;
 
-	/**
-	 * 短信接口
-	 */
-	@Reference(version = "1.0.0", check = false)
-	ISmsService smsService;
-
-	/**
-	 * 消息编码
-	 */
-	@Value("${mcm.sys.code}")
-	protected String mcmSysCode;
-
-	/**
-	 * 消息Token
-	 */
-	@Value("${mcm.sys.token}")
-	protected String mcmSysToken;
 
 	/**
 	 * 第三方支付订单取消短信文案
@@ -225,19 +206,7 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 		return template;
 	}
 
-	protected SmsVO createSmsVo(String mobile, String content) {
-		SmsVO smsVo = new SmsVO();
-		smsVo.setId(UuidUtils.getUuid());
-		smsVo.setUserId(mobile);
-		smsVo.setIsTiming(0);
-		smsVo.setToken(mcmSysToken);
-		smsVo.setSysCode(mcmSysCode);
-		smsVo.setMobile(mobile);
-		smsVo.setContent(content);
-		smsVo.setSmsChannelType(3);
-		smsVo.setSendTime(DateUtils.formatDateTime(new Date()));
-		return smsVo;
-	}
+	
 
 	/**
 	 * @Description: 订单取消（拒收）
