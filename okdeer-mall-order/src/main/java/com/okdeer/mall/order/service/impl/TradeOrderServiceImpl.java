@@ -4453,7 +4453,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     // 退换货状态计算0:不支持，1:支持退换货
     private String getServiceAssurance(Date receivedTime, Integer serviceAssurance) {
         String flag = "0";
-        if (receivedTime != null && serviceAssurance != 0) {
+        if (receivedTime != null && !Integer.valueOf(0).equals(serviceAssurance)) {
             Date nowDate = new Date();
             long nowTime = nowDate.getTime();
             long serviceAssuranceTmp = Long.valueOf(serviceAssurance);
