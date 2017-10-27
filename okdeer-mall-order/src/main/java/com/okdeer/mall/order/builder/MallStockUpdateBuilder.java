@@ -28,6 +28,11 @@ import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscountGroup;
+import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
+import com.okdeer.mall.activity.discount.mapper.ActivityDiscountGroupMapper;
+import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillService;
@@ -64,6 +69,12 @@ public class MallStockUpdateBuilder {
 	
 	@Resource
 	private TradeOrderComboSnapshotMapper tradeOrderComboSnapshotMapper;
+	
+	@Resource
+	private ActivityDiscountMapper activityDiscountMapper;
+	
+	@Resource
+	private ActivityDiscountGroupMapper activityDiscountGroupMapper;
 
 	@Resource
 	private ComboSnapshotAdapter comboSnapshotAdapter;
@@ -228,8 +239,10 @@ public class MallStockUpdateBuilder {
 			if(actType == ActivityTypeEnum.LOW_PRICE){
 				// 如果是低价
 				updateDetail.setUpdateLockedNum(orderItem.getActivityQuantity());
-			}else if (actType == ActivityTypeEnum.SALE_ACTIVITIES || actType == ActivityTypeEnum.SECKILL_ACTIVITY){
-				// 如果是特惠或者是秒杀
+			}else if (actType == ActivityTypeEnum.SALE_ACTIVITIES 
+					|| actType == ActivityTypeEnum.SECKILL_ACTIVITY
+					|| actType == ActivityTypeEnum.GROUP_ACTIVITY){
+				// 如果是特惠或者是秒杀或者是团购
 				updateDetail.setUpdateLockedNum(orderItem.getQuantity());
 			}
 			if(orderItem.getSpuType() == SpuTypeEnum.assembleSpu){
@@ -401,6 +414,20 @@ public class MallStockUpdateBuilder {
 			SeckillStatusEnum seckillStatus = seckill.getSeckillStatus();
 			if (seckillStatus  == SeckillStatusEnum.ing) {
 				return ActivityTypeEnum.SECKILL_ACTIVITY;
+			}else{
+				return ActivityTypeEnum.NO_ACTIVITY;
+			}
+		}else if(ActivityTypeEnum.GROUP_ACTIVITY == tradeOrder.getActivityType()){
+			// 如果是团购
+			ActivityDiscount groupAct = activityDiscountMapper.findById(tradeOrder.getActivityId());
+			if(groupAct.getStatus() != ActivityDiscountStatus.ing){
+				return ActivityTypeEnum.NO_ACTIVITY;
+			}
+			// 如果团购活动进行中，检查团购商品是否有活动限制
+			ActivityDiscountGroup groupSku = activityDiscountGroupMapper
+					.findByActivityIdAndSkuId(tradeOrder.getActivityId(), tradeOrder.getActivityItemId());
+			if(groupSku.getGoodsCountLimit().compareTo(Integer.valueOf(0)) > 0){
+				return ActivityTypeEnum.GROUP_ACTIVITY;
 			}else{
 				return ActivityTypeEnum.NO_ACTIVITY;
 			}
