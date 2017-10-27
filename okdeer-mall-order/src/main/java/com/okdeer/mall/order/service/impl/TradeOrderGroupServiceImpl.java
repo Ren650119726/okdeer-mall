@@ -181,7 +181,8 @@ public class TradeOrderGroupServiceImpl extends BaseServiceImpl implements Trade
 		paramBo.setActivityId(activityId);
 		paramBo.setStoreSkuId(storeSkuId);
 		
-		//查询总团购数
+		//查询总成团购数
+		paramBo.setStatus(GroupOrderStatusEnum.GROUP_SUCCESS);
 		dto.setAllGroupTotal(tradeOrderGroupMapper.countGroupNum(paramBo));
 		//查询总数后再查询 开团未成团记录
 		paramBo.setStatus(GroupOrderStatusEnum.UN_GROUP);
