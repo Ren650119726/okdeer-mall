@@ -534,7 +534,16 @@ public class MallStockUpdateBuilder {
 	}
 	
 	// Begin V2.6.3 added by maojj 2017-10-12
-	public StockUpdateDto buildForGroupOrder(TradeOrderGroup orderGroup) throws Exception {
+	/**
+	 * @Description: 团购订单构建商品更新对象
+	 * @param orderGroup
+	 * @param isLimitLocked 是否限制活动库存
+	 * @return
+	 * @throws Exception   
+	 * @author maojj
+	 * @date 2017年10月27日
+	 */
+	public StockUpdateDto buildForGroupOrder(TradeOrderGroup orderGroup,boolean isLimitLocked) throws Exception {
 		StockUpdateDto stockUpdateDto = new StockUpdateDto();
 
 		stockUpdateDto.setRpcId(UuidUtils.getUuid());
@@ -548,7 +557,9 @@ public class MallStockUpdateBuilder {
 		updateDetail = new StockUpdateDetailDto();
 		updateDetail.setStoreSkuId(orderGroup.getStoreSkuId());
 		updateDetail.setUpdateNum(orderGroup.getGroupCount());
-		updateDetail.setUpdateLockedNum(orderGroup.getGroupCount());
+		if(isLimitLocked){
+			updateDetail.setUpdateLockedNum(orderGroup.getGroupCount());
+		}
 		updateDetailList.add(updateDetail);
 		stockUpdateDto.setUpdateDetailList(updateDetailList);
 		return stockUpdateDto;
