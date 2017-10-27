@@ -290,7 +290,7 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 		if (successJoinNum == groupSku.getGroupCount()) {
 			// 判断是否可成团
 			if (isGroupSuccess(orderGroup, groupSku, successJoinNum)) {
-				groupSuccess(orderGroup);
+				groupSuccess(orderGroup,groupSku);
 			} else {
 				List<TradeOrderGroupRelation> orderGroupRelList = tradeOrderGroupRelationMapper
 						.findByGroupOrderId(orderGroup.getId());
@@ -351,7 +351,7 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 	 * @author maojj
 	 * @date 2017年10月12日
 	 */
-	private void groupSuccess(TradeOrderGroup orderGroup) {
+	private void groupSuccess(TradeOrderGroup orderGroup, ActivityDiscountGroup groupSku) {
 		Date currentDate = new Date();
 		// 修改团单状态为已成团
 		orderGroup.setStatus(GroupOrderStatusEnum.GROUP_SUCCESS);
@@ -366,7 +366,7 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 		tradeOrderMapper.updateOrderType(orderIdList,currentDate);
 		// 更新库存
 		try {
-			StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.buildForGroupOrder(orderGroup);
+			StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.buildForGroupOrder(orderGroup,groupSku.getGoodsCountLimit().compareTo(Integer.valueOf(0))>0);
 			goodsStoreSkuStockApi.updateStock(mallStockUpdate);
 		} catch (Exception e) {
 			logger.error("团购订单更新库存失败", e);
