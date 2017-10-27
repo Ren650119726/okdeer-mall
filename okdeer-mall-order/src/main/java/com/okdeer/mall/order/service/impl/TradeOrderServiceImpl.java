@@ -6703,7 +6703,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     	json.put("absentNum", orderGroup.getGroupCount() - joinUserList.size());
     	json.put("joinUserList", JSONArray.fromObject(joinUserList));
 		json.put("groupShareUrl",
-				String.format("%s%s", sysConfigComponent.getGroupShareLink(), groupRel.getGroupOrderId()));
+				String.format("%s%s?uid=", sysConfigComponent.getGroupShareLink(), groupRel.getGroupOrderId()));
     	json.put("groupOrderId", groupRel.getGroupOrderId());
     }
     
