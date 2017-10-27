@@ -425,7 +425,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 			scanOrderService.updateActivityCoupons(vo.getOrderId(), vo.getRecordId(), vo.getCouponsId(), vo.getDeviceId());
 		}
 		// 保存零花钱记录
-		if (vo.getPinMoneyAmount().compareTo(BigDecimal.ZERO) > 0) {
+		if (vo.getPinMoneyAmount() != null && vo.getPinMoneyAmount().compareTo(BigDecimal.ZERO) > 0) {
 			//保存零花钱记录
 			tradePinMoneyUseService.orderOccupy(vo.getUserId(), vo.getOrderId(), persity.getTotalAmount(),
 					vo.getPinMoneyAmount());

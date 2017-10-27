@@ -193,7 +193,7 @@ public class ScanOrderServiceImpl implements ScanOrderService {
 			this.updateActivityCoupons(vo.getOrderId(), vo.getRecordId(),vo.getCouponsId(), requestParams.getMachineCode());
 		}
 		// 保存零花钱记录
-		if (persity.getPinMoney().compareTo(BigDecimal.ZERO) > 0) {
+		if (persity.getPinMoney() != null && persity.getPinMoney().compareTo(BigDecimal.ZERO) > 0) {
 			tradePinMoneyUseService.orderOccupy(vo.getUserId(), vo.getOrderId(), persity.getTotalAmount(),
 					persity.getPinMoney());
 		}
