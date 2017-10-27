@@ -30,7 +30,7 @@ public interface TradePinMoneyObtainMapper extends IBaseMapper {
 	BigDecimal findMyUsableTotal(@Param("userId") String userId, @Param("nowDate") Date nowDate);
 
 	/**
-	 * @Description: 查询列表
+	 * @Description: 查询零花钱领取列表
 	 * @param userId
 	 * @param date
 	 * @param status
@@ -39,6 +39,18 @@ public interface TradePinMoneyObtainMapper extends IBaseMapper {
 	 * @date 2017年8月11日
 	 */
 	List<TradePinMoneyObtain> findList(@Param("userId") String userId, @Param("nowDate") Date nowDate,
+			@Param("status") Integer status);
+	/**
+	 * 
+	 * @Description: 查询零花钱可用列表
+	 * @param userId
+	 * @param nowDate
+	 * @param status
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年10月27日
+	 */
+	List<TradePinMoneyObtain> findUsableList(@Param("userId") String userId, @Param("nowDate") Date nowDate,
 			@Param("status") Integer status);
 	/**
 	 * @Description: 获取列表
