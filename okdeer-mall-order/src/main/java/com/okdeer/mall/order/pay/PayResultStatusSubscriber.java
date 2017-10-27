@@ -36,10 +36,13 @@ import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.entity.TradeOrderGroupRelation;
 import com.okdeer.mall.order.entity.TradeOrderLog;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.RefundsStatusEnum;
+import com.okdeer.mall.order.mapper.TradeOrderGroupRelationMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemDetailMapper;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderPayMapper;
@@ -55,6 +58,7 @@ import com.okdeer.mall.order.service.TradeOrderSendMessageService;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
 import com.okdeer.mall.order.service.TradeorderProcessLister;
 import com.okdeer.mall.order.service.TradeorderRefundProcessLister;
+import com.okdeer.mall.util.RedisLock;
 
 /**
  * 余额支付结果消息订阅处理
@@ -148,6 +152,12 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 	@Qualifier(value="jxcSynTradeorderRefundProcessLister")
 	private TradeorderRefundProcessLister tradeorderRefundProcessLister;
 	
+	@Resource
+	private TradeOrderGroupRelationMapper tradeOrderGroupRelationMapper;
+	
+	@Resource
+	private RedisLock redisLock;
+	
 	@Override
 	public String getTopic() {
 		return TOPIC_PAY_RESULT;
@@ -189,6 +199,7 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 		String tradeNum = null;
 		TradeOrder tradeOrder = null;
 		AbstractPayResultHandler handler = null;
+		String lockKey = null;
 		try {
 			String msg = new String(message.getBody(), Charsets.UTF_8);
 			logger.info("订单支付状态消息:" + msg);
@@ -198,11 +209,28 @@ public class PayResultStatusSubscriber extends AbstractRocketMQSubscriber
 			}
 			tradeNum = result.getTradeNum();
 			tradeOrder = tradeOrderService.getByTradeNum(result.getTradeNum());
+			if(tradeOrder.getType() == OrderTypeEnum.GROUP_ORDER){
+				// 如果是团购订单，查询订单团单关联关系
+				TradeOrderGroupRelation orderGroupRel = tradeOrderGroupRelationMapper.findByOrderId(tradeOrder.getId());
+				if(orderGroupRel != null){
+					// 如果是拼团，处理团单时，要加锁
+					lockKey = String.format("GROUP:%s", orderGroupRel.getGroupOrderId());
+				}
+			}
 			handler = payResultHandlerFactory.getByOrder(tradeOrder);
-			handler.handler(tradeOrder, result);
+			if(StringUtils.isEmpty(lockKey) || redisLock.tryLock(lockKey, 10)){
+				handler.handler(tradeOrder, result);
+			}else{
+				// 如果要获取锁，但是没有成功取得锁，则延时消费
+				return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+			}
 		} catch (Exception e) {
 			logger.error("订单支付状态消息处理失败", e);
 			return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+		} finally{
+			if(StringUtils.isNotEmpty(lockKey)){
+				redisLock.unLock(lockKey);
+			}
 		}
 		
 		return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
