@@ -8,6 +8,17 @@
  */
 package com.okdeer.mall.order.pay;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
@@ -23,31 +34,19 @@ import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
-import com.okdeer.mall.order.constant.text.ExceptionConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
-import com.okdeer.mall.order.enums.OrderResourceEnum;
+import com.okdeer.mall.order.entity.TradeOrderGroupRelation;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.SendMsgType;
+import com.okdeer.mall.order.mapper.TradeOrderGroupRelationMapper;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
 import com.okdeer.mall.order.mq.TradeOrderSubScriberHandler;
 import com.okdeer.mall.order.pay.callback.AbstractPayResultHandler;
 import com.okdeer.mall.order.pay.callback.PayResultHandlerFactory;
-import com.okdeer.mall.order.service.OrderReturnCouponsService;
 import com.okdeer.mall.order.service.TradeMessageServiceApi;
 import com.okdeer.mall.order.vo.SendMsgParamVo;
-
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import com.okdeer.mall.util.RedisLock;
 
 /**
  * @ClassName: AlipayStatusSubscriber
@@ -88,11 +87,11 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
     @Reference(version = "1.0.0", check = false)
 	private IStoreMemberRelationServiceApi storeMemberRelationApi;
 
-    /**
-     * 订单返券service
-     */
-    @Autowired
-    private OrderReturnCouponsService orderReturnCouponsService;
+    @Resource
+	private TradeOrderGroupRelationMapper tradeOrderGroupRelationMapper;
+	
+	@Resource
+	private RedisLock redisLock;
 
     @Override
     public String getTopic() {
@@ -109,6 +108,7 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
         String tradeNum = null;
         TradeOrder tradeOrder = null;
         AbstractPayResultHandler handler = null;
+        String lockKey = null;
         try {
             String msg = new String(msgs.get(0).getBody(), Charsets.UTF_8);
             logger.info("订单支付状态消息:" + msg);
@@ -123,13 +123,32 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
         		handlerLzg(respDto);
         	} else {
         		tradeOrder = tradeOrderMapper.selectByParamsTrade(tradeNum);
+        		// Begin V2.6.3 added by maojj 2017-10-27
+        		if(tradeOrder.getType() == OrderTypeEnum.GROUP_ORDER){
+    				// 如果是团购订单，查询订单团单关联关系
+    				TradeOrderGroupRelation orderGroupRel = tradeOrderGroupRelationMapper.findByOrderId(tradeOrder.getId());
+    				if(orderGroupRel != null){
+    					// 如果是拼团，处理团单时，要加锁
+    					lockKey = String.format("GROUP:%s", orderGroupRel.getGroupOrderId());
+    				}
+    			}
+        		// End V2.6.3 added by maojj 2017-10-27
                 handler = payResultHandlerFactory.getByOrder(tradeOrder);
-                handler.handler(tradeOrder, respDto);
+                if(StringUtils.isEmpty(lockKey) || redisLock.tryLock(lockKey, 10)){
+                	 handler.handler(tradeOrder, respDto);
+    			}else{
+    				// 如果要获取锁，但是没有成功取得锁，则延时消费
+    				return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+    			}
         	}
         } catch (Exception e) {
             logger.error("订单支付状态消息处理失败", e);
             return ConsumeConcurrentlyStatus.RECONSUME_LATER;
-        }
+        } finally {
+			if(StringUtils.isNotEmpty(lockKey)){
+				redisLock.unLock(lockKey);
+			}
+		}
        
         // end add by wushp 20161015
         return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;

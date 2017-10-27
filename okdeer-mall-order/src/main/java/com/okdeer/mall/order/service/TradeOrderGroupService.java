@@ -12,8 +12,6 @@ import com.okdeer.mall.order.dto.TradeOrderGroupDetailDto;
 import com.okdeer.mall.order.dto.TradeOrderGroupDto;
 import com.okdeer.mall.order.dto.TradeOrderGroupGoodsDto;
 import com.okdeer.mall.order.dto.TradeOrderGroupParamDto;
-import com.okdeer.mall.order.entity.TradeOrder;
-import com.okdeer.mall.order.entity.TradeOrderGroupRelation;
 
 
 public interface TradeOrderGroupService extends IBaseService {
@@ -78,24 +76,4 @@ public interface TradeOrderGroupService extends IBaseService {
 	 */
 	PageUtils<TradeOrderGroupGoodsDto> findOrderGroupList(TradeOrderGroupParamBo paramBo, Integer pageNumber,
 			Integer pageSize);
-	
-	/**
-	 * @Description: 团购订单开团
-	 * @param tradeOrder 交易订单
-	 * @param orderGroupRel 团购订单关联关系
-	 * @throws Exception   
-	 * @author maojj
-	 * @date 2017年10月27日
-	 */
-	void openGroup(TradeOrder tradeOrder, TradeOrderGroupRelation orderGroupRel) throws Exception;
-	
-	/**
-	 * @Description: 订单入团
-	 * @param tradeOrder
-	 * @param orderGroupRel
-	 * @throws Exception   
-	 * @author maojj
-	 * @date 2017年10月27日
-	 */
-	void joinGroup(TradeOrder tradeOrder, TradeOrderGroupRelation orderGroupRel) throws Exception;
 }
