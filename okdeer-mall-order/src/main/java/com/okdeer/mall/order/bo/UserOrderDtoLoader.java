@@ -173,7 +173,7 @@ public class UserOrderDtoLoader {
 					if(order.getStatus() == OrderStatusEnum.DROPSHIPPING){
 						orderDto.setOrderStatus(OrderStatusEnum.PAY_COMPLETE.ordinal());
 					}else{
-						orderDto.setOrderStatus(order.getStatus().ordinal());
+						orderDto.setOrderStatus(OrderAppStatusAdaptor.convertAppOrderStatus(order.getStatus()));
 					}
 					break;
 				default:

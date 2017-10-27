@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
@@ -268,7 +270,8 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 	 * @throws Exception 
 	 * @date 2017年10月12日
 	 */
-	private void joinGroup(TradeOrder tradeOrder, TradeOrderGroupRelation orderGroupRel) throws Exception {
+	@Transactional(propagation=Propagation.REQUIRES_NEW)
+	public void joinGroup(TradeOrder tradeOrder, TradeOrderGroupRelation orderGroupRel) throws Exception {
 		// 查询关联的团购订单
 		TradeOrderGroup orderGroup = tradeOrderGroupMapper.findById(orderGroupRel.getGroupOrderId());
 		if (orderGroup.getStatus() != GroupOrderStatusEnum.UN_GROUP) {
