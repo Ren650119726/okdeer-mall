@@ -528,6 +528,13 @@ public class TradeOrderGroupServiceImpl extends BaseServiceImpl implements Trade
 			StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.buildForGroupOrder(orderGroup,
 					groupSku.getGoodsCountLimit().compareTo(Integer.valueOf(0)) > 0);
 			goodsStoreSkuStockApi.updateStock(mallStockUpdate);
+			
+			// 增加商品销量
+			GoodsStoreSku goodsStoreSku = goodsStoreSkuServiceApi.getById(groupSku.getStoreSkuId());
+			if (goodsStoreSku != null) {
+				goodsStoreSku.setSaleNum(ConvertUtil.format(goodsStoreSku.getSaleNum()) + orderGroup.getGroupCount());
+				goodsStoreSkuServiceApi.updateByPrimaryKeySelective(goodsStoreSku);
+			}
 		} catch (Exception e) {
 			logger.error("团购订单更新库存失败", e);
 			// 更新库存失败，走取消流程
