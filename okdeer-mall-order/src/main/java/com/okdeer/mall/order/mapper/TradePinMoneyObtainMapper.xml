@@ -194,7 +194,21 @@
         </if>
         ORDER BY create_time DESC
     </select>
-    
+    <!-- 20171027 xuzq V2.6.3 修改后零花钱增加有效时间范围 不是从领取时及时生效 -->
+    <select id="findUsableList" resultMap="BaseResultMap" >
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM trade_pin_money_obtain
+        WHERE user_id = #{userId,jdbcType=VARCHAR}
+        <if test="nowDate != null" >
+        	AND valid_time <![CDATA[ >= ]]> #{nowDate,jdbcType=TIMESTAMP}
+        	AND effect_time <![CDATA[ <= ]]> #{nowDate,jdbcType=TIMESTAMP}
+        </if>
+        <if test="status != null" >
+            AND status = #{status,jdbcType=TINYINT}
+        </if>
+        ORDER BY create_time DESC
+    </select>
     <!-- 根据ID列表查询记录 -->
     <select id="findByIds" resultMap="BaseResultMap" >
         SELECT 

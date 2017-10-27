@@ -112,8 +112,9 @@ public class TradePinMoneyUseServiceImpl extends BaseServiceImpl implements Trad
 	 */
 	@Override
 	public void orderOccupy(String userId,String orderId,BigDecimal orderTotalAmount,BigDecimal usePinMoney) throws Exception{
-		// 查询我的红包记录
-		List<TradePinMoneyObtain> pinMoneyObtains = tradePinMoneyObtainMapper.findList(userId,
+		// 查询我的零花钱记录
+		//V2.6.3 xuzq 20171027 修改接口调用为获取用户可用零花钱列表
+		List<TradePinMoneyObtain> pinMoneyObtains = tradePinMoneyObtainMapper.findUsableList(userId,
 				new Date(), PinMoneyStatusConstant.UNUSED);
 		//倒序
 		Collections.reverse(pinMoneyObtains);
