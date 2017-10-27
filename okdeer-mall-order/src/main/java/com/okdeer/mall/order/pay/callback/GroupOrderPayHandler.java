@@ -352,8 +352,6 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 		List<TradeOrderGroupRelation> orderGroupRelList = tradeOrderGroupRelationMapper
 				.findByGroupOrderId(orderGroup.getId());
 		List<String> orderIdList = orderGroupRelList.stream().map(e -> e.getOrderId()).collect(Collectors.toList());
-		// 修改所有订单类型为寄送服务订单
-		tradeOrderMapper.updateOrderType(orderIdList,currentDate);
 		// 更新库存
 		try {
 			StockUpdateDto mallStockUpdate = mallStockUpdateBuilder.buildForGroupOrder(orderGroup,
@@ -370,6 +368,8 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 			// 更新库存失败，走取消流程
 			cancelGroupOrder(orderGroup, orderIdList);
 		}
+		// 修改所有订单类型为寄送服务订单
+		tradeOrderMapper.updateOrderType(orderIdList,currentDate);
 		// 成团成功，发送通知消息
 		sendNotifyMessage(orderIdList);
 		// 成团成功，发送订单待发货超时消息
