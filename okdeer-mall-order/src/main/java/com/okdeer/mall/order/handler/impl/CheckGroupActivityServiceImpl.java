@@ -89,6 +89,16 @@ public class CheckGroupActivityServiceImpl implements RequestHandler<PlaceOrderP
 	 * 活动设备总限购
 	 */
 	private static final int LIMIT_ACTIVITY_DEVICE_TOTAL = 3;
+	
+	/**
+	 * 活动用户日限购
+	 */
+	private static final int LIMIT_ACTIVITY_USER_DAY = 4;
+	
+	/**
+	 * 活动设备日限购 
+	 */
+	private static final int LIMIT_ACTIVITY_DEVICE_DAY = 5;
 
 	@Override
 	public void process(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) throws Exception {
@@ -135,6 +145,16 @@ public class CheckGroupActivityServiceImpl implements RequestHandler<PlaceOrderP
 		// 检查是否超出商品总限购
 		if(isOutOfLimit(paramDto,storeSkuBo,groupSku.getUserCountLimit(),LIMIT_SKU_USER_TOTAL)){
 			resp.setResult(ResultCodeEnum.GROUP_TOTAL_USER_LIMIT_OUT);
+			return;
+		}
+		// 检查是否超出活动用户日参与次数
+		if(isOutOfLimit(paramDto,storeSkuBo,activityGroup.getAccountDayLimit(),LIMIT_ACTIVITY_USER_DAY)){
+			resp.setResult(ResultCodeEnum.GROUP_TOTAL_USER_LIMIT_OUT);
+			return;
+		}
+		// 检查是否超出活动设备每日参与次数
+		if(isOutOfLimit(paramDto,storeSkuBo,activityGroup.getDeviceDayLimit(),LIMIT_ACTIVITY_DEVICE_DAY)){
+			resp.setResult(ResultCodeEnum.GROUP_DEVICE_LIMIT_OUT);
 			return;
 		}
 		// 检查是否超出活动用户总限购
@@ -214,7 +234,7 @@ public class CheckGroupActivityServiceImpl implements RequestHandler<PlaceOrderP
 			// 限购数为0，标识不限购
 			return false;
 		}
-		if(limitType == 3 && StringUtils.isEmpty(paramDto.getDeviceId())){
+		if((limitType == 3 || limitType == 5) && StringUtils.isEmpty(paramDto.getDeviceId())){
 			// 如果限设备，但是设备id为空，则不做校验
 			return false;
 		}
@@ -236,6 +256,14 @@ public class CheckGroupActivityServiceImpl implements RequestHandler<PlaceOrderP
 			case 3:
 				// 活动设备总限购
 				paramBo = new ActivityJoinRecParamBo(null,storeSkuBo.getActivityId() ,null, paramDto.getDeviceId(), null);
+				break;
+			case 4:
+				// 活动用户日限购
+				paramBo = new ActivityJoinRecParamBo(paramDto.getUserId(),storeSkuBo.getActivityId(),null, new Date());
+				break;
+			case 5:
+				// 活动设备每日限购
+				paramBo = new ActivityJoinRecParamBo(null,storeSkuBo.getActivityId() ,null, paramDto.getDeviceId(), new Date());
 				break;
 			default:
 				break;
