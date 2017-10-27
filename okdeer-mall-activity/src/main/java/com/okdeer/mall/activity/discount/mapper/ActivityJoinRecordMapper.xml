@@ -153,6 +153,7 @@
             <if test="joinDate != null">
             	AND create_date = #{joinDate,jdbcType=DATE}
             </if>
+            AND disabled = 0
 		</where>
 	</select>
 	
