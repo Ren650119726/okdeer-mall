@@ -211,6 +211,16 @@ public class ScanOrderApiImpl implements ScanOrderApi {
 		SelfOrderVo orderParam = builderParams(reqDto.getData(),cacheOrderDetail,bo.getPlatformPreferential());
 		// 调用零售提交订单接口 
 		RespSelfJson jxcResp = selfPayOrderServiceApi.getOrderInfo(orderParam );
+		//判断接口是否失败(库存)
+		if (Integer.valueOf(jxcResp.get(RespSelfJson.KEY_CODE).toString()) != 0) {
+			resp.setCode(Integer.valueOf(jxcResp.get(RespSelfJson.KEY_CODE).toString()));
+			resp.setMessage((String)jxcResp.get(RespSelfJson.KEY_MESSAGE));
+			logger.error("扫码购确认订单失败，code:{},原因：{}", jxcResp.get(RespSelfJson.KEY_CODE),
+					jxcResp.get(RespSelfJson.KEY_MESSAGE));
+			
+			return resp;
+		}
+		
     	SelfPayTradeInfoVo tradeInfoVo = (SelfPayTradeInfoVo) jxcResp.get(RespSelfJson.DATA);
     	ScanOrderDto orderDetail = BeanMapper.map(tradeInfoVo, ScanOrderDto.class);
     	orderDetail.setPinMoneyAmount(tradeInfoVo.getPinAmount());
@@ -325,6 +335,7 @@ public class ScanOrderApiImpl implements ScanOrderApi {
 	 * @see com.okdeer.mall.order.service.ScanOrderApi#getJxcStoreId(java.lang.String)
 	 */
 	public ScanPosStoreDto getJxcStoreId(String branchId){
+		System.out.println("");
 		Branches branches = branchesServiceApi.getBranchInfoById(branchId);
 		return BeanMapper.map(branches, ScanPosStoreDto.class);
 	}
