@@ -18,4 +18,10 @@ public class GroupOrderRemarkConst {
 	public static final String GROUP_EXPIRE = "团购拼团过期";
 	
 	public static final String GROUP_FAIL = "团购拼团失败";
+	
+	public static final String GROUP_FAIL_OUT_DAY_LIMIT = "超出团购商品每日限购，拼团失败";
+	
+	public static final String GROUP_FAIL_OUT_TOTAL_LIMIT = "超出团购商品总限购，拼团失败";
+	
+	public static final String GROUP_FAIL_STOCK_NOT_ENOUGH= "团购商品库存不足，拼团失败";
 }
