@@ -180,6 +180,7 @@ public class ScanOrderApiImpl implements ScanOrderApi {
 		orderParamDto.getCacheMap().put("parserBo", bo);
 		ScanOrderDto cacheOrderDetail = (ScanOrderDto) redisTemplateWrapper.get(SCAN_ORDER_PRDFIX+orderParamDto.getOrderId());
 		orderParamDto.setChannel(String.valueOf(cacheOrderDetail.getOrderResource().ordinal()));
+		orderParamDto.setStoreId(cacheOrderDetail.getBranchId());
 		if(orderParamDto.getActivityType() == null){
 			orderParamDto.setActivityType(String.valueOf(ActivityTypeEnum.NO_ACTIVITY.ordinal()));
 		} else if (ActivityTypeEnum.NO_ACTIVITY != orderParamDto.getActivityType()) {
