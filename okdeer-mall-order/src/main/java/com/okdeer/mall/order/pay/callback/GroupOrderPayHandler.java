@@ -367,6 +367,7 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 			logger.error("团购订单更新库存失败", e);
 			// 更新库存失败，走取消流程
 			cancelGroupOrder(orderGroup, orderIdList);
+			return;
 		}
 		// 修改所有订单类型为寄送服务订单
 		tradeOrderMapper.updateOrderType(orderIdList,currentDate);
