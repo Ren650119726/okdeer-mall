@@ -219,7 +219,7 @@
 		UPDATE activity_share_record
 		<set>
 			<if test="deliveryNum != null">
-				delivery_num = complete_num + #{deliveryNum,jdbcType=INTEGER},
+				delivery_num = delivery_num + #{deliveryNum,jdbcType=INTEGER},
 			</if>
 			<if test="completeNum != null">
 				complete_num = complete_num + #{completeNum,jdbcType=INTEGER},
