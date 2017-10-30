@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -317,6 +318,7 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 
 			int soldDayNum = tradeOrderGroupMapper.countGroupSkuNum(paramBo);
 			if (soldDayNum + orderGroup.getGroupCount() > groupSku.getGoodsDayCountLimit().intValue()) {
+				orderGroup.setRemark(GroupOrderRemarkConst.GROUP_FAIL_OUT_DAY_LIMIT);
 				return false;
 			}
 		}
@@ -329,6 +331,7 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 
 			int soldTotal = tradeOrderGroupMapper.countGroupSkuNum(paramBo);
 			if (soldTotal + orderGroup.getGroupCount() > groupSku.getGoodsCountLimit().intValue()) {
+				orderGroup.setRemark(GroupOrderRemarkConst.GROUP_FAIL_OUT_TOTAL_LIMIT);
 				return false;
 			}
 		}
@@ -366,6 +369,7 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 		} catch (Exception e) {
 			logger.error("团购订单更新库存失败", e);
 			// 更新库存失败，走取消流程
+			orderGroup.setRemark(GroupOrderRemarkConst.GROUP_FAIL_STOCK_NOT_ENOUGH);
 			cancelGroupOrder(orderGroup, orderIdList);
 			return;
 		}
@@ -388,7 +392,9 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 		// 修改团单状态为成团失败
 		orderGroup.setStatus(GroupOrderStatusEnum.GROUP_FAIL);
 		orderGroup.setEndTime(new Date());
-		orderGroup.setRemark(GroupOrderRemarkConst.GROUP_FAIL);
+		if(StringUtils.isEmpty(orderGroup.getRemark())){
+			orderGroup.setRemark(GroupOrderRemarkConst.GROUP_FAIL);
+		}
 		tradeOrderGroupMapper.update(orderGroup);
 		// 对所有入团订单走订单取消流程
 		List<CancelOrderParamDto> cancelOrderList = Lists.newArrayList();

@@ -75,4 +75,14 @@ public interface MockFilePath {
 	 * 店铺地址信息模拟文件路径
 	 */
 	String MOCK_STORE_ADDR_INFO_PATH = BASE_MOCK_PATH + "mock-store-addr-info.json";
+	
+	/**
+	 * 用户地址信息模拟文件
+	 */
+	String MOCK_USER_ADDR_LIST_PATH = BASE_MOCK_PATH + "mock-user-addr-list.json";
+	
+	/**
+	 * 活动信息列表
+	 */
+	String MOCK_ACTIVITY_LIST_PATH = BASE_MOCK_PATH + "mock-activity-list.json";
 }
