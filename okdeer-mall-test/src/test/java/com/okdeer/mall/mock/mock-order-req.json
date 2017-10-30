@@ -1325,7 +1325,8 @@ Begin---15 用户参团请求
 			"seckillId": "8a8080cf5ec79881015ecb8a74c10011",
 			"lng": "112.21641",
 			"groupJoinType":1,
-			"groupOrderId":"8a94e7545f145575015f145575ca0000",
+			"groupOrderId":"8a8080f45f6bd031015f6bf27221000b",
+			"screen":"600*600",
 			"skuList": [{
 				"quantity": "1",
 				"skuPrice": "78.00",
