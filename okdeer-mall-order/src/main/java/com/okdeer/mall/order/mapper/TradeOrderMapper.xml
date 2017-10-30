@@ -6068,7 +6068,6 @@
 			<if test="status != null">
 				AND trade.status = #{status,jdbcType=TINYINT} 
 			</if>
-			refundsStatus
 			<!-- 起始时间-->
 			<if test="startTime != null">
 				AND trade.create_time <![CDATA[ >= ]]>
