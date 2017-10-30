@@ -69,6 +69,10 @@ public class ActivityParamBo {
 	 * 活动结束时间
 	 */
 	private Date endTime;
+	/**
+	 * 参与订单类型 2服务店订单 3便利店订单 4扫码购订单 5会员卡自助订单。不同选项之间用|分隔,便于sql正则匹配
+	 */
+	private String limitOrderType;
 
 	public ActivityDiscountStatus getStatus() {
 		return status;
@@ -148,6 +152,14 @@ public class ActivityParamBo {
 
 	public void setLimitRange(AreaType limitRange) {
 		this.limitRange = limitRange;
+	}
+
+	public String getLimitOrderType() {
+		return limitOrderType;
+	}
+
+	public void setLimitOrderType(String limitOrderType) {
+		this.limitOrderType = limitOrderType;
 	}
 
 }

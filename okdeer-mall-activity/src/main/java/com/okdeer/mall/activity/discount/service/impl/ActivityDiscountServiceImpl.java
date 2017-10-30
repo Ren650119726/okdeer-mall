@@ -21,14 +21,8 @@ import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.base.entity.GoodsSpuCategory;
 import com.okdeer.archive.goods.base.service.GoodsSpuCategoryServiceApi;
 import com.okdeer.archive.goods.dto.StoreSkuParamDto;
-import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.dto.StoreSkuDto;
-import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
-import com.okdeer.archive.goods.store.enums.IsActivity;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
-import com.okdeer.archive.stock.dto.StockUpdateDetailDto;
-import com.okdeer.archive.stock.dto.StockUpdateDto;
-import com.okdeer.archive.stock.enums.StockOperateEnum;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.StoreActivityTypeEnum;
@@ -66,7 +60,6 @@ import com.okdeer.mall.activity.dto.ActivityBusinessRelDto;
 import com.okdeer.mall.activity.dto.ActivityInfoDto;
 import com.okdeer.mall.activity.dto.ActivityParamDto;
 import com.okdeer.mall.activity.dto.ActivityPinMoneyDto;
-import com.okdeer.mall.activity.seckill.vo.ActivitySeckillFormVo;
 import com.okdeer.mall.activity.service.FavourFilterStrategy;
 import com.okdeer.mall.activity.service.MaxFavourStrategy;
 import com.okdeer.mall.common.enums.AreaType;
@@ -348,6 +341,10 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		if(StringUtils.isNotEmpty(actInfoDto.getLimitRangeIds())){
 			String[] tempArr = actInfoDto.getLimitRangeIds().split(",");
 			paramBo.setLimitRangeIds(Arrays.asList(tempArr));
+		}
+		//零花钱活动要校验限制的订单类型
+		if(paramBo.getType() == ActivityDiscountType.PIN_MONEY){
+			paramBo.setLimitOrderType(actInfo.getLimitOrderType().replaceAll(",", "|"));
 		}
 		int count = activityDiscountMapper.countConflict(paramBo);
 		return count < 1;
