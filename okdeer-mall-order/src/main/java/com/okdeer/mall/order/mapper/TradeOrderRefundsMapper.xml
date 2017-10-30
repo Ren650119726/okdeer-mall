@@ -683,6 +683,8 @@
 			<result column="refunds_area" property="area" jdbcType="VARCHAR" />
 			<result column="refunds_address" property="address" jdbcType="VARCHAR" />
 			<result column="refunds_mobile" property="mobile" jdbcType="VARCHAR" />
+			<result column="refunds_logistics_company_name" property="logisticsCompanyName"
+				jdbcType="VARCHAR" /> 
 			<result column="refunds_logistics_no" property="logisticsNo"
 				jdbcType="VARCHAR" />
 		</association>
@@ -1009,7 +1011,7 @@
 		trade.delivery_time,trade.invoice,trade.activity_id,trade.activity_type,trade.pay_way,trade.payment_time,
 		logistics.consignee_name as refunds_consignee_name,logistics.mobile as refunds_mobile,
 		logistics.area as refunds_area,logistics.address as refunds_address,
-		logistics.`logistics_no` as	refunds_logistics_no,
+		logistics.logistics_company_name as refunds_logistics_company_name, logistics.`logistics_no` as	refunds_logistics_no,
 		logistics.type as refunds_type,
 		image.id as image_id,image.image_path,
 		ol.consignee_name,ol.mobile,ol.area,ol.address,ol.`logistics_no`,ol.type,
