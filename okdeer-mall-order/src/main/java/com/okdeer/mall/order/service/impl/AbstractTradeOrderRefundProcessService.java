@@ -98,7 +98,7 @@ public abstract class AbstractTradeOrderRefundProcessService implements TradeOrd
 			response.setResult(ResultCodeEnum.ORDER_NOT_SUPPORT_REFUND);
 			return false;
 		}
-		if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER && tradeOrderRefundsService.isRefundOrderItemId(tradeOrderItem.getId())) {
+		if ((tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER || tradeOrder.getType() == OrderTypeEnum.SERVICE_EXPRESS_ORDER) && tradeOrderRefundsService.isRefundOrderItemId(tradeOrderItem.getId())) {
 			response.setResult(ResultCodeEnum.ORDER_HAS_BEAN_REFUND);
 			return false;
 		}
