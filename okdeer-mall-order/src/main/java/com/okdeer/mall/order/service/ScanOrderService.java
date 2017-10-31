@@ -38,12 +38,11 @@ public interface ScanOrderService {
 	/**
 	 * @Description: 保存扫码购订单
 	 * @param vo
-	 * @param branchId
 	 * @param requestParams
 	 * @throws Exception   
 	 * @author guocp
 	 * @date 2017年10月16日
 	 */
-	void saveScanOrder(ScanOrderDto vo, String branchId, RequestParams requestParams) throws Exception;
+	void saveScanOrder(ScanOrderDto vo, RequestParams requestParams) throws Exception;
 
 }

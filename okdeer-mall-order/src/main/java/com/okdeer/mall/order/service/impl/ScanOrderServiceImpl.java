@@ -46,7 +46,6 @@ import com.okdeer.mall.order.dto.ScanOrderItemDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.enums.OrderIsShowEnum;
-import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.service.ScanOrderService;
 import com.okdeer.mall.order.service.TradeOrderPayServiceApi;
@@ -115,7 +114,7 @@ public class ScanOrderServiceImpl implements ScanOrderService {
 	 */
     @Override
     @Transactional(rollbackFor=Exception.class)
-	public void saveScanOrder(ScanOrderDto vo,String branchId,RequestParams requestParams) throws Exception{
+	public void saveScanOrder(ScanOrderDto vo,RequestParams requestParams) throws Exception{
 		//转化结果集
 		TradeOrder persity = BeanMapper.map(vo, TradeOrder.class);
 		//设置id值
@@ -143,7 +142,7 @@ public class ScanOrderServiceImpl implements ScanOrderService {
 		//设置显示
 		persity.setIsShow(OrderIsShowEnum.yes);
 		//设置店铺信息
-		StoreInfo storeInfo = storeInfoService.findById(branchId);
+		StoreInfo storeInfo = storeInfoService.findById(vo.getBranchId());
 		logger.info("店铺信息:{}",JsonMapper.nonEmptyMapper().toJson(storeInfo));
 		persity.setStoreName(storeInfo.getStoreName());
 		//设置用户信息
@@ -161,7 +160,7 @@ public class ScanOrderServiceImpl implements ScanOrderService {
 			TradeOrderItem item = items.get(i);
 			ScanOrderItemDto map = orderIts.get(item.getId());
 				//在线上查找是否有对应商品，如果有，将对应信息设置进去
-				GoodsStoreSku goodsStoreSku = goodsStoreSkuApi.selectByStoreIdAndSkuId(branchId, map.getSkuId());
+				GoodsStoreSku goodsStoreSku = goodsStoreSkuApi.selectByStoreIdAndSkuId(vo.getBranchId(), map.getSkuId());
 				if(goodsStoreSku != null && StringUtils.isNotBlank(goodsStoreSku.getId())){
 					item.setStoreSkuId(goodsStoreSku.getId());
 					item.setMainPicPrl(goodsStoreSku.getContent());
