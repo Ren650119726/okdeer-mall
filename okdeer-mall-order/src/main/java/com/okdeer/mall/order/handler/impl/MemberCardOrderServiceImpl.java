@@ -378,7 +378,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		//总优惠
 		persity.setPreferentialPrice(discount.add(prefer).add(pinMoney));
 		//平台优惠字段
-		persity.setPlatformPreferential(prefer.add(pinMoney));
+		persity.setPlatformPreferential(prefer);
 		//零花钱优惠
 		persity.setPinMoney(pinMoney);
 		persity.setCreateTime(new Date());
