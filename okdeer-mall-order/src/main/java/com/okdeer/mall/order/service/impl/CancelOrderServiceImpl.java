@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.rocketmq.client.producer.LocalTransactionState;
 import com.alibaba.rocketmq.client.producer.SendResult;
 import com.alibaba.rocketmq.client.producer.SendStatus;
 import com.alibaba.rocketmq.common.message.Message;
@@ -43,6 +42,7 @@ import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountRecordService;
 import com.okdeer.mall.activity.discount.service.ActivityJoinRecordService;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
+import com.okdeer.mall.ele.service.ExpressService;
 import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.entity.ActivityJoinRecord;
@@ -176,6 +176,12 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 	private ActivityJoinRecordService activityJoinRecordService;
 
 	/**
+	 * 注入配送-service
+	 */
+	@Autowired
+	private ExpressService expressService;
+
+	/**
 	 * @Description: 取消订单
 	 * @param order 订单
 	 * @author zengjizu
@@ -233,50 +239,57 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			setOrderStatus(tradeOrder, oldOrder);
 			// 设置退款金额
 			setReturnAmount(tradeOrder, oldOrder);
+			// 释放活动锁定
+			releaseActivity(tradeOrder, oldOrder);
+			// 保存订单轨迹
+			saveOrderLog(tradeOrder, operator);
+			// 保存订单轨迹
+			tradeOrderTraceService.saveOrderTrace(tradeOrder);
 
+			// 更新订单状态
+			Integer updateRows = tradeOrderMapper.updateOrderStatus(tradeOrder);
+			logger.info("更新后的订单状态:{}", tradeOrder.getStatus().getName());
+			if (updateRows == null || updateRows.intValue() == 0) {
+				throw new Exception(ORDER_STATUS_CHANGE);
+			}
+			// 回收库存
+			stockOperateService.recycleStockByOrder(tradeOrder, rpcIdList);
+			// 发送短信
+			if (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()
+					|| OrderStatusEnum.TO_BE_SIGNED == oldOrder.getStatus()
+					|| OrderStatusEnum.WAIT_RECEIVE_ORDER == oldOrder.getStatus()) {
+				// 查询支付信息
+				TradeOrderPay tradeOrderPay = tradeOrderPayService.selectByOrderId(oldOrder.getId());
+				tradeOrder.setTradeOrderPay(tradeOrderPay);
+				tradeMessageService.sendSmsByCancel(tradeOrder, oldOrder.getStatus());
+			}
+			// 发消息到云钱包，关闭订单
+			if (OrderStatusEnum.UNPAID == oldOrder.getStatus()) {
+				// 只有待支付订单状态需要关闭
+				sendCancelMsg(tradeOrder.getTradeNum());
+			}
+			// 如果是货到付款的,走拒收的流程
+			if (oldOrder.getPayWay() != PayWayEnum.PAY_ONLINE) {
+				// add by zhangkeneng 和左文明对接丢消息
+				TradeOrderContext tradeOrderContext = new TradeOrderContext();
+				tradeOrderContext.setTradeOrder(tradeOrder);
+				tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
+				tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+				tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
+				tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
+			}
+			
+			if(tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER){
+				// begin V2.5.0 add by wangf01 20170629
+				expressService.cancelExpressOrder(tradeOrder.getOrderNo());
+				// end V2.5.0 add by wangf01 20170629
+			}
+			
 			// 最后一步退款，避免出现发送了消息，后续操作失败了，无法回滚资金
-			// 如果不是支付中的状态是需要退款给用户的
-			this.tradeOrderPayService.cancelOrderPay(tradeOrder, (msg, obj) -> {
-				try {
-					// 释放活动锁定
-					releaseActivity(tradeOrder, oldOrder);
-					// 保存订单轨迹
-					saveOrderLog(tradeOrder, operator);
-					// 保存订单轨迹
-					tradeOrderTraceService.saveOrderTrace(tradeOrder);
-
-					// 更新订单状态
-					Integer updateRows = tradeOrderMapper.updateOrderStatus(tradeOrder);
-					logger.info("更新后的订单状态:{}", tradeOrder.getStatus().getName());
-					if (updateRows == null || updateRows.intValue() == 0) {
-						throw new Exception(ORDER_STATUS_CHANGE);
-					}
-					// 回收库存
-					stockOperateService.recycleStockByOrder(tradeOrder, rpcIdList);
-					// 发送短信
-					if (OrderStatusEnum.DROPSHIPPING == oldOrder.getStatus()
-							|| OrderStatusEnum.TO_BE_SIGNED == oldOrder.getStatus()
-							|| OrderStatusEnum.WAIT_RECEIVE_ORDER == oldOrder.getStatus()) {
-						// 查询支付信息
-						TradeOrderPay tradeOrderPay = tradeOrderPayService.selectByOrderId(oldOrder.getId());
-						tradeOrder.setTradeOrderPay(tradeOrderPay);
-						tradeMessageService.sendSmsByCancel(tradeOrder, oldOrder.getStatus());
-					}
-
-					// 如果是货到付款的,走拒收的流程
-					if (oldOrder.getPayWay() != PayWayEnum.PAY_ONLINE) {
-						// add by zhangkeneng 和左文明对接丢消息
-						TradeOrderContext tradeOrderContext = new TradeOrderContext();
-						tradeOrderContext.setTradeOrder(tradeOrder);
-						tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
-					}
-				} catch (Exception e) {
-					logger.error("处理取消订单失败", e);
-					return LocalTransactionState.ROLLBACK_MESSAGE;
-				}
-				return LocalTransactionState.COMMIT_MESSAGE;
-			});
-
+			if (OrderStatusEnum.UNPAID != oldOrder.getStatus()) {
+				// 如果不是支付中的状态是需要退款给用户的
+				this.tradeOrderPayService.cancelOrderPay(tradeOrder);
+			}
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;
