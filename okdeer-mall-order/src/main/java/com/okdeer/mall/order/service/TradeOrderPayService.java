@@ -2,7 +2,6 @@
 package com.okdeer.mall.order.service;
 
 import com.okdeer.mall.order.bo.PayInfo;
-import com.okdeer.mall.order.dto.PayInfoDto;
 import com.okdeer.mall.order.dto.PayInfoParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderPay;
@@ -32,7 +31,6 @@ public interface TradeOrderPayService {
 	 * @throws Exception 
 	 */
 	boolean cancelOrderPay(TradeOrder tradeOrder) throws Exception;
-
 	/**
 	 * 确认收货打款
 	 * @throws MQClientException 
@@ -80,4 +78,6 @@ public interface TradeOrderPayService {
 	 * @date 2017年8月23日
 	 */
 	public PayInfo getPayInfo(PayInfoParamDto payInfoParamDto) throws Exception;
+
+	
 }

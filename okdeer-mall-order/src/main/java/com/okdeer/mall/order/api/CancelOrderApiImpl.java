@@ -56,11 +56,7 @@ public class CancelOrderApiImpl implements CancelOrderApi {
 	@Qualifier(value="jxcSynTradeorderProcessLister")
 	private TradeorderProcessLister tradeorderProcessLister;
 	
-	/**
-	 * 注入配送-service
-	 */
-	@Autowired
-	private ExpressService expressService;
+	
 
 	@Override
 	public CancelOrderDto cancelOrder(CancelOrderParamDto cancelOrderParamDto) {
@@ -102,18 +98,6 @@ public class CancelOrderApiImpl implements CancelOrderApi {
 			cancelOrderService.cancelOrder(tradeOrder, isBuyerOperate);
 			cancelOrderDto.setStatus(0);
 			cancelOrderDto.setMsg(ORDER_CANCEL_SUCCESS);
-			
-			//add by  zhangkeneng  和左文明对接丢消息
-			TradeOrderContext tradeOrderContext = new TradeOrderContext();
-			tradeOrderContext.setTradeOrder(tradeOrder);
-			tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
-			tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
-			tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
-			tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
-
-			// begin V2.5.0 add by wangf01 20170629
-			expressService.cancelExpressOrder(tradeOrder.getOrderNo());
-			// end V2.5.0 add by wangf01 20170629
 		} catch (Exception e) {
 			logger.error(ORDER_CANCEL_ERROR, e);
 			cancelOrderDto.setStatus(1);

@@ -42,6 +42,7 @@ import com.okdeer.mall.activity.coupons.service.ActivitySaleRecordService;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountRecordService;
 import com.okdeer.mall.activity.discount.service.ActivityJoinRecordService;
 import com.okdeer.mall.activity.seckill.service.ActivitySeckillRecordService;
+import com.okdeer.mall.ele.service.ExpressService;
 import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.entity.ActivityJoinRecord;
@@ -155,7 +156,6 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 	@Resource
 	private ActivityDiscountRecordService activityDiscountRecordService;
 
-
 	/**
 	 * 第三方支付订单取消短信文案
 	 */
@@ -171,9 +171,15 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 	@Autowired
 	@Qualifier(value = "jxcSynTradeorderProcessLister")
 	private TradeorderProcessLister tradeorderProcessLister;
-	
+
 	@Resource
 	private ActivityJoinRecordService activityJoinRecordService;
+
+	/**
+	 * 注入配送-service
+	 */
+	@Autowired
+	private ExpressService expressService;
 
 	/**
 	 * @Description: 取消订单
@@ -206,8 +212,6 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 		return template;
 	}
 
-	
-
 	/**
 	 * @Description: 订单取消（拒收）
 	 * @param tradeOrder
@@ -234,7 +238,7 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			// 设置订单状态
 			setOrderStatus(tradeOrder, oldOrder);
 			// 设置退款金额
-			setReturnAmount(tradeOrder,oldOrder);
+			setReturnAmount(tradeOrder, oldOrder);
 			// 释放活动锁定
 			releaseActivity(tradeOrder, oldOrder);
 			// 保存订单轨迹
@@ -264,24 +268,34 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 				// 只有待支付订单状态需要关闭
 				sendCancelMsg(tradeOrder.getTradeNum());
 			}
-			// 最后一步退款，避免出现发送了消息，后续操作失败了，无法回滚资金
-			if (OrderStatusEnum.UNPAID != oldOrder.getStatus()) {
-				// 如果不是支付中的状态是需要退款给用户的
-				this.tradeOrderPayService.cancelOrderPay(tradeOrder);
-			}
 			// 如果是货到付款的,走拒收的流程
 			if (oldOrder.getPayWay() != PayWayEnum.PAY_ONLINE) {
 				// add by zhangkeneng 和左文明对接丢消息
 				TradeOrderContext tradeOrderContext = new TradeOrderContext();
 				tradeOrderContext.setTradeOrder(tradeOrder);
+				tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
+				tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+				tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
 				tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
+			}
+			
+			if(tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER){
+				// begin V2.5.0 add by wangf01 20170629
+				expressService.cancelExpressOrder(tradeOrder.getOrderNo());
+				// end V2.5.0 add by wangf01 20170629
+			}
+			
+			// 最后一步退款，避免出现发送了消息，后续操作失败了，无法回滚资金
+			if (OrderStatusEnum.UNPAID != oldOrder.getStatus()) {
+				// 如果不是支付中的状态是需要退款给用户的
+				this.tradeOrderPayService.cancelOrderPay(tradeOrder);
 			}
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;
 		}
 	}
-	
+
 	/**
 	 * @Description: 设置退款金额
 	 * @param tradeOrder
@@ -289,11 +303,11 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 	 * @author zengjizu
 	 * @date 2017年8月23日
 	 */
-	private void setReturnAmount(TradeOrder tradeOrder,TradeOrder oldOrder) {
+	private void setReturnAmount(TradeOrder tradeOrder, TradeOrder oldOrder) {
 		if (OrderStatusEnum.UNPAID == oldOrder.getStatus()) {
-			//待支付中，退款金额为0
+			// 待支付中，退款金额为0
 			tradeOrder.setActualReturnAmount(new BigDecimal(0));
-			return ;
+			return;
 		}
 		// 默认是等于实际支付金额
 		BigDecimal returnAmount = tradeOrder.getActualAmount();
@@ -307,7 +321,7 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 			if (tradeOrder.getRealFarePreferential() == null) {
 				tradeOrder.setRealFarePreferential(new BigDecimal(0));
 			}
-			//减去运费
+			// 减去运费
 			returnAmount = returnAmount.subtract(tradeOrder.getFare().subtract(tradeOrder.getRealFarePreferential()));
 		} else if (tradeOrder.getType() == OrderTypeEnum.SERVICE_STORE_ORDER
 				&& tradeOrder.getIsBreach() == WhetherEnum.whether) {
@@ -391,11 +405,11 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 				// 释放所有代金卷
 				activityCouponsRecordService.releaseConpons(tradeOrder);
 			}
-		} 
+		}
 		if (tradeOrder.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY) {
 			// 团购活动参与记录
 			activityJoinRecordService.updateByOrderId(new ActivityJoinRecord(tradeOrder.getId(), Disabled.invalid));
-		} 
+		}
 		if (tradeOrder.getActivityType() == ActivityTypeEnum.SECKILL_ACTIVITY) {
 			// 秒杀活动释放购买记录
 			activitySeckillRecordService.updateStatusBySeckillId(tradeOrder.getId());
@@ -421,7 +435,7 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 		}
 
 		// 释放零花钱
-		if (tradeOrder.getPinMoney().compareTo(BigDecimal.ZERO) > 0 ) {
+		if (tradeOrder.getPinMoney().compareTo(BigDecimal.ZERO) > 0) {
 			if (tradeOrder.getType() == OrderTypeEnum.PHYSICAL_ORDER
 					|| OrderStatusEnum.DROPSHIPPING != oldOrder.getStatus()
 					|| (OrderCancelType.CANCEL_BY_BUYER != tradeOrder.getCancelType())) {
