@@ -134,7 +134,7 @@ public class ScanOrderServiceImpl implements ScanOrderService {
 		//零花钱优惠
 		persity.setPinMoney(pinMoney);
 		//平台优惠字段
-		persity.setPlatformPreferential(prefer.add(pinMoney));
+		persity.setPlatformPreferential(prefer);
 		//店铺收入字段
 		persity.setIncome(persity.getActualAmount().add(persity.getPlatformPreferential()));
 		persity.setCreateTime(new Date());
