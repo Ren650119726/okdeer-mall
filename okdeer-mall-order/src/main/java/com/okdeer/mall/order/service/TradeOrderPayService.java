@@ -6,6 +6,7 @@ import com.okdeer.mall.order.dto.PayInfoDto;
 import com.okdeer.mall.order.dto.PayInfoParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderPay;
+import com.alibaba.rocketmq.client.producer.LocalTransactionExecuter;
 import com.okdeer.base.common.exception.ServiceException;
 
 /**
@@ -31,8 +32,7 @@ public interface TradeOrderPayService {
 	 * @return 
 	 * @throws Exception 
 	 */
-	boolean cancelOrderPay(TradeOrder tradeOrder) throws Exception;
-
+	boolean cancelOrderPay(TradeOrder tradeOrder,LocalTransactionExecuter tranExecuter) throws Exception;
 	/**
 	 * 确认收货打款
 	 * @throws MQClientException 
@@ -80,4 +80,6 @@ public interface TradeOrderPayService {
 	 * @date 2017年8月23日
 	 */
 	public PayInfo getPayInfo(PayInfoParamDto payInfoParamDto) throws Exception;
+
+	
 }

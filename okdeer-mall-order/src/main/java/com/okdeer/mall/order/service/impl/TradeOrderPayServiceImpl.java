@@ -158,7 +158,10 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 	 * 取消订单付款
 	 */
 	@Override
-	public boolean cancelOrderPay(TradeOrder tradeOrder) throws Exception {
+	public boolean cancelOrderPay(TradeOrder tradeOrder,LocalTransactionExecuter tranExecuter) throws Exception {
+		if (OrderStatusEnum.UNPAID != tradeOrder.getStatus()) {
+			return true;
+		}
 		// 判断非在线支付
 		if (tradeOrder.getPayWay() != PayWayEnum.PAY_ONLINE) {
 			return true;
@@ -170,17 +173,15 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 			// 服务订单已经取消也需要退违约金
 			return true;
 		}
-
+		
 		TradeOrderPay orderPay = this.selectByOrderId(tradeOrder.getId());
 		if (orderPay.getPayType() == com.okdeer.mall.order.enums.PayTypeEnum.WALLET) {
 			String tradesPaymentJson = buildBalanceCancelPay(tradeOrder);
 			Message msg = new Message(PayMessageConstant.TOPIC_BALANCE_PAY_TRADE, PayMessageConstant.TAG_PAY_TRADE_MALL,
 					tradesPaymentJson.getBytes(Charsets.UTF_8));
 			// 发送消息
-			SendResult sendResult = rocketMQProducer.send(msg);
-			if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
-				throw new Exception("取消订单余额支付发送消息失败");
-			}
+			TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, tradeOrder, tranExecuter,null);
+			RocketMqResult.returnResult(sendResult);
 		} else if (tradeOrder.getType() == OrderTypeEnum.SERVICE_STORE_ORDER
 				&& tradeOrder.getIsBreach() == WhetherEnum.whether
 				&& (com.okdeer.mall.order.enums.PayTypeEnum.ALIPAY == orderPay.getPayType()
@@ -188,14 +189,11 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 			// 如果是上门服务订单，并且违约了，还是第三方支付订单，需要赔偿违约金给商家
 			// 构建支付违约金信息
 			String tradesPaymentJson = buildBreachMoneyPay(tradeOrder, orderPay.getPayType());
-
+			
 			Message msg = new Message(PayMessageConstant.TOPIC_BALANCE_PAY_TRADE, PayMessageConstant.TAG_PAY_TRADE_MALL,
 					tradesPaymentJson.getBytes(Charsets.UTF_8));
-			// 发送消息
-			SendResult sendResult = rocketMQProducer.send(msg);
-			if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
-				throw new Exception("取消订单违约金收入发送消息失败");
-			}
+			TransactionSendResult sendResult = rocketMQTransactionProducer.send(msg, tradeOrder, tranExecuter,null);
+			RocketMqResult.returnResult(sendResult);
 		}
 
 		// Begin V2.5 added by maojj 2017-07-05
