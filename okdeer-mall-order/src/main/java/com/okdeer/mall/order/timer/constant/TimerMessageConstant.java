@@ -103,9 +103,7 @@ public interface TimerMessageConstant {
         /**
          * 收货超时处理(团购) 10天
          */
-        // tag_confirm_group_timeout(10 * 24 * 60 * 60L),
-        // 用于测试使用，测试完毕进行回滚（指定10分钟超时）
-        tag_confirm_group_timeout(10 * 60L),
+        tag_confirm_group_timeout(10 * 24 * 60 * 60L),
 
         //begin by wangf01 2016.07.21
         /**
