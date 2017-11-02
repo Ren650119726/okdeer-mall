@@ -80,7 +80,6 @@ import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.IStoreInfoExtServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.archive.system.entity.PsmsAgent;
-import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.archive.system.service.IPsmsAgentServiceApi;
 import com.okdeer.archive.system.service.SysOrganiApi;
@@ -2276,21 +2275,25 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         //add by mengsj end 扫码购另外处理 and tuzd 会员卡扫码付
         // 保存订单轨迹
         tradeOrderTraceService.saveOrderTrace(tradeOrder);
-        TradeOrderContext tradeOrderContext = new TradeOrderContext();
-        tradeOrderContext.setTradeOrder(tradeOrder);
-        tradeOrderContext.setTradeOrder(tradeOrder);
-        tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
-        tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
-        tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
-        try {
-			tradeOrderChangeListeners.tradeOrderChanged(tradeOrderContext);
-		} catch (MallApiException e) {
-			logger.error("订单监听处理失败",e);
-			throw new ServiceException(e);
-		}
+        
+        TradeOrder orgTradeOrder = tradeOrderMapper.selectByPrimaryKey(tradeOrder.getId());
+        if(!orgTradeOrder.getStatus().equals(tradeOrder.getStatus())){
+        	 TradeOrderContext tradeOrderContext = new TradeOrderContext();
+             tradeOrderContext.setTradeOrder(tradeOrder);
+             tradeOrderContext.setTradeOrder(tradeOrder);
+             tradeOrderContext.setTradeOrderPay(tradeOrder.getTradeOrderPay());
+             tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
+             tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
+             try {
+     			tradeOrderChangeListeners.tradeOrderChanged(tradeOrderContext);
+     		} catch (MallApiException e) {
+     			logger.error("订单监听处理失败",e);
+     			throw new ServiceException(e);
+     		}
+        }
         return tradeOrderMapper.updateOrderStatus(tradeOrder);
     }
-
+    
     @Override
     public PageUtils<TradeOrder> getTradeOrderByParams(Map<String, Object> map, int pageNumber, int pageSize)
             throws ServiceException {
