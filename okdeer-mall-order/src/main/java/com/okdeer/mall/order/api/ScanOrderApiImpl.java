@@ -212,6 +212,7 @@ public class ScanOrderApiImpl implements ScanOrderApi {
 		SelfOrderVo orderParam = builderParams(reqDto.getData(),cacheOrderDetail,bo.getPlatformPreferential());
 		// 调用零售提交订单接口 
 		RespSelfJson jxcResp = selfPayOrderServiceApi.getOrderInfo(orderParam );
+		logger.info("零售提交获取订单详情：{}",JsonMapper.nonDefaultMapper().toJson(jxcResp));
 		//判断接口是否失败(库存)
 		if (Integer.valueOf(jxcResp.get(RespSelfJson.KEY_CODE).toString()) != 0) {
 			resp.setCode(Integer.valueOf(jxcResp.get(RespSelfJson.KEY_CODE).toString()));
@@ -230,7 +231,7 @@ public class ScanOrderApiImpl implements ScanOrderApi {
 		//保存扫描购订单信息
 		orderDetail.setRecordId(reqDto.getData().getRecordId());
 		orderDetail.setOrderResource(orderParamDto.getChannel());
-		scanOrderService.saveScanOrder(orderDetail, orderDetail.getBranchId(),requestParams);
+		scanOrderService.saveScanOrder(orderDetail,requestParams);
 		// 发送超时自动处理消息
 		tradeOrderTimer.sendTimerMessage(TradeOrderTimer.Tag.tag_pay_timeout, orderDetail.getOrderId());
 		//填充返回信息

@@ -935,7 +935,7 @@
 			<result column="area" property="area" jdbcType="VARCHAR" />
 			<result column="address" property="address" jdbcType="VARCHAR" />
 			<result column="mobile" property="mobile" jdbcType="VARCHAR" />
-			<result column="type" property="type" jdbcType="VARCHAR"
+			<result column="logistics_type" property="type" jdbcType="VARCHAR"
 				javaType="com.okdeer.mall.common.enums.LogisticsType" />
 			<result column="logistics_no" property="logisticsNo" jdbcType="VARCHAR" />
 			<result column="logistics_company_name" property="logisticsCompanyName"
@@ -955,12 +955,12 @@
 	<select id="selectDetailById" resultMap="RefundsOnlineDetailMap"
 		parameterType="java.lang.String">
 		SELECT
-		refunds.id,refunds.store_id,refunds.total_amount,refunds.refunds_status,refunds.total_income,refunds.total_preferential_price,refunds.store_preferential,
+		refunds.id,refunds.store_id,refunds.total_amount,refunds.refunds_status,refunds.total_income,refunds.total_preferential_price,refunds.store_preferential,refunds.type,
 		item.main_pic_prl,item.sku_name,item.store_sku_id,item.amount,item.unit_price,item.quantity,item.preferential_price,item.`properties_indb`,item.store_preferential,
 		refunds.refund_no,refunds.memo,refunds.create_time,refunds.total_amount,"退货退款"
 		AS refunds_type,refunds.order_id,refunds.delivery_time,
 		refunds.refunds_reason,refunds.refuse_reson,refunds.logistics_type,refunds.payment_method,refunds.status,refunds.refund_money_time,
-		logistics.consignee_name,logistics.mobile,logistics.area,logistics.address,logistics.`type`,logistics.`logistics_no`
+		logistics.consignee_name,logistics.mobile,logistics.area,logistics.address,logistics.`type` AS logistics_type,logistics.`logistics_no`
 		,logistics.logistics_company_name,
 		trade.order_no,trade.`status` AS
 		order_status,trade.pick_up_type,trade.pick_up_time,trade.create_time
