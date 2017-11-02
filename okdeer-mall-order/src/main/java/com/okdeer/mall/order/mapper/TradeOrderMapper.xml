@@ -4990,7 +4990,7 @@
 			</if>
 		</if>
 		<if test="null != userPhone and '' != userPhone">
-			AND tr.user_phone like CONCAT('%',#{userPhone},'%')
+			AND o.user_phone like CONCAT('%',#{userPhone},'%')
 		</if>
 		<choose>
 			<when test="orderTimeSortLabel == 2">
