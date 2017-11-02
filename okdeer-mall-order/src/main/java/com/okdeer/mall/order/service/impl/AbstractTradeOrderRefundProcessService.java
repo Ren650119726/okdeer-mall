@@ -201,6 +201,11 @@ public abstract class AbstractTradeOrderRefundProcessService implements TradeOrd
 					throw new MallApiException(exceptionMsg);
 				}
 				break;
+			case SELLER_REJECT_APPLY:
+				if (!(currentRefundsStatus == RefundsStatusEnum.WAIT_SELLER_VERIFY || currentRefundsStatus == RefundsStatusEnum.WAIT_SELLER_REFUND)){
+					throw new MallApiException(exceptionMsg);
+				}
+				break;
 			default:
 				RefundsStatusEnum conditionStatus = getConditionStatus(checkStatus);
 				if (conditionStatus == null) {
