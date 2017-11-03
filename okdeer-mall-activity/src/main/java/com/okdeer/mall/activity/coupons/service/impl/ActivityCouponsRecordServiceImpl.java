@@ -1177,7 +1177,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	@Override
 	public ActivityCouponsRecord selectByPrimaryKey(String id) {
-		return activityCouponsMapper.selectByPrimaryKey(id);
+		return activityCouponsRecordMapper.selectByPrimaryKey(id);
 	}
 
 	/**
