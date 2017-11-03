@@ -56,8 +56,11 @@ import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
+import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
+import com.okdeer.mall.order.pay.constant.GroupOrderTopicConst;
 import com.okdeer.mall.order.service.CancelOrderApi;
 import com.okdeer.mall.order.service.CancelOrderService;
 import com.okdeer.mall.order.service.GenerateNumericalService;
@@ -164,6 +167,9 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 	@Resource
 	private RedisLock redisLock;
 	// End V2.6.3 added by maojj 2017-10-17
+	
+	@Resource
+	private RocketMQProducer rocketMQProducer;
 	
 	
 	@Override
@@ -823,15 +829,11 @@ public class TradeOrderTimerSubscriber extends AbstractRocketMQSubscriber implem
 				// 查询所有已经入团的团购订单
 				List<TradeOrderGroupRelation> orderGroupRelList = tradeOrderGroupRelationService.findByGroupOrderId(orderGroup.getId());
 				// 对所有入团订单走订单取消流程
-				List<CancelOrderParamDto> cancelOrderList = Lists.newArrayList();
-				orderGroupRelList.forEach(groupRel -> {
-					CancelOrderParamDto cancelParamDto = new CancelOrderParamDto();
-					cancelParamDto.setOrderId(groupRel.getOrderId());
-					cancelParamDto.setReason("拼团失败");
-					cancelParamDto.setCancelType(OrderCancelType.CANCEL_BY_SYSTEM);
-					cancelOrderList.add(cancelParamDto);
-				});
-				cancelOrderList.forEach(cancelOrder -> cancelOrderApi.cancelOrder(cancelOrder));
+				for(TradeOrderGroupRelation groupRel : orderGroupRelList){
+					MQMessage<String> anMessage = new MQMessage<String>(GroupOrderTopicConst.TOPIC_GROUP_ORDER_CANCEL,
+							groupRel.getOrderId(), groupRel.getOrderId());
+					rocketMQProducer.sendMessage(anMessage);
+				}
 			}
 		} catch (Exception e) {
 			logger.error("{}团购订单过期失败：{}",timeoutMsg.getKey(),e);

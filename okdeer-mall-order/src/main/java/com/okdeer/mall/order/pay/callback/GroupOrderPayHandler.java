@@ -18,6 +18,8 @@ import com.okdeer.archive.stock.dto.StockUpdateDto;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
 import com.okdeer.archive.store.service.IStoreInfoServiceExtServiceApi;
 import com.okdeer.base.common.utils.DateUtils;
+import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.jxc.common.utils.UuidUtils;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountGroup;
@@ -37,7 +39,7 @@ import com.okdeer.mall.order.enums.OrderCancelType;
 import com.okdeer.mall.order.enums.SendMsgType;
 import com.okdeer.mall.order.mapper.TradeOrderGroupMapper;
 import com.okdeer.mall.order.mapper.TradeOrderGroupRelationMapper;
-import com.okdeer.mall.order.service.CancelOrderApi;
+import com.okdeer.mall.order.pay.constant.GroupOrderTopicConst;
 import com.okdeer.mall.order.service.GenerateNumericalService;
 import com.okdeer.mall.order.timer.TradeOrderTimer;
 import com.okdeer.mall.order.utils.OrderNoUtils;
@@ -83,7 +85,7 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 	private IStoreInfoServiceExtServiceApi storeInfoServiceExtServiceApi;
 
 	@Resource
-	private CancelOrderApi cancelOrderApi;
+	private RocketMQProducer rocketMQProducer;
 	
 	@Reference(version = "1.0.0", check = false)
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
@@ -342,9 +344,10 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 	 * @Description: 成团处理流程
 	 * @param orderGroup   
 	 * @author maojj
+	 * @throws Exception 
 	 * @date 2017年10月12日
 	 */
-	private void groupSuccess(TradeOrderGroup orderGroup, ActivityDiscountGroup groupSku) {
+	private void groupSuccess(TradeOrderGroup orderGroup, ActivityDiscountGroup groupSku) throws Exception {
 		Date currentDate = new Date();
 		// 修改团单状态为已成团
 		orderGroup.setStatus(GroupOrderStatusEnum.GROUP_SUCCESS);
@@ -386,9 +389,10 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 	 * @param orderGroup
 	 * @param orderIdList   
 	 * @author maojj
+	 * @throws Exception 
 	 * @date 2017年10月12日
 	 */
-	private void cancelGroupOrder(TradeOrderGroup orderGroup, List<String> orderIdList) {
+	private void cancelGroupOrder(TradeOrderGroup orderGroup, List<String> orderIdList) throws Exception {
 		// 修改团单状态为成团失败
 		orderGroup.setStatus(GroupOrderStatusEnum.GROUP_FAIL);
 		orderGroup.setEndTime(new Date());
@@ -397,15 +401,10 @@ public class GroupOrderPayHandler extends AbstractPayResultHandler {
 		}
 		tradeOrderGroupMapper.update(orderGroup);
 		// 对所有入团订单走订单取消流程
-		List<CancelOrderParamDto> cancelOrderList = Lists.newArrayList();
-		orderIdList.forEach(orderId -> {
-			CancelOrderParamDto cancelParamDto = new CancelOrderParamDto();
-			cancelParamDto.setOrderId(orderId);
-			cancelParamDto.setReason("成团失败");
-			cancelParamDto.setCancelType(OrderCancelType.CANCEL_BY_SYSTEM);
-			cancelOrderList.add(cancelParamDto);
-		});
-		cancelOrderList.forEach(cancelOrder -> cancelOrderApi.cancelOrder(cancelOrder));
+		for(String orderId : orderIdList){
+			MQMessage<String> anMessage = new MQMessage<String>(GroupOrderTopicConst.TOPIC_GROUP_ORDER_CANCEL, orderId, orderId);
+			rocketMQProducer.sendMessage(anMessage);
+		}
 	}
 
 	public void sendTimerMessage(List<String> orderIdList) {
