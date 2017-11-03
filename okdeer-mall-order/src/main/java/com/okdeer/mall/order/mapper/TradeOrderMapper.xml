@@ -4948,6 +4948,13 @@
 			AND EXISTS(SELECT 1 FROM trade_order_item it WHERE it.order_id = o.id
 			AND it.sku_name LIKE CONCAT('%', #{skuName,jdbcType=VARCHAR}, '%'))
 		</if>
+		<if test="barCode != null and barCode != ''">
+			AND EXISTS(
+				SELECT 1 FROM trade_order_item it 
+				WHERE o.id = it.order_id 
+				AND LOCATE(#{barCode},it.bar_code) > 0
+			)
+		</if>
 		<if test="orderResource != null">
 			AND o.order_resource = #{orderResource, jdbcType=TINYINT}
 		</if>
