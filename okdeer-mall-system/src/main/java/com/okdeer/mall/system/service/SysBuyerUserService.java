@@ -1,5 +1,7 @@
 package com.okdeer.mall.system.service;
 
+import java.util.List;
+
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.archive.system.entity.SysBuyerUserThirdparty;
 import com.okdeer.archive.system.entity.SysSmsVerifyCode;
@@ -105,4 +107,11 @@ public interface SysBuyerUserService{
 	 */
 	SysBuyerUser findByPrimaryKey(String userId) throws ServiceException;
 	// End 重构4.1  add by wusw  20160719
+	
+	/**
+	 * @Description: 通过ids查询用户列表
+	 * @param ids
+	 * @return   
+	 */
+	List<SysBuyerUser> findUserListByIds(List<String> ids,int page,int pageSize);
 }
