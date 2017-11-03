@@ -64,6 +64,11 @@ public class UserOrderParamBo {
 	 */
 	private List<OrderTypeEnum> orderTypeList;
 	
+	/**
+	 * 排除的订单类型列表
+	 */
+	private List<OrderTypeEnum> excludeOrderTypeList;
+	
 	private String screen;
 
 	public String getUserId() {
@@ -146,5 +151,13 @@ public class UserOrderParamBo {
 	public void setOrderResource(OrderResourceEnum orderResource) {
 		this.orderResource = orderResource;
 	}
-	
+
+	public List<OrderTypeEnum> getExcludeOrderTypeList() {
+		return excludeOrderTypeList;
+	}
+
+	public void setExcludeOrderTypeList(List<OrderTypeEnum> excludeOrderTypeList) {
+		this.excludeOrderTypeList = excludeOrderTypeList;
+	}
+
 }

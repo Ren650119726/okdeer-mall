@@ -6258,6 +6258,12 @@
 					#{orderType,jdbcType=TINYINT}
 				</foreach>
 			</if>
+			<if test="excludeOrderTypeList != null and excludeOrderTypeList.size()>0">
+				AND type NOT IN  
+				<foreach collection="excludeOrderTypeList" item="excludeOrderType" separator="," open="(" close=")">
+					#{excludeOrderType,jdbcType=TINYINT}
+				</foreach>
+			</if>
 			
 			<!-- 待使用订单查询 -->
 			<if test="status == '2'.toString()">
