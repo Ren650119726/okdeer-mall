@@ -53,9 +53,15 @@
     <select id="findOrderGroupList" resultMap="SearchResultMap" parameterType="com.okdeer.mall.order.bo.TradeOrderGroupParamBo" >
         SELECT 
 			g.id, g.group_no,g.group_user_id, g.activity_id, g.store_sku_id,g.group_count,
-       		g.group_price,g.expire_time, (g.group_count - COUNT(r.`id`)) hadOrderCount
+       		g.group_price,g.expire_time, 
+       		( g.group_count - 
+       			(
+       			 SELECT COUNT(1) 
+       			 FROM `trade_order_group_relation` r 
+       			 WHERE g.id = r.`group_order_id` AND r.STATUS = 1
+       			 )
+       		) hadOrderCount
 		FROM `trade_order_group` g 
-			 LEFT JOIN `trade_order_group_relation`  r ON g.id = r.`group_order_id` and r.status = 1
 		<where>
 			<if test="activityId != null ">
 				AND g.activity_id = #{activityId,jdbcType=VARCHAR}
@@ -70,7 +76,6 @@
                 AND g.expire_time &gt; #{expireTime,jdbcType=TIMESTAMP}
             </if>
 		</where>
-		GROUP BY g.id
 		order by g.create_time
     </select>
     
