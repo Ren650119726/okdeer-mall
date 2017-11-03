@@ -7,15 +7,18 @@
 package com.okdeer.mall.operate;
 
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.okdeer.base.common.enums.Enabled;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.operate.dto.OperateFieldsDto;
 import com.okdeer.mall.operate.dto.OperateFieldsQueryParamDto;
@@ -50,67 +53,38 @@ public class OperateFieldsApiTest extends BaseServiceTest {
     }
 	
 	@Test
-	public void findListWithContentCityIdTest() {
-		OperateFieldsQueryParamDto queryParamDto = new OperateFieldsQueryParamDto();
-		//业务id(type=0时为cityId,type=1时为0，type=2时为店铺id) 开心小卖部
-		queryParamDto.setBusinessId("291");
-		//0:城市运营栏位1:默认运营栏位2:店铺运营栏位
-		queryParamDto.setType(OperateFieldsType.CITY);
-		List<OperateFieldsDto> list = operateFieldsApi.findListWithContent(queryParamDto);
-		assertNotNull(list);
-	}
-	@Test
-	public void findListWithContentOperateTest() {
+	public void findListWithContentTest() {
 		OperateFieldsQueryParamDto queryParamDto = new OperateFieldsQueryParamDto();
 		//业务id(type=0时为cityId,type=1时为0，type=2时为店铺id) 开心小卖部
 		queryParamDto.setBusinessId("0");
 		//0:城市运营栏位1:默认运营栏位2:店铺运营栏位
 		queryParamDto.setType(OperateFieldsType.DEFAULT);
+		queryParamDto.setEnabled(Enabled.YES);
 		List<OperateFieldsDto> list = operateFieldsApi.findListWithContent(queryParamDto);
 		assertNotNull(list);
 	}
-	@Test
-	public void findListWithContentStoreIdTest() {
-		OperateFieldsQueryParamDto queryParamDto = new OperateFieldsQueryParamDto();
-		//业务id(type=0时为cityId,type=1时为0，type=2时为店铺id) 开心小卖部
-		queryParamDto.setBusinessId("5592971b276511e6aaff00163e010eb1");
-		//0:城市运营栏位1:默认运营栏位2:店铺运营栏位
-		queryParamDto.setType(OperateFieldsType.STORE);
-		List<OperateFieldsDto> list = operateFieldsApi.findListWithContent(queryParamDto);
-		assertNotNull(list);
-	}
+
 	@Test
 	public void findByIdTest() throws Exception {
-		
-		String id="3fcfa3de8c5a11e79f170050569e35a5";
-		OperateFieldsDto operateFieldsDto = operateFieldsApi.findById(id);
+		//when(tradeorderService.selectById(paramDto.getOrderId())).thenReturn(tradeOrder);
+		//查询运营栏位列表
+		OperateFieldsQueryParamDto queryParamDto = new OperateFieldsQueryParamDto();
+		//0:城市运营栏位1:默认运营栏位2:店铺运营栏位
+		queryParamDto.setType(OperateFieldsType.STORE);
+		queryParamDto.setEnabled(Enabled.YES);
+		List<OperateFieldsDto> list = operateFieldsApi.findList(queryParamDto);
+			
+		OperateFieldsDto operateFieldsDto = operateFieldsApi.findById(list.get(0).getId());
 		assertNotNull(operateFieldsDto);
 	}
 	@Test
-	public void findListCityIdTest() {
-		OperateFieldsQueryParamDto pp = new OperateFieldsQueryParamDto();
-		pp.setType(OperateFieldsType.CITY);
-		pp.setBusinessId("291");
-		List<OperateFieldsDto> list = operateFieldsApi.findList(pp);
-		assertNotNull(list);
-	}
-	@Test
-	public void findListOperateTest() {
+	public void findListTest() {
 		OperateFieldsQueryParamDto pp = new OperateFieldsQueryParamDto();
 		pp.setType(OperateFieldsType.DEFAULT);
 		pp.setBusinessId("0");
 		List<OperateFieldsDto> list = operateFieldsApi.findList(pp);
 		assertNotNull(list);
 	}
-	@Test
-	public void findListStoreIdTest() {
-		OperateFieldsQueryParamDto pp = new OperateFieldsQueryParamDto();
-		pp.setType(OperateFieldsType.STORE);
-		pp.setBusinessId("5592971b276511e6aaff00163e010eb1");
-		List<OperateFieldsDto> list = operateFieldsApi.findList(pp);
-		assertNotNull(list);
-	}
-	
 	@Test
 	public void saveTest() {
 		operateFieldsDto.setCreateUserId("1");
