@@ -54,6 +54,7 @@ import com.okdeer.mall.order.enums.OrderIsShowEnum;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
+import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.handler.MemberCardOrderService;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.GetPreferentialService;
@@ -381,6 +382,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		persity.setPlatformPreferential(prefer);
 		//零花钱优惠
 		persity.setPinMoney(pinMoney);
+		persity.setPayWay(PayWayEnum.PAY_ONLINE);
 		persity.setCreateTime(new Date());
 		persity.setUpdateTime(persity.getCreateTime());
 		//设置显示
