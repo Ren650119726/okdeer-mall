@@ -47,6 +47,7 @@ import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderItem;
 import com.okdeer.mall.order.enums.OrderIsShowEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.service.ScanOrderService;
 import com.okdeer.mall.order.service.TradeOrderPayServiceApi;
 import com.okdeer.mall.order.service.TradeOrderService;
@@ -135,6 +136,7 @@ public class ScanOrderServiceImpl implements ScanOrderService {
 		persity.setPinMoney(pinMoney);
 		//平台优惠字段
 		persity.setPlatformPreferential(prefer);
+		persity.setPayWay(PayWayEnum.PAY_ONLINE);
 		//店铺收入字段
 		persity.setIncome(persity.getActualAmount().add(persity.getPlatformPreferential()));
 		persity.setCreateTime(new Date());
