@@ -140,17 +140,7 @@ public class TradeOrderGroupServiceImpl extends BaseServiceImpl implements Trade
 		//查询总数后再查询 开团未成团记录
 		paramBo.setStatus(GroupOrderStatusEnum.UN_GROUP);
 		paramBo.setExpireTime(new Date());
-		PageHelper.startPage(1, 5, true);
-		PageUtils<TradeOrderGroupGoodsDto> openGroup = new PageUtils<>(tradeOrderGroupMapper.findOrderGroupList(paramBo));
-		//循环处理用户头像
-		if(CollectionUtils.isNotEmpty(openGroup.getList())){
-			openGroup.getList().forEach(e -> {
-				String url = e.getUserImgUrl();
-				url = StringUtils.isNotBlank(url)
-						? (sysConfigComponent.getMyinfoImagePrefix() + url + StaticConstants.PIC_SUFFIX_PARM_240) : "";
-				e.setUserImgUrl(url);
-			});
-		}
+		PageUtils<TradeOrderGroupGoodsDto> openGroup = findOrderGroupList(paramBo, 1, 5);
 		//未成团总数
 		dto.setOpenGroupTotal(openGroup.getTotal());
 		dto.setOpenGroupList(openGroup.getList());
@@ -173,11 +163,21 @@ public class TradeOrderGroupServiceImpl extends BaseServiceImpl implements Trade
 		PageUtils<TradeOrderGroupGoodsDto> page = new PageUtils<>(tradeOrderGroupMapper.findOrderGroupList(paramBo));
 		//循环处理用户头像
 		if(CollectionUtils.isNotEmpty(page.getList())){
+			List<String> userIds = Lists.newArrayList();
 			page.getList().forEach(e -> {
-				String url = e.getUserImgUrl();
-				url = StringUtils.isNotBlank(url)
-						? (sysConfigComponent.getMyinfoImagePrefix() + url + StaticConstants.PIC_SUFFIX_PARM_240) : "";
-				e.setUserImgUrl(url);
+				userIds.add(e.getGroupUserId());
+			});
+			//查询用户信息
+			List<SysBuyerUser>  users=sysBuyerUserService.findUserListByIds(userIds, pageNumber, pageSize);
+			page.getList().forEach(e -> {
+				users.forEach(user -> {
+					if(e.getGroupUserId().equals(user.getId())){
+						e.setUserImgUrl(StringUtils.isNotBlank(user.getPicUrl()) ? 
+								(sysConfigComponent.getMyinfoImagePrefix() + user.getPicUrl() + StaticConstants.PIC_SUFFIX_PARM_240) : "");
+						e.setPhone(user.getPhone());
+						e.setUserName(user.getNickName());
+					}
+				});
 			});
 		}
 		return page;
