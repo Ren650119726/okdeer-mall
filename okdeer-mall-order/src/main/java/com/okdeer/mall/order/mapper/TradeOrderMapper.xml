@@ -6108,7 +6108,8 @@
 		FROM trade_order trade  
 			 INNER JOIN trade_order_pay p ON trade.id = p.order_id
 			 LEFT JOIN trade_order_refunds r ON trade.id=r.`order_id`
-		WHERE trade.pay_way = 0 
+			 <!-- V2.6.3 xuzq 20171102 查询所有订单来源数据 会员卡和扫码购支付类型为null -->
+		WHERE (trade.pay_way = 0 or (trade.`order_resource` in (4,5) and trade.pay_way is null))
 			<if test="userId != null and userId !='' ">
 			  	AND trade.user_id = #{userId,jdbcType=VARCHAR} 
 			</if>
