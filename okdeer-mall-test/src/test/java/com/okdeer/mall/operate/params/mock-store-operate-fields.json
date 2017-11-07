@@ -1,0 +1,24 @@
+Begin---
+[{
+	"id": "4028015f5d82dda1015d88046e520408",
+	"type":"STORE",
+	"businessId": "14256114110922ca00dcee964d759259",
+	"sort": 100,
+	"operateFieldscontentDtoList": 
+	 [{
+		"id": "4028015f5d82dda1015d88046e520408",
+		"businessId": "4028015f5d82dda1015d88046e660409",
+		"type":"SINGLE_GOODS"
+     }]
+},{
+	"id": "4028015f5d82dda1015d88046e520408",
+	"type":"CITY",
+	"businessId": "291",
+	"sort": 100,
+	"operateFieldscontentDtoList": 
+	 [{
+		"id": "4028015f5d82dda1015d88046e520408",
+		"businessId": "4028015f5d82dda1015d88046e660409"
+     }]
+}]
+End---

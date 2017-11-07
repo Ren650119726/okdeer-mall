@@ -7,22 +7,37 @@
 package com.okdeer.mall.operate;
 
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.enums.Enabled;
 import com.okdeer.mall.base.BaseServiceTest;
+import com.okdeer.mall.base.MockUtils;
+import com.okdeer.mall.operate.dto.OperateFieldContentDto;
+import com.okdeer.mall.operate.dto.OperateFieldDto;
+import com.okdeer.mall.operate.dto.OperateFieldsContentDto;
 import com.okdeer.mall.operate.dto.OperateFieldsDto;
 import com.okdeer.mall.operate.dto.OperateFieldsQueryParamDto;
+import com.okdeer.mall.operate.enums.OperateFieldsContentType;
 import com.okdeer.mall.operate.enums.OperateFieldsType;
+import com.okdeer.mall.operate.operatefields.entity.OperateFields;
+import com.okdeer.mall.operate.operatefields.service.OperateFieldsService;
 import com.okdeer.mall.operate.service.OperateFieldsApi;
 
 /**
@@ -42,14 +57,29 @@ public class OperateFieldsApiTest extends BaseServiceTest {
 	@Autowired
 	private OperateFieldsApi operateFieldsApi;
 	
-	private OperateFieldsDto operateFieldsDto= new OperateFieldsDto();
+	@Mock
+	private OperateFieldsService operateFieldsService;
+	/**
+	 * mock运营栏位列表
+	 */
+	private List<OperateFieldsDto> operateFieldsList;
+
+	private OperateFields operateFields = new OperateFields();
 	
 	@Before
     public void setUp() throws Exception {
         // 初始化测试用例类中由Mockito的注解标注的所有模拟对象
         MockitoAnnotations.initMocks(this);
-       //ReflectionTestUtils.setField(cancelOrderApi, "tradeorderService", tradeorderService);
-       //ReflectionTestUtils.setField(cancelOrderApi, "cancelOrderService", cancelOrderService);
+        //店铺运营栏位管理对象
+        operateFields.setId("094d31dc276411e6aaff00163e010eb1");
+        operateFields.setType(OperateFieldsType.STORE);
+        operateFields.setBusinessId("2c909084562b72bf01562b72c0090001");
+        operateFields.setName("店铺运营栏位测试");
+        operateFields.setSort(100);
+        
+        ReflectionTestUtils.setField(operateFieldsApi, "operateFieldsService", operateFieldsService);
+        operateFieldsList = MockUtils
+				.getMockData("/com/okdeer/mall/operate/params/mock-store-operate-fields.json", OperateFieldsDto.class).get(0);
     }
 	
 	@Test
@@ -59,100 +89,104 @@ public class OperateFieldsApiTest extends BaseServiceTest {
 		queryParamDto.setBusinessId("0");
 		//0:城市运营栏位1:默认运营栏位2:店铺运营栏位
 		queryParamDto.setType(OperateFieldsType.DEFAULT);
-		queryParamDto.setEnabled(Enabled.YES);
+		queryParamDto.setEnabled(Enabled.NO);
 		List<OperateFieldsDto> list = operateFieldsApi.findListWithContent(queryParamDto);
 		assertNotNull(list);
 	}
 
 	@Test
-	public void findByIdTest() throws Exception {
-		//when(tradeorderService.selectById(paramDto.getOrderId())).thenReturn(tradeOrder);
-		//查询运营栏位列表
-		OperateFieldsQueryParamDto queryParamDto = new OperateFieldsQueryParamDto();
-		//0:城市运营栏位1:默认运营栏位2:店铺运营栏位
-		queryParamDto.setType(OperateFieldsType.STORE);
-		queryParamDto.setEnabled(Enabled.YES);
-		List<OperateFieldsDto> list = operateFieldsApi.findList(queryParamDto);
-			
-		OperateFieldsDto operateFieldsDto = operateFieldsApi.findById(list.get(0).getId());
-		assertNotNull(operateFieldsDto);
-	}
-	@Test
 	public void findListTest() {
 		OperateFieldsQueryParamDto pp = new OperateFieldsQueryParamDto();
 		pp.setType(OperateFieldsType.DEFAULT);
 		pp.setBusinessId("0");
+		pp.setEnabled(Enabled.NO);
 		List<OperateFieldsDto> list = operateFieldsApi.findList(pp);
 		assertNotNull(list);
 	}
-	@Test
-	public void saveTest() {
-		operateFieldsDto.setCreateUserId("1");
-		// 上传头图，获得图片路径
-		//operateFieldsDto.setHeadPic(uploadFile(headPicFile));
-		//operateFieldsApi.save(operateFieldsDto, operateFieldscontentList);
-
-	}
 	
 	@Test
-	public void updateTest(){
-		operateFieldsDto.setUpdateUserId("1");
-		// 上传头图，获得图片路径
-		//operateFieldsDto.setHeadPic(uploadFile(headPicFile));
-		//operateFieldsApi.update(operateFieldsDto, operateFieldscontentList);
-		
-	}
-	@Test
+	@Rollback(true)
+	@Transactional(propagation=Propagation.REQUIRES_NEW)
 	public void updateSortUpTest() throws Exception{
-		String id="3fcfa3de8c5a11e79f170050569e35a5";
-		operateFieldsApi.updateSort(id, true);
-		
+		when(operateFieldsService.findById(operateFields.getId())).thenReturn(operateFields);
+		//无返回值
+		operateFieldsApi.updateSort("094d31dc276411e6aaff00163e010eb1", true);
+		Assert.assertTrue(true);
 	}
 	
 	@Test
+	@Rollback(true)
+	@Transactional(propagation=Propagation.REQUIRES_NEW)
 	public void updateSortDownTest() throws Exception{
-		String id="3fcfa3de8c5a11e79f170050569e35a5";
-		operateFieldsApi.updateSort(id, false);
-		
-	}
-	@Test
-	public void update2Test(){
-		operateFieldsDto.setUpdateUserId("1");
-		// 上传头图，获得图片路径
-		//operateFieldsDto.setHeadPic(uploadFile(headPicFile));
-		//operateFieldsApi.update(operateFieldsDto, operateFieldscontentList);
-		//int update(operateFieldsDto) throws Exception;
+		when(operateFieldsService.findById(operateFields.getId())).thenReturn(operateFields);
+		//无返回值
+		operateFieldsApi.updateSort("094d31dc276411e6aaff00163e010eb1", false);
+		Assert.assertTrue(true);
 	}
 	
 	///////app接口
 	@Test
-	public void initStoreOperateFieldDataTest() {
-
+	public void initStoreOperateFieldDataTest() throws Exception {
+		List<OperateFieldDto> storeFieldList = operateFieldsApi.initStoreOperateFieldData(operateFieldsList.get(0).getBusinessId());
+		Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),storeFieldList);
 	}
 	
 	@Test
-	public void initCityOperateFieldDataTest() {
-
+	public void initCityOperateFieldDataTest() throws Exception {
+		List<OperateFieldDto> cityFieldList = operateFieldsApi.initCityOperateFieldData(operateFieldsList.get(1).getBusinessId());
+		Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),cityFieldList);
 	}
 	
 	@Test
-	public void initOperationFieldTest() {
-
+	public void initOperationFieldTest() throws Exception {
+		operateFieldsApi.initOperationField(operateFieldsList.get(0).getBusinessId());
+		Assert.assertTrue(true);
 	}
 	
 	@Test
-	public void initOperationFieldContextTest() {
-
-	}
-	
-	
-	@Test
-	public void getSingleGoodsOfOperateFieldTest() {
-
+	public void initOperationFieldContextTest() throws Exception {
+		operateFieldsApi.initOperationFieldContext(operateFieldsList.get(0).getBusinessId());
+		Assert.assertTrue(true);
 	}
 	
 	@Test
-	public void getGoodsOfStoreActivityFieldTest() {
-
+	public void getSingleGoodsOfOperateFieldTest() throws Exception {
+		String goodsId = "";
+		String storeId = "";
+		for(OperateFieldsDto dto : operateFieldsList){
+			List<OperateFieldsContentDto> operateFieldscontentDtoList = dto.getOperateFieldscontentDtoList();
+			if(CollectionUtils.isNotEmpty(operateFieldscontentDtoList)){
+				for(OperateFieldsContentDto content : operateFieldscontentDtoList){
+					//栏位内容类型为单品
+					if(content.getType() == OperateFieldsContentType.SINGLE_GOODS){
+						//类型为单品时保存商品id
+						goodsId = content.getBusinessId();
+						//类型为店铺运营栏位保存的是店铺id
+						storeId = dto.getBusinessId();
+						break;
+					}
+				}
+				
+			}
+		}
+		OperateFieldContentDto fieldContentDto = new OperateFieldContentDto();
+		fieldContentDto.setStoreId("2c909084562b72bf01562b72c0090001");
+		given(operateFieldsService.getSingleGoodsOfOperateField(any(),any())).willReturn(fieldContentDto);
+		OperateFieldContentDto contentDto = operateFieldsApi.getSingleGoodsOfOperateField(goodsId, storeId);
+		Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),contentDto);
+	}
+	
+	@Test
+	public void getGoodsOfStoreActivityFieldTest() throws Exception {
+		String storeId= operateFieldsList.get(0).getBusinessId();
+		//0或者1 0:特惠活动 1:低价活动
+		int businessType= 0;
+		int template= 10;
+		//排序规则  0 价格从高到低  1 排序值从高到低 2 价格从低到高  3排序值从低到高 
+		int sortType= 1;
+		int sort= 1;
+		List<OperateFieldContentDto> storeFiledContentList = 
+				operateFieldsApi.getGoodsOfStoreActivityField(storeId, businessType, template, sortType, sort);
+		Assert.assertNotNull(ResultCodeEnum.SUCCESS.getDesc(),storeFiledContentList);
 	}
 }
