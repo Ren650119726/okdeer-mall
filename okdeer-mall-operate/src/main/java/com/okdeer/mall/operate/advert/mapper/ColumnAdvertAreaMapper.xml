@@ -75,7 +75,7 @@
 		WHERE advert_id = #{advertId, jdbcType=VARCHAR}
 	</delete>
 	
-	<select id="findList" parameterMap="columnAdvertAreaRsMap" parameterType="com.okdeer.mall.operate.advert.bo.ColumnAdvertAreaParamBo">
+	<select id="findList" resultMap="columnAdvertAreaRsMap" parameterType="com.okdeer.mall.operate.advert.bo.ColumnAdvertAreaParamBo">
 		SELECT <include refid="base_column_list" /> FROM column_advert_area 
 		<where>
 			<if test="advertId != null and advertId != '' ">
