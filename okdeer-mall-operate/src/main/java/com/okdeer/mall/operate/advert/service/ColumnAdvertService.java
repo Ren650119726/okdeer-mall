@@ -11,7 +11,6 @@ package com.okdeer.mall.operate.advert.service;
 import java.util.List;
 import java.util.Map;
 
-import com.okdeer.archive.system.entity.PsmsSmallCommunityInfo;
 import com.okdeer.archive.system.entity.SysUser;
 import com.okdeer.mall.advert.dto.ColumnAdvertQueryParamDto;
 import com.okdeer.mall.advert.entity.AdvertDetailVo;
@@ -125,13 +124,6 @@ public interface ColumnAdvertService {
 	 * @return 广告详情Vo
 	 */
 	AdvertDetailVo getAdvertDetailById(String id);
-	
-	/**
-	 * 根据代理商Id代理商代理小区列表
-	 * @param agentId 代理商Id
-	 * @return 代理小区列表
-	 */
-	List<PsmsSmallCommunityInfo> getCommunityByAgentId(String agentId);
 	
 	/**
 	 * 广告审核
@@ -250,4 +242,13 @@ public interface ColumnAdvertService {
 	 * @date 2017年1月3日
 	 */
 	List<ColumnAdvert> findForWx(ColumnAdvertQueryParamDto advertQueryParamDto);
+	
+	/**
+	 * @Description: 查询列表
+	 * @param advertQueryParamDto 根据查询参数查询列表
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年11月8日
+	 */
+	List<ColumnAdvert> findList(ColumnAdvertQueryParamDto advertQueryParamDto);
 }

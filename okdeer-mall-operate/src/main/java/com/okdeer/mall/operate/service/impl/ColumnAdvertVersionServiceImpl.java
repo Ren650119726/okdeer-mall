@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.base.service.BaseServiceImpl;
+import com.okdeer.mall.operate.advert.bo.ColumnAdvertVersionParamBo;
+import com.okdeer.mall.operate.entity.ColumnAdvertVersion;
 import com.okdeer.mall.operate.entity.ColumnAdvertVersionDto;
 import com.okdeer.mall.operate.mapper.ColumnAdvertVersionMapper;
 import com.okdeer.mall.operate.service.ColumnAdvertVersionService;
@@ -54,6 +56,12 @@ public class ColumnAdvertVersionServiceImpl extends BaseServiceImpl implements C
 			return null;
 		}
 		return advertVersionMappe.findListByAdvertId(advertId);
+	}
+
+	@Override
+	public List<ColumnAdvertVersion> findList(ColumnAdvertVersionParamBo columnAdvertVersionParamBo) {
+		
+		return advertVersionMappe.findList(columnAdvertVersionParamBo);
 	}
 
 }

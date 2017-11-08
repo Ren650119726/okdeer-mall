@@ -22,14 +22,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
-import com.okdeer.archive.system.entity.PsmsSmallCommunityInfo;
 import com.okdeer.archive.system.entity.SysUser;
-import com.okdeer.archive.system.service.IPsmsSmallCommunityInfoServiceApi;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
@@ -99,11 +96,6 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	@Autowired
 	private ColumnAdvertAreaMapper advertAreaMapper;
 
-	/**
-	 * 物业平台小区信息Service
-	 */
-	@Reference(version = "1.0.0")
-	private IPsmsSmallCommunityInfoServiceApi psmsCommunityInfoServiceApi;
 
 	/**
 	 * 审核Mapper注入
@@ -411,16 +403,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		return this.advertMapper.getAdvertDetailById(id);
 	}
 
-	/**
-	 * @desc 根据代理商Id代理商代理小区列表
-	 *
-	 * @param agentId 代理商Id
-	 * @return 代理小区列表
-	 */
-	@Override
-	public List<PsmsSmallCommunityInfo> getCommunityByAgentId(String agentId) {
-		return this.psmsCommunityInfoServiceApi.getCommunityByAgentId(agentId);
-	}
+	
 
 	/**
 	 * @desc 广告审核
@@ -898,5 +881,10 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 	@Override
 	public int findCount(ColumnAdvertQueryVo query) {
 		return advertMapper.findCount(query);
+	}
+
+	@Override
+	public List<ColumnAdvert> findList(ColumnAdvertQueryParamDto advertQueryParamDto) {
+		return advertMapper.findList(advertQueryParamDto);
 	}
 }

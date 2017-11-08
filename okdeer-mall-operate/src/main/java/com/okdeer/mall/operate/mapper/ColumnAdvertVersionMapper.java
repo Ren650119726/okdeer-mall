@@ -11,6 +11,8 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.mall.operate.advert.bo.ColumnAdvertVersionParamBo;
+import com.okdeer.mall.operate.entity.ColumnAdvertVersion;
 import com.okdeer.mall.operate.entity.ColumnAdvertVersionDto;
 
 public interface ColumnAdvertVersionMapper extends IBaseMapper {
@@ -41,5 +43,13 @@ public interface ColumnAdvertVersionMapper extends IBaseMapper {
 	 * @date 2017年3月14日
 	 */
 	void deleteByAdvertId(@Param("advertId")String advertId);
+	/**
+	 * @Description: 根据条件查询版本
+	 * @param columnAdvertVersionParamBo
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年11月8日
+	 */
+	List<ColumnAdvertVersion> findList(ColumnAdvertVersionParamBo columnAdvertVersionParamBo);
 
 }

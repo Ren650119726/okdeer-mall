@@ -272,4 +272,13 @@ public interface ColumnAdvertMapper extends IBaseMapper {
 	 * @date 2017年8月29日
 	 */
 	int findCount(ColumnAdvertQueryVo query);
+	
+	/**
+	 * @Description: 根据参数查询列表
+	 * @param advertQueryParamDto
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年11月8日
+	 */
+	List<ColumnAdvert> findList(ColumnAdvertQueryParamDto advertQueryParamDto);
 }

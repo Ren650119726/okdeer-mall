@@ -12,12 +12,8 @@
 		id, advert_id, area_id, type
 	</sql>
 	
-	<insert id="insert" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertArea">
-		INSERT INTO column_advert_area (id, advert_id, area_id, type)
-		VALUES(#{id, jdbcType=VARCHAR}, #{advertId, jdbcType=VARCHAR}, #{areaId, jdbcType=VARCHAR}, #{type, jdbcType=TINYINT})
-	</insert>
 	
-	<insert id="insertSelective" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertArea">
+	<insert id="add" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertArea">
 		INSERT INTO column_advert_area 
 		<trim prefix="(" suffix=")" suffixOverrides=",">
 			<if test="id != null">
@@ -58,7 +54,7 @@
 		</foreach>
 	</insert>
 	
-	<update id="updateByPrimaryKeySelective" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertArea">
+	<update id="update" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertArea">
 		UPDATE column_advert_area
 		<set>
 			<if test="advertId != null">
@@ -78,4 +74,25 @@
 		DELETE FROM column_advert_area 
 		WHERE advert_id = #{advertId, jdbcType=VARCHAR}
 	</delete>
+	
+	<select id="findList" parameterMap="columnAdvertAreaRsMap" parameterType="com.okdeer.mall.operate.advert.bo.ColumnAdvertAreaParamBo">
+		SELECT <include refid="base_column_list" /> FROM column_advert_area 
+		<where>
+			<if test="advertId != null and advertId != '' ">
+				AND advert_id = #{advertId, jdbcType=VARCHAR}
+			</if>
+			<if test="advertIdList != null and advertIdList.size() > 0">
+				AND advert_id IN 
+				<foreach collection="advertIdList" item="item" separator="," open="(" close=")">
+					#{item, jdbcType=VARCHAR}
+				</foreach>
+			</if>
+			<if test="type != null">
+				AND type = #{type, jdbcType=TINYINT}
+			</if>
+			<if test="areaId != null and areaId != '' ">
+				AND area_id = #{areaId, jdbcType=VARCHAR}
+			</if>
+		</where>
+	</select>
 </mapper>

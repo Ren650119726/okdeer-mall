@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.operate.advert.mapper.ColumnAdvertShowRecordMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.operate.advert.entity.ColumnAdvertShowRecord" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="advert_id" property="advertId" jdbcType="VARCHAR" />
+        <result column="device_no" property="deviceNo" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, advert_id, device_no, create_time
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from column_advert_show_record
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.operate.advert.entity.ColumnAdvertShowRecord" >
+        insert into column_advert_show_record
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="advertId != null" >
+                advert_id,
+            </if>
+            <if test="deviceNo != null" >
+                device_no,
+            </if>
+            <if test="createTime != null" >
+                create_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="advertId != null" >
+                #{advertId,jdbcType=VARCHAR},
+            </if>
+            <if test="deviceNo != null" >
+                #{deviceNo,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.operate.advert.entity.ColumnAdvertShowRecord" >
+        update column_advert_show_record
+        <set >
+            <if test="advertId != null" >
+                advert_id = #{advertId,jdbcType=VARCHAR},
+            </if>
+            <if test="deviceNo != null" >
+                device_no = #{deviceNo,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null" >
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from column_advert_show_record
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+    
+    <select id="findCountByParam" parameterType="com.okdeer.mall.operate.advert.bo.ColumnAdvertShowRecordParamBo" resultType="int">
+   		 SELECT COUNT(1) FROM column_advert_show_record
+   		 <where>
+   		 	<if test="advertId != null and advertId !='' ">
+   		 		AND advert_id = #{advertId,jdbcType=VARCHAR}
+   		 	</if>
+   		 	<if test="deviceNo != null and deviceNo !='' ">
+   		 		AND device_no = #{deviceNo,jdbcType=VARCHAR}
+   		 	</if>
+   		 	<if test="startCreateTime != null and startCreateTime != '' ">
+   		 		<![CDATA[AND create_time >=  #{startCreateTime,jdbcType=VARCHAR}]]>
+   		 	</if>
+   		 	<if test="endCreateTime != null and endCreateTime != '' ">
+   		 		<![CDATA[AND create_time <=  #{endCreateTime,jdbcType=VARCHAR}]]>
+   		 	</if>
+   		 </where>
+    </select>
+
+</mapper>

@@ -1338,4 +1338,18 @@
 	   	   AND ca.position_id = #{positionId, jdbcType=VARCHAR}
 	    </if>   
 	</select>
+	
+	<select id="findList" parameterType="com.okdeer.mall.advert.dto.ColumnAdvertQueryParamDto" resultMap="columnAdvertRsMap" >
+			SELECT <include refid="base_column_list2" />
+		FROM column_advert ca
+		LEFT JOIN column_advert_version version ON ca.id = version.advert_id
+		WHERE 1 = 1
+		<if test="positionId != null and positionId != ''">
+			and position_id = #{positionId,jdbcType=VARCHAR}
+		</if>
+		<if test="advertStatus != null">
+			and status = #{advertStatus,jdbcType=TINYINT}
+		</if>
+		order by sort desc , create_time desc
+	</select>
 </mapper>
