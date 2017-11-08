@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.base.common.enums.Disabled;
 import com.okdeer.base.common.utils.PageUtils;
-import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.mall.activity.staticFile.dto.ActivityStaticFileDto;
 import com.okdeer.mall.activity.staticFile.dto.ActivityStaticFileParamDto;
 import com.okdeer.mall.activity.staticFile.entity.ActivityStaticFile;
@@ -60,7 +59,6 @@ public class ActivityStaticFileApiImpl implements ActivityStaticFileApi {
 	@Override
 	public void addStaticFile(ActivityStaticFile activityStaticFile) throws Exception {
 		Date date = new Date();
-		activityStaticFile.setId(UuidUtils.getUuid());
 		activityStaticFile.setCreateTime(date);
 		activityStaticFile.setUpdateTime(date);
 		activityStaticFile.setDisabled(Disabled.valid);
