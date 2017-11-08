@@ -3,17 +3,31 @@ package com.okdeer.mall.operate.advert.api;
 
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.google.common.collect.Lists;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.advert.dto.ColumnAdvertDto;
 import com.okdeer.mall.advert.dto.ColumnAdvertQueryParamDto;
 import com.okdeer.mall.advert.entity.AdvertPosition;
 import com.okdeer.mall.advert.entity.ColumnAdvert;
+import com.okdeer.mall.advert.entity.ColumnAdvertArea;
+import com.okdeer.mall.advert.enums.AdvertTypeEnum;
 import com.okdeer.mall.advert.service.ColumnAdvertApi;
+import com.okdeer.mall.common.enums.AreaType;
+import com.okdeer.mall.operate.advert.bo.ColumnAdvertAreaParamBo;
+import com.okdeer.mall.operate.advert.bo.ColumnAdvertShowRecordParamBo;
+import com.okdeer.mall.operate.advert.bo.ColumnAdvertVersionParamBo;
+import com.okdeer.mall.operate.advert.entity.ColumnAdvertShowRecord;
 import com.okdeer.mall.operate.advert.service.AdvertPositionService;
+import com.okdeer.mall.operate.advert.service.ColumnAdvertAreaService;
 import com.okdeer.mall.operate.advert.service.ColumnAdvertService;
+import com.okdeer.mall.operate.advert.service.ColumnAdvertShowRecordService;
+import com.okdeer.mall.operate.entity.ColumnAdvertVersion;
+import com.okdeer.mall.operate.service.ColumnAdvertVersionService;
 
 /**
  * ClassName: ColumnAdvertApiImpl 
@@ -35,16 +49,146 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 	@Autowired
 	private AdvertPositionService advertPositionService;
 
+	@Autowired
+	private ColumnAdvertAreaService columnAdvertAreaService;
+
+	@Autowired
+	private ColumnAdvertVersionService columnAdvertVersionService;
+
+	@Autowired
+	private ColumnAdvertShowRecordService columnAdvertShowRecordService;
+
 	@Override
 	public List<ColumnAdvertDto> findForApp(ColumnAdvertQueryParamDto advertQueryParamDto) {
+		Assert.notNull(advertQueryParamDto.getAdvertType(), "广告类型不能为空");
 		AdvertPosition advertPosition = advertPositionService.findByType(advertQueryParamDto.getAdvertType());
 		advertQueryParamDto.setPositionId(advertPosition.getId());
-		List<ColumnAdvert> list = columnAdvertService.findForApp(advertQueryParamDto);
-		if (list != null) {
-			List<ColumnAdvertDto> dtoList = BeanMapper.mapList(list, ColumnAdvertDto.class);
-			return dtoList;
+		List<ColumnAdvert> list = columnAdvertService.findList(advertQueryParamDto);
+		if (CollectionUtils.isEmpty(list)) {
+			return Lists.newArrayList();
 		}
-		return null;
+		// 根据区域进行过滤数据
+		list = filterByArea(advertQueryParamDto, list);
+		// 根据版本进行过滤
+		list = filterByVersion(advertQueryParamDto, list);
+		// 根据显示记录来过滤
+		list = filterByShowRecord(advertQueryParamDto, list);
+		return BeanMapper.mapList(list, ColumnAdvertDto.class);
+	}
+
+	private List<ColumnAdvert> filterByShowRecord(ColumnAdvertQueryParamDto advertQueryParamDto,
+			List<ColumnAdvert> list) {
+		List<ColumnAdvert> resultList = Lists.newArrayList();
+		// 是否需要记录显示日志
+		boolean isNeedRecord = isNeedShowRecord(advertQueryParamDto.getAdvertType());
+		if (isNeedRecord) {
+			Assert.hasText(advertQueryParamDto.getDeviceNo(), "设备号不能为空");
+			ColumnAdvertShowRecordParamBo columnAdvertShowRecordParamBo = new ColumnAdvertShowRecordParamBo();
+			columnAdvertShowRecordParamBo.setDeviceNo(advertQueryParamDto.getDeviceNo());
+			for (ColumnAdvert columnAdvert : list) {
+				columnAdvertShowRecordParamBo.setAdvertId(columnAdvert.getId());
+				int count = columnAdvertShowRecordService.findCountByParam(columnAdvertShowRecordParamBo);
+				if (count < 10) {
+					resultList.add(columnAdvert);
+				}
+			}
+			addShowRecord(advertQueryParamDto, resultList);
+		}
+		return resultList;
+	}
+
+	private void addShowRecord(ColumnAdvertQueryParamDto advertQueryParamDto, List<ColumnAdvert> list) {
+		List<ColumnAdvertShowRecord> saveList = Lists.newArrayList();
+		for (ColumnAdvert columnAdvert : list) {
+			ColumnAdvertShowRecord columnAdvertShowRecord = new ColumnAdvertShowRecord();
+			columnAdvertShowRecord.setDeviceNo(advertQueryParamDto.getDeviceNo());
+			columnAdvertShowRecord.setAdvertId(columnAdvert.getId());
+			saveList.add(columnAdvertShowRecord);
+		}
+		columnAdvertShowRecordService.save(saveList);
+	}
+
+	private boolean isNeedShowRecord(AdvertTypeEnum advertType) {
+		
+		return false;
+	}
+
+	private List<ColumnAdvert> filterByVersion(ColumnAdvertQueryParamDto advertQueryParamDto, List<ColumnAdvert> list) {
+		if (!isNeedFilterByVersion(advertQueryParamDto.getAdvertType())) {
+			return list;
+		}
+		List<String> advertIdList = Lists.newArrayList();
+		for (ColumnAdvert columnAdvert : list) {
+			advertIdList.add(columnAdvert.getId());
+		}
+		ColumnAdvertVersionParamBo columnAdvertVersionParamBo = new ColumnAdvertVersionParamBo();
+		columnAdvertVersionParamBo.setAdvertIdList(advertIdList);
+		columnAdvertVersionParamBo.setType(advertQueryParamDto.getClientType().getCode());
+		columnAdvertVersionParamBo.setVersion(advertQueryParamDto.getVersion());
+		List<ColumnAdvertVersion> versionList = columnAdvertVersionService.findList(columnAdvertVersionParamBo);
+		List<String> versionAdvertList = Lists.newArrayList();
+		for (ColumnAdvertVersion columnAdvertVersion : versionList) {
+			if (!versionAdvertList.contains(columnAdvertVersion.getAdvertId())) {
+				versionAdvertList.add(columnAdvertVersion.getAdvertId());
+			}
+		}
+
+		List<ColumnAdvert> filterList = Lists.newArrayList();
+		for (ColumnAdvert columnAdvert : list) {
+			if (versionAdvertList.contains(columnAdvert.getId())) {
+				filterList.add(columnAdvert);
+			}
+		}
+		return filterList;
+	}
+
+	private boolean isNeedFilterByVersion(AdvertTypeEnum advertType) {
+		switch (advertType) {
+			case WX_INDEX_BANNER:
+			case POS_MACHINE:
+				return false;
+			default:
+				break;
+		}
+		return true;
+	}
+
+	private List<ColumnAdvert> filterByArea(ColumnAdvertQueryParamDto advertQueryParamDto, List<ColumnAdvert> list) {
+		List<String> advertIdList = Lists.newArrayList();
+		for (ColumnAdvert columnAdvert : list) {
+			advertIdList.add(columnAdvert.getId());
+		}
+		ColumnAdvertAreaParamBo columnAdvertAreaParamBo = new ColumnAdvertAreaParamBo();
+		columnAdvertAreaParamBo.setAdvertIdList(advertIdList);
+		columnAdvertAreaParamBo.setType(1);
+		columnAdvertAreaParamBo.setAreaId(advertQueryParamDto.getProvinceId());
+		List<ColumnAdvertArea> areaList = columnAdvertAreaService.findList(columnAdvertAreaParamBo);
+		List<String> areaExistsAdvertIdList = Lists.newArrayList();
+		collectAdvertByArea(areaList, areaExistsAdvertIdList);
+
+		columnAdvertAreaParamBo.setType(0);
+		columnAdvertAreaParamBo.setAreaId(advertQueryParamDto.getCityId());
+		areaList = columnAdvertAreaService.findList(columnAdvertAreaParamBo);
+		collectAdvertByArea(areaList, areaExistsAdvertIdList);
+
+		List<ColumnAdvert> filterList = Lists.newArrayList();
+		for (ColumnAdvert columnAdvert : list) {
+			if (columnAdvert.getAreaType() == AreaType.national) {
+				filterList.add(columnAdvert);
+			} else if (columnAdvert.getAreaType() == AreaType.area
+					&& areaExistsAdvertIdList.contains(columnAdvert.getId())) {
+				filterList.add(columnAdvert);
+			}
+		}
+		return filterList;
+	}
+
+	private void collectAdvertByArea(List<ColumnAdvertArea> areaList, List<String> areaExistsAdvertIdList) {
+		for (ColumnAdvertArea columnAdvertArea : areaList) {
+			if (!areaExistsAdvertIdList.contains(columnAdvertArea.getAdvertId())) {
+				areaExistsAdvertIdList.add(columnAdvertArea.getAdvertId());
+			}
+		}
 	}
 
 	@Override

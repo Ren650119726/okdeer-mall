@@ -4,11 +4,14 @@
  *@Date: 2017年3月14日 
  *@Copyright: ©2014-2020 www.okdeer.com Inc. All rights reserved. 
  */
+
 package com.okdeer.mall.operate.service;
 
 import java.util.List;
 
 import com.okdeer.base.service.IBaseService;
+import com.okdeer.mall.operate.advert.bo.ColumnAdvertVersionParamBo;
+import com.okdeer.mall.operate.entity.ColumnAdvertVersion;
 import com.okdeer.mall.operate.entity.ColumnAdvertVersionDto;
 
 /**
@@ -34,5 +37,13 @@ public interface ColumnAdvertVersionService extends IBaseService {
 	 * @date 2017年3月14日
 	 */
 	List<ColumnAdvertVersionDto> findListByAdvertId(String advertId) throws Exception;
+	/**
+	 * @Description: 根据条件查询广告版本
+	 * @param columnAdvertVersionParamBo
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年11月8日
+	 */
+	List<ColumnAdvertVersion> findList(ColumnAdvertVersionParamBo columnAdvertVersionParamBo);
 
 }

@@ -14,7 +14,8 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import com.okdeer.mall.advert.entity.ColumnAdvertArea;
-import com.okdeer.base.dal.IBaseCrudMapper;
+import com.okdeer.mall.operate.advert.bo.ColumnAdvertAreaParamBo;
+import com.okdeer.base.dal.IBaseMapper;
 
 /**
  * 广告区域关系Mapper
@@ -23,7 +24,7 @@ import com.okdeer.base.dal.IBaseCrudMapper;
  * @date 2016年1月28日 下午3:20:29
  */
 @Repository
-public interface ColumnAdvertAreaMapper extends IBaseCrudMapper {
+public interface ColumnAdvertAreaMapper extends IBaseMapper {
 	/**
 	 * 批量新增广告区域关系
 	 *
@@ -38,4 +39,12 @@ public interface ColumnAdvertAreaMapper extends IBaseCrudMapper {
 	 * @param advertId 广告Id
 	 */
 	void deleteByAdvertId(@Param("advertId") String advertId);
+	/**
+	 * @Description: 根据参数查询列表
+	 * @param columnAdvertAreaParamBo
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年11月8日
+	 */
+	List<ColumnAdvertArea> findList(ColumnAdvertAreaParamBo columnAdvertAreaParamBo);
 }
