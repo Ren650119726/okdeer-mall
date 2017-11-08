@@ -25,6 +25,7 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSkuPicture;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuPictureServiceApi;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.model.RequestParams;
+import com.okdeer.base.common.model.ResponseData;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.redis.IRedisTemplateWrapper;
@@ -34,6 +35,7 @@ import com.okdeer.common.utils.JsonDateUtil;
 import com.okdeer.jxc.branch.entity.Branches;
 import com.okdeer.jxc.branch.service.BranchesServiceApi;
 import com.okdeer.jxc.common.result.RespSelfJson;
+import com.okdeer.jxc.goods.qo.GoodsStockQo;
 import com.okdeer.jxc.pos.service.SelfPayOrderServiceApi;
 import com.okdeer.jxc.pos.vo.SelfOrderVo;
 import com.okdeer.jxc.pos.vo.SelfPayTradeInfoVo;
@@ -56,6 +58,7 @@ import com.okdeer.mall.order.dto.ScanOrderParamDto;
 import com.okdeer.mall.order.dto.ScanPosStoreDto;
 import com.okdeer.mall.order.dto.ScanPosStoreSkuDto;
 import com.okdeer.mall.order.dto.ScanSkuParamDto;
+import com.okdeer.mall.order.dto.SkuStockMissingDto;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.ScanOrderApi;
@@ -140,19 +143,27 @@ public class ScanOrderApiImpl implements ScanOrderApi {
      * @throws Exception 
      */
     @Override
-    public ScanOrderDto confirmOrder(ScanOrderParamDto scanOrderDto, RequestParams requestParams) throws Exception {
+    public ResponseData<ScanOrderDto> confirmOrder(ScanOrderParamDto scanOrderDto, RequestParams requestParams) throws Exception {
 		SelfPrepayVo prepayDto = BeanMapper.map(scanOrderDto, SelfPrepayVo.class);
 		prepayDto.setSerialNum(TradeNumUtil.getTradeNum());
 		// 调用零售确认订单接口
 		RespSelfJson resp = selfPayOrderServiceApi.settlementOrder(prepayDto);
 		// 验证返回结果
+		ResponseData<ScanOrderDto> response = new ResponseData<ScanOrderDto>();
 		ScanOrderDto orderDetail = new ScanOrderDto();
+		response.setData(orderDetail);
 		orderDetail.setOrderResource(OrderResourceEnum.enumValueOf(Integer.valueOf(scanOrderDto.getOrderResource())));
 		if (Integer.valueOf(resp.get(RespSelfJson.KEY_CODE).toString()) != 0) {
-			orderDetail.setCode(Integer.valueOf(resp.get(RespSelfJson.KEY_CODE).toString()));
+			response.setCode(Integer.valueOf(resp.get(RespSelfJson.KEY_CODE).toString()));
+			response.setMessage(String.valueOf(resp.get(RespSelfJson.KEY_MESSAGE)));
 			logger.error("扫码购确认订单失败，code:{},原因：{}", resp.get(RespSelfJson.KEY_CODE),
 					resp.get(RespSelfJson.KEY_MESSAGE));
-			return orderDetail;
+			if(Integer.valueOf(resp.get(RespSelfJson.KEY_CODE).toString()) == 288){
+				@SuppressWarnings("unchecked")
+				List<GoodsStockQo> goodsStockQo = (List<GoodsStockQo>) resp.get(RespSelfJson.DATA);
+				orderDetail.setStockMissings(BeanMapper.mapList(goodsStockQo, SkuStockMissingDto.class));
+			}
+			return response;
 		}
 		SelfPayTradeInfoVo tradeInfoVo = (SelfPayTradeInfoVo) resp.get(RespSelfJson.DATA);
 		BeanMapper.copy(tradeInfoVo, orderDetail);
@@ -163,7 +174,7 @@ public class ScanOrderApiImpl implements ScanOrderApi {
 		}
 		redisTemplateWrapper.set(SCAN_ORDER_PRDFIX + orderDetail.getOrderId(), orderDetail, TIME_OUT_MINUTES,
 				TimeUnit.MINUTES);
-		return orderDetail;
+		return response;
     }
     
     
@@ -219,7 +230,13 @@ public class ScanOrderApiImpl implements ScanOrderApi {
 			resp.setMessage((String)jxcResp.get(RespSelfJson.KEY_MESSAGE));
 			logger.error("扫码购确认订单失败，code:{},原因：{}", jxcResp.get(RespSelfJson.KEY_CODE),
 					jxcResp.get(RespSelfJson.KEY_MESSAGE));
-			
+			if(Integer.valueOf(jxcResp.get(RespSelfJson.KEY_CODE).toString()) == 288){
+				@SuppressWarnings("unchecked")
+				List<GoodsStockQo> goodsStockQo = (List<GoodsStockQo>) jxcResp.get(RespSelfJson.DATA);
+				PlaceOrderDto placeOrderDto = new PlaceOrderDto();
+				placeOrderDto.setStockMissings(BeanMapper.mapList(goodsStockQo, SkuStockMissingDto.class));
+				resp.setData(placeOrderDto);
+			}
 			return resp;
 		}
 		
@@ -337,7 +354,6 @@ public class ScanOrderApiImpl implements ScanOrderApi {
 	 * @see com.okdeer.mall.order.service.ScanOrderApi#getJxcStoreId(java.lang.String)
 	 */
 	public ScanPosStoreDto getJxcStoreId(String branchId){
-		System.out.println("");
 		Branches branches = branchesServiceApi.getBranchInfoById(branchId);
 		return BeanMapper.map(branches, ScanPosStoreDto.class);
 	}
