@@ -18,7 +18,7 @@ import com.okdeer.mall.system.service.SysUserOperateLogService;
 
 /**
  * ClassName: SysUserOperateLogApiImpl 
- * @Description: TODO
+ * @Description: 系统用户操作日志表api实现
  * @author xuzq01
  * @date 2017年11月8日
  *

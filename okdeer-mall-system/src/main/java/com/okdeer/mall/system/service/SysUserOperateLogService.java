@@ -10,7 +10,7 @@ import com.okdeer.base.service.IBaseService;
 
 /**
  * ClassName: SysUserOperateLogService 
- * @Description: TODO
+ * @Description: 系统用户操作日志表service
  * @author xuzq01
  * @date 2017年11月8日
  *
