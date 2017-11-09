@@ -277,11 +277,11 @@
 		 #{startTime, jdbcType=TIMESTAMP},#{endTime, jdbcType=TIMESTAMP},
 		 #{useUserType, jdbcType=TINYINT},#{useClientType, jdbcType=TINYINT},
 		 #{deviceDayLimit, jdbcType=INTEGER},#{accountDayLimit, jdbcType=INTEGER},
-		 IFNULL(#{effectDay, jdbcType=INTEGER},0),IFNULL(#{termType, jdbcType=TINYINT},0)
+		 IFNULL(#{effectDay, jdbcType=INTEGER},0),IFNULL(#{termType, jdbcType=TINYINT},0),
 		 #{orderDiscountMax},
 		 #{orderTypes},
-		 #{areaTypeInvert},
-		 #{categoryInvert}
+		 IFNULL(#{areaTypeInvert, jdbcType=INTEGER},0),
+		 IFNULL(#{categoryInvert, jdbcType=INTEGER},0)
 		 ) 
 	</insert> 
 	
