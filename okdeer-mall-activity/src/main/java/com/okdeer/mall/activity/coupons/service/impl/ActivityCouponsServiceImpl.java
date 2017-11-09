@@ -225,6 +225,9 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		} else if (CouponsType.bldty.getValue().equals(coupons.getType())) {
 			activityCouponsMapper.insert(coupons);
 			this.addRelatedInfo(coupons);
+		} else if (CouponsType.tyzkq.getValue().equals(coupons.getType())) {
+			activityCouponsMapper.insert(coupons);
+			this.addRelatedInfo(coupons);
 		}
 		// Begin added by maojj 2016-10-25
 		// 如果代金券设置了需要生成随机码，则根据代金券的发行量生成随机码
@@ -429,7 +432,8 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		} else if (CouponsType.bld.getValue().equals(coupons.getType())
 				|| CouponsType.fwd.getValue().equals(coupons.getType())
 				|| CouponsType.film.getValue().equals(coupons.getType())
-				|| CouponsType.bldty.getValue().equals(coupons.getType())) {
+				|| CouponsType.bldty.getValue().equals(coupons.getType())
+				|| CouponsType.tyzkq.getValue().equals(coupons.getType())) {
 			activityCouponsMapper.updateCoupons(coupons);
 
 			// 删掉老数据
@@ -672,7 +676,8 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		if (CouponsType.bld.getValue().equals(coupons.getType())
 				|| CouponsType.bldty.getValue().equals(coupons.getType())) {
 			type = 1;
-		} else if (CouponsType.fwd.getValue().equals(coupons.getType())) {
+		} else if (CouponsType.fwd.getValue().equals(coupons.getType()) ||
+				CouponsType.tyzkq.getValue().equals(coupons.getType())) {
 			type = 2;
 		}
 		if (StringUtils.isNotEmpty(coupons.getCategoryIds())) {
