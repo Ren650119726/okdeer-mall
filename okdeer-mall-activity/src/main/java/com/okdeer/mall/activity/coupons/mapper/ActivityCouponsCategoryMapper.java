@@ -2,6 +2,8 @@ package com.okdeer.mall.activity.coupons.mapper;
 
 import java.util.List;
 import java.util.Map;
+
+import com.okdeer.mall.activity.coupons.bo.ActivityCouponsCategoryParamBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory;
 
 /**
@@ -34,4 +36,13 @@ public interface ActivityCouponsCategoryMapper {
 	 * @date 2016年9月10日
 	 */
 	void deleteByCouponsId(String couponsId);
+	
+	/**
+	 * @Description: 查询导航分类信息
+	 * @param activityCouponsCategoryParamBo
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年11月10日
+	 */
+	List<ActivityCouponsCategory> findList(ActivityCouponsCategoryParamBo activityCouponsCategoryParamBo);
 }

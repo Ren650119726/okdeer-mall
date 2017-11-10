@@ -137,13 +137,6 @@ public interface ActivityCouponsService {
 	 */
 	List<ActivityCoupons> getCouponsInfoByName(ActivityCoupons coupons) throws ServiceException;
 
-	/**
-	 * 根据 couponsId 获取  ActivityCouponsLimitCategory
-	 * @param couponsId 代金券id
-	 * @return  List
-	 * @throws ServiceException 异常
-	 */
-	List<ActivityCouponsLimitCategory> getCouponsLimitCategoryByCouponsId(String couponsId) throws ServiceException;
 
 	/**
 	 * 根据id删除

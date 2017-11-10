@@ -35,5 +35,27 @@
     <select id="listByCollectCouponsId" parameterType="string" resultMap="ActivityCollectArea">
     	select <include refid="columns"/> from activity_collect_area where collect_coupons_id = #{value}
     </select>
-
+	
+	
+	 <select id="findList" parameterType="com.okdeer.mall.activity.coupons.bo.ActivityCollectAreaParamBo" resultMap="ActivityCollectArea">
+    	select <include refid="columns"/> from activity_collect_area 
+    	<where>
+			<if test="collectCouponsId != null and collectCouponsId != '' ">
+				AND collect_coupons_id = #{collectCouponsId, jdbcType=VARCHAR}
+			</if>
+			<if test="collectCouponsIdList != null and collectCouponsIdList.size() > 0">
+				AND advert_id IN 
+				<foreach collection="collectCouponsIdList" item="item" separator="," open="(" close=")">
+					#{item, jdbcType=VARCHAR}
+				</foreach>
+			</if>
+			<if test="type != null">
+				AND type = #{type, jdbcType=TINYINT}
+			</if>
+			<if test="areaId != null and areaId != '' ">
+				AND area_id = #{areaId, jdbcType=VARCHAR}
+			</if>
+    	</where>
+    </select>
+	
 </mapper>

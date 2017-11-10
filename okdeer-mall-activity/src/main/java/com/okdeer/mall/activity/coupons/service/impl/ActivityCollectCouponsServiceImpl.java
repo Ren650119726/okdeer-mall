@@ -54,6 +54,7 @@ import com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsApprovalStat
 import com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsStatus;
 import com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsType;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
+import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectAreaMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCommunityMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
@@ -69,6 +70,7 @@ import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsServiceApi;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsReceiveStrategy;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsService;
+import com.okdeer.mall.activity.dto.ActivityCollectCouponsParamDto;
 import com.okdeer.mall.activity.dto.ActivityCouponsRecordBeforeParamDto;
 import com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto;
 import com.okdeer.mall.activity.dto.TakeActivityCouponParamDto;
@@ -164,12 +166,7 @@ public class ActivityCollectCouponsServiceImpl
 	@Reference(version = "1.0.0", check = false)
 	ISysUserServiceApi iSysUserServiceApi;
 
-	/**
-	 * userservice
-	 */
-	@Reference(version = "1.0.0", check = false)
-	IPsmsAgentServiceApi iPsmsAgentServiceApi;
-	
+
 	@Autowired
 	private ActivityCouponsReceiveStrategy activityCouponsReceiveStrategy;
 
@@ -301,10 +298,6 @@ public class ActivityCollectCouponsServiceImpl
 						if ("0".equals(a.getBelongType())) {
 							SysUser su = iSysUserServiceApi.findSysUserById(a.getCreateUserId());
 							a.setUpdateUserId(su == null ? "" : su.getUserName());
-						} else {
-							// 创建者是代理商
-							PsmsAgent pa = iPsmsAgentServiceApi.loadById(a.getBelongType());
-							a.setUpdateUserId(pa == null ? "" : pa.getFullName());
 						}
 					}
 				}
@@ -527,9 +520,8 @@ public class ActivityCollectCouponsServiceImpl
 			for (ActivityCollectCouponsVo vo : result) {
 				ActivityCouponsRecordQueryParamDto activityCouponsRecord = new ActivityCouponsRecordQueryParamDto();
 				activityCouponsRecord.setCouponsCollectId(vo.getId());
-				List<ActivityCoupons> activityCouponsList = new ArrayList<>();
-				activityCouponsList = vo.getActivityCoupons();
-				if (activityCouponsList != null && activityCouponsList.size() > 0) {
+				List<ActivityCoupons> activityCouponsList = vo.getActivityCoupons();
+				if (CollectionUtils.isNotEmpty(activityCouponsList)) {
 					for (ActivityCoupons activityCoupons : activityCouponsList) {
 						// Begin V2.6.0_P02 added by maojj 2017-09-11
 						// 根据代金券的设置设置代金券的开始时间和结束时间
@@ -541,8 +533,9 @@ public class ActivityCollectCouponsServiceImpl
 						cal.setTime(expireTime);
 						cal.add(Calendar.DATE, -1);
 						activityCoupons.setEndTime(cal.getTime());
+						activityCoupons.setFaceValue(calculCouponsFaceValue(activityCoupons));
 						// End V2.6.0_P02 added by maojj 2017-09-11
-						
+
 						activityCouponsRecord.setCouponsId(activityCoupons.getId());
 						activityCouponsRecord.setCollectType(ActivityCouponsType.coupons.ordinal());
 						// 当前登陆用户id
@@ -603,6 +596,25 @@ public class ActivityCollectCouponsServiceImpl
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * @Description: 计算优惠卷面值
+	 * @param activityCoupons
+	 * @param round 1: 除以 10 2:除以 100
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年11月10日
+	 */
+	private BigDecimal calculCouponsFaceValue(ActivityCoupons activityCoupons, int round) {
+		if (activityCoupons.getType() == CouponsType.tyzkq.getValue()) {
+			int divide = 10;
+			if (round == 2) {
+				divide = 100;
+			}
+			return new BigDecimal(activityCoupons.getFaceValue()).divide(new BigDecimal(divide));
+		}
+		return new BigDecimal(activityCoupons.getFaceValue());
 	}
 
 	/**
@@ -869,43 +881,43 @@ public class ActivityCollectCouponsServiceImpl
 	}
 
 	@Override
-	public Boolean isShareRedPackage(ActivityCollectCoupons coupon,StoreInfo storeInfo) {
+	public Boolean isShareRedPackage(ActivityCollectCoupons coupon, StoreInfo storeInfo) {
 		Boolean flag = false;
-		//活动范围为全国
-		if(coupon.getAreaType() ==0 ){
+		// 活动范围为全国
+		if (coupon.getAreaType() == 0) {
 			flag = true;
 		}
-		//活动范围类型为区域
-		if(coupon.getAreaType() == 1){
+		// 活动范围类型为区域
+		if (coupon.getAreaType() == 1) {
 			List<ActivityCollectArea> areaList = activityCollectAreaMapper.listByCollectCouponsId(coupon.getId());
-			for(ActivityCollectArea collectArea : areaList){
-				//0市 1 省
-				if(collectArea.getType() == 0 && collectArea.getAreaId().equals(storeInfo.getCityId())){
+			for (ActivityCollectArea collectArea : areaList) {
+				// 0市 1 省
+				if (collectArea.getType() == 0 && collectArea.getAreaId().equals(storeInfo.getCityId())) {
 					flag = true;
 				}
-				if(collectArea.getType() == 1 && collectArea.getAreaId().equals(storeInfo.getProvinceId())){
+				if (collectArea.getType() == 1 && collectArea.getAreaId().equals(storeInfo.getProvinceId())) {
 					flag = true;
 				}
 			}
 		}
-		//活动范围类型为指定店铺
-		if(coupon.getAreaType() == 3){
+		// 活动范围类型为指定店铺
+		if (coupon.getAreaType() == 3) {
 			List<ActivityCollectStore> storeList = activityCollectStoreMapper.listByCollectCouponsId(coupon.getId());
-			for(ActivityCollectStore collectStore : storeList){
-				if(collectStore.getStoreId().equals(storeInfo.getId())){
+			for (ActivityCollectStore collectStore : storeList) {
+				if (collectStore.getStoreId().equals(storeInfo.getId())) {
 					flag = true;
 				}
 			}
 		}
-		//店铺参与活动继续进行校验
-		if(flag){
+		// 店铺参与活动继续进行校验
+		if (flag) {
 			ActivityCouponsRecord record = new ActivityCouponsRecord();
 			record.setCollectTime(DateUtils.getDateStart(new Date()));
 			record.setCollectType(ActivityCouponsType.red_packet);
 			record.setCouponsCollectId(coupon.getId());
 			int drawAmount = getDaliyDrawAmount(record);
 			log.info("红包每天已发行数量drawAmount=====" + drawAmount);
-			
+
 			// 0表示不限制 每日最大发行量大于领取数量
 			if (Integer.valueOf(coupon.getDailyCirculation()) == 0
 					|| Integer.valueOf(coupon.getDailyCirculation()) > drawAmount) {
@@ -943,7 +955,8 @@ public class ActivityCollectCouponsServiceImpl
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public TakeActivityCouponResultDto takeActivityCoupon(TakeActivityCouponParamDto activityCouponParamDto) throws Exception {
+	public TakeActivityCouponResultDto takeActivityCoupon(TakeActivityCouponParamDto activityCouponParamDto)
+			throws Exception {
 		TakeActivityCouponResultDto resultDto = new TakeActivityCouponResultDto();
 		if (StringUtils.isEmpty(activityCouponParamDto.getUserId())
 				&& StringUtils.isEmpty(activityCouponParamDto.getMobile())) {
@@ -998,9 +1011,9 @@ public class ActivityCollectCouponsServiceImpl
 		}
 		try {
 			activityCouponsService.takeCoupons(activityCollectCoupons, activityCouponParamDto);
-			//添加领取记录
+			// 添加领取记录
 			addActivityCollectCouponsRecord(activityCollectCoupons, activityCouponParamDto);
-			//添加订单返劵记录
+			// 添加订单返劵记录
 			addActivityCouponsOrderRecord(activityCollectCoupons, activityCouponParamDto);
 			resultDto.setCode(0);
 			resultDto.setMsg("领取成功");
@@ -1011,10 +1024,17 @@ public class ActivityCollectCouponsServiceImpl
 		}
 		return resultDto;
 	}
+	
+	@Override
+	public List<ActivityCollectCoupons> findList(ActivityCollectCouponsParamDto activityCollectCouponsParamDto) {
+		List<ActivityCollectCoupons> list = activityCollectCouponsMapper.findList(activityCollectCouponsParamDto);
+		
+		return null;
+	}
 
 	private void addActivityCouponsOrderRecord(ActivityCollectCoupons activityCollectCoupons,
 			TakeActivityCouponParamDto activityCouponParamDto) {
-		if(StringUtils.isNotBlank(activityCouponParamDto.getOrderId())){
+		if (StringUtils.isNotBlank(activityCouponParamDto.getOrderId())) {
 			ActivityCouponsOrderRecord activityCouponsOrderRecord = new ActivityCouponsOrderRecord();
 			activityCouponsOrderRecord.setId(UuidUtils.getUuid());
 			activityCouponsOrderRecord.setCollectType(activityCouponParamDto.getActivityCouponsType());
@@ -1024,7 +1044,7 @@ public class ActivityCollectCouponsServiceImpl
 			activityCouponsOrderRecord.setCollectUserId(activityCouponParamDto.getMobile());
 			activityCouponsOrderRecordMapper.add(activityCouponsOrderRecord);
 		}
-		
+
 	}
 
 	private void addActivityCollectCouponsRecord(ActivityCollectCoupons activityCollectCoupons,
@@ -1098,5 +1118,7 @@ public class ActivityCollectCouponsServiceImpl
 		resultDto.setCode(code);
 		resultDto.setMsg(msg);
 	}
+
+	
 
 }
