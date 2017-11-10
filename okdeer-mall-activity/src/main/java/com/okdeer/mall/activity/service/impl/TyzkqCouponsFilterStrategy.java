@@ -47,8 +47,8 @@ public class TyzkqCouponsFilterStrategy extends GenericCouponsFilterStrategy {
 		// app版本
 		String version = paramBo.getClientVersion();
 		if (StringUtils.isNotEmpty(version)
-				&& "V2.6.4".compareTo(version.substring(0, version.lastIndexOf(".") + 2)) > 0) {
-			// 2.6.4以前的版本不能享受折扣优惠
+				&& "V2.6.2".compareTo(version.substring(0, version.lastIndexOf(".") + 2)) > 0) {
+			// 2.6.2以前的版本不能享受折扣优惠
 			return true;
 		}
 		// 可用订单类型，多个之间逗号分隔：0便利店订单 1服务店订单 2会员卡订单 3扫码购订单
