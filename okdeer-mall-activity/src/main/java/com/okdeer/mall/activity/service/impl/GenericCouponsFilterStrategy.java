@@ -90,32 +90,32 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 		}
 		// 检查是否超过订单类型限制
 		if (isOutOfLimitOrderType(paramBo, couponsInfo)) {
-			 LOG.info("订单类型{}渠道{}使用代金券{}超出订单类型限制",paramBo.getOrderType(),paramBo.getChannel(),couponsId);
+			 LOG.debug("订单类型{}渠道{}使用代金券{}超出订单类型限制",paramBo.getOrderType(),paramBo.getChannel(),couponsId);
 			 return false;
 		}
 		// 检查是否超出客户端限制
 		if(isOutOfLimitClientType(paramBo.getClientType(),couponsInfo.getUseClientType())){
-			LOG.info("客户端{}使用代金券{}超出客户端限制",paramBo.getClientType(),couponsId);
+			LOG.debug("客户端{}使用代金券{}超出客户端限制",paramBo.getClientType(),couponsId);
 			return false;
 		}
 		// 检查是否超出用户类型限制
 		if(isOutOfLimitUserType(paramBo.getUserId(), filterContext, couponsInfo.getUseUserType())){
-			LOG.info("用户{}使用代金券{}超出用户类型限制",paramBo.getUserId(),couponsId);
+			LOG.debug("用户{}使用代金券{}超出用户类型限制",paramBo.getUserId(),couponsId);
 			return false;
 		}
 		// 检查是否到达订单金额限制
 		if(!isArriveOrderAmount(paramBo.getTotalAmount(), BigDecimal.valueOf(couponsInfo.getArriveLimit()))){
-			LOG.info("用户{}使用代金券{}订单金额为{}未达到金额上限",paramBo.getUserId(),couponsId,paramBo.getTotalAmount());
+			LOG.debug("用户{}使用代金券{}订单金额为{}未达到金额上限",paramBo.getUserId(),couponsId,paramBo.getTotalAmount());
 			return false;
 		}
 		// 检查是否超出代金券使用范围
 		if(isOutOfLimitRange(paramBo, couponsInfo,filterContext)){
-			LOG.info("用户{}在店铺{}使用代金券{}超出使用范围限制",paramBo.getUserId(),paramBo.getStoreId(),couponsId);
+			LOG.debug("用户{}在店铺{}使用代金券{}超出使用范围限制",paramBo.getUserId(),paramBo.getStoreId(),couponsId);
 			return false;
 		}
 		// 是否超出类目限制
 		if(isOutOfLimitCategory(paramBo, couponsInfo,filterContext)){
-			LOG.info("用户{}在店铺{}使用代金券{}超出类目限制",paramBo.getUserId(),paramBo.getStoreId(),couponsId);
+			LOG.debug("用户{}在店铺{}使用代金券{}超出类目限制",paramBo.getUserId(),paramBo.getStoreId(),couponsId);
 			return false;
 		}
 		// 剔除特价商品
@@ -127,24 +127,24 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 		}
 		// 检查代金券用户日使用限制
 		if(isOutOfLimitUserDayUseInCoupons(couponsInfo.getAccountDayLimit(), paramBo, couponsId)){
-			LOG.info("用户{}使用代金券{}超出代金券账户日使用限制",paramBo.getUserId(),couponsId);
+			LOG.debug("用户{}使用代金券{}超出代金券账户日使用限制",paramBo.getUserId(),couponsId);
 			return false;
 		}
 		// 检查代金券设备日使用限制
 		if(isOutOfLimitDeviceDayUseInCoupons(couponsInfo.getDeviceDayLimit(), paramBo, couponsId)){
-			LOG.info("用户{}在设备{}上使用代金券{}超出代金券设备日使用限制",paramBo.getUserId(),paramBo.getDeviceId(),couponsId);
+			LOG.debug("用户{}在设备{}上使用代金券{}超出代金券设备日使用限制",paramBo.getUserId(),paramBo.getDeviceId(),couponsId);
 			return false;
 		}
 		// 代金券活动信息
 		ActivityCollectCoupons couponsActInfo = userCouponsBo.getCouponsActInfo();
 		// 检查代金券活动日使用限制
 		if(isOutOfLimitUserDayUseInAct(couponsActInfo.getAccountDayLimit(), paramBo, couponsActInfo.getId(), filterContext)){
-			LOG.info("用户{}使用代金券{}超出代金券活动账户日使用限制",paramBo.getUserId(),couponsId);
+			LOG.debug("用户{}使用代金券{}超出代金券活动账户日使用限制",paramBo.getUserId(),couponsId);
 			return false;
 		}
 		// 检查代金券活动设备日使用限制
 		if(isOutOfLimitDeviceDayUseInAct(couponsActInfo.getDeviceDayLimit(), paramBo, couponsActInfo.getId(), filterContext)){
-			LOG.info("用户{}在设备{}上使用代金券{}超出代金券活动设备日使用限制",paramBo.getUserId(),paramBo.getDeviceId(),couponsId);
+			LOG.debug("用户{}在设备{}上使用代金券{}超出代金券活动设备日使用限制",paramBo.getUserId(),paramBo.getDeviceId(),couponsId);
 			return false;
 		}
 		return true;
