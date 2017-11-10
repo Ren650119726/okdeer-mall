@@ -68,6 +68,7 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 	@Override
 	public boolean accept(UserCouponsBo userCouponsBo,FavourParamBO paramBo,UserCouponsFilterContext filterContext){
 		Assert.notNull(filterContext, "代金券过滤上下文对象不能为空");
+		filterContext.refresh(paramBo);
 		ActivityCoupons couponsInfo = userCouponsBo.getCouponsInfo();
 		// 代金券id
 		String couponsId = couponsInfo.getId();

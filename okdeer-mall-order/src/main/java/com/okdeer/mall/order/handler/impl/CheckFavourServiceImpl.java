@@ -23,6 +23,7 @@ import com.okdeer.mall.activity.bo.FavourParamBuilder;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
 import com.okdeer.mall.activity.coupons.bo.UserCouponsBo;
 import com.okdeer.mall.activity.coupons.bo.UserCouponsFilterContext;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
@@ -184,12 +185,15 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		}
 		// 查询代金券
 		ActivityCoupons coupons = activityCouponsMapper.selectByPrimaryKey(couponsRecord.getCouponsId());
+		// 查询代金券活动信息
+		ActivityCollectCoupons couponsActInfo = activityCollectCouponsMapper.get(coupons.getActivityId());
 		CouponsFilterStrategy filterStrategy = couponsFilterStrategyFactory.get(coupons.getType());
 		// 构建过滤的条件参数
 		// 1、构建用户代金券信息
 		UserCouponsBo userCouponsBo = new UserCouponsBo();
 		userCouponsBo.setCollectRecord(couponsRecord);
 		userCouponsBo.setCouponsInfo(coupons);
+		userCouponsBo.setCouponsActInfo(couponsActInfo);
 		// 2、构建用户优惠请求信息
 		parserBo.refreshReqSkuList(paramDto);
 		FavourParamBO favourParamBo = favourParamBuilder.build(paramDto, resp.getData(), parserBo.getCategoryIdSet(),

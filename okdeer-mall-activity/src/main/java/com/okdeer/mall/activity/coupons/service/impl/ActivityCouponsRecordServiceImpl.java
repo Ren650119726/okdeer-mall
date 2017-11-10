@@ -1615,7 +1615,6 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		UserCouponsFilterContext filterContext = new UserCouponsFilterContext();
 		// 过滤可用的用户代金券信息
 		userCouponsList.forEach(userCoupons -> {
-			filterContext.refresh(paramBo);
 			CouponsFilterStrategy filterStrategy = couponsFilterStrategyFactory.get(userCoupons.getCouponsInfo().getType());
 			// 代金券信息
 			ActivityCoupons couponsInfo = userCoupons.getCouponsInfo();
