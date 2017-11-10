@@ -25,7 +25,8 @@
 		select
 		<include refid="Base_Column_List" />
 		from column_advert_version
-		where advert_id = #{advertId,jdbcType=VARCHAR}
+		where advert_id =
+		#{advertId,jdbcType=VARCHAR}
 	</select>
 
 	<insert id="add" parameterType="com.okdeer.mall.operate.entity.ColumnAdvertVersion">
@@ -63,13 +64,15 @@
 	<insert id="insertBatch" parameterType="java.util.List">
 		INSERT INTO column_advert_version (
 		id, advert_id, type, version
-		) VALUES
+		)
+		VALUES
 		<foreach collection="list" index="index" item="item"
 			separator=",">
 			(
 			#{item.id,jdbcType=VARCHAR},
 			#{item.advertId,jdbcType=VARCHAR},
-			#{item.type,jdbcType=TINYINT}, #{item.version,jdbcType=VARCHAR}
+			#{item.type,jdbcType=TINYINT},
+			#{item.version,jdbcType=VARCHAR}
 			)
 		</foreach>
 	</insert>
@@ -92,35 +95,40 @@
 	</update>
 
 	<delete id="delete" parameterType="java.lang.String">
-		delete from column_advert_version
+		delete from
+		column_advert_version
 		where id = #{id,jdbcType=VARCHAR}
 	</delete>
 
 	<delete id="deleteByAdvertId" parameterType="java.lang.String">
-		delete from column_advert_version
+		delete from
+		column_advert_version
 		where advert_id = #{advertId,jdbcType=VARCHAR}
 	</delete>
 
-	<select id="findList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.operate.advert.bo.ColumnAdvertVersionParamBo">
+	<select id="findList" resultMap="BaseResultMap"
+		parameterType="com.okdeer.mall.operate.advert.bo.ColumnAdvertVersionParamBo">
 		select
 		<include refid="Base_Column_List" />
 		from column_advert_version
-		<if test="advertId != null and advertId != '' ">
-			AND advert_id = #{advertId, jdbcType=VARCHAR}
-		</if>
-		<if test="advertIdList != null and advertIdList.size() > 0">
-			AND advert_id IN
-			<foreach collection="advertIdList" item="item" separator=","
-				open="(" close=")">
-				#{item, jdbcType=VARCHAR}
-			</foreach>
-		</if>
-		<if test="type != null">
-			AND type = #{type, jdbcType=TINYINT}
-		</if>
-		<if test="version != null and version != '' ">
-			AND version = #{version, jdbcType=VARCHAR}
-		</if>
+		<where>
+			<if test="advertId != null and advertId != '' ">
+				AND advert_id = #{advertId, jdbcType=VARCHAR}
+			</if>
+			<if test="advertIdList != null and advertIdList.size() > 0">
+				AND advert_id IN
+				<foreach collection="advertIdList" item="item" separator=","
+					open="(" close=")">
+					#{item, jdbcType=VARCHAR}
+				</foreach>
+			</if>
+			<if test="type != null">
+				AND type = #{type, jdbcType=TINYINT}
+			</if>
+			<if test="version != null and version != '' ">
+				AND version = #{version, jdbcType=VARCHAR}
+			</if>
+		</where>
 	</select>
 
 </mapper>

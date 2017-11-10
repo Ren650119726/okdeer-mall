@@ -1340,9 +1340,8 @@
 	</select>
 	
 	<select id="findList" parameterType="com.okdeer.mall.advert.dto.ColumnAdvertQueryParamDto" resultMap="columnAdvertRsMap" >
-			SELECT <include refid="base_column_list2" />
-		FROM column_advert ca
-		LEFT JOIN column_advert_version version ON ca.id = version.advert_id
+			SELECT <include refid="base_column_list" />
+		FROM column_advert
 		WHERE 1 = 1
 		<if test="positionId != null and positionId != ''">
 			and position_id = #{positionId,jdbcType=VARCHAR}
