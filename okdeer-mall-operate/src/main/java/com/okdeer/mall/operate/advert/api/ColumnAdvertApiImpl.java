@@ -30,14 +30,16 @@ import com.okdeer.mall.operate.entity.ColumnAdvertVersion;
 import com.okdeer.mall.operate.service.ColumnAdvertVersionService;
 
 /**
- * ClassName: ColumnAdvertApiImpl 
+ * ClassName: ColumnAdvertApiImpl
+ * 
  * @Description: 广告api
  * @author zengjizu
  * @date 2017年1月3日
  *
- * =================================================================================================
- *     Task ID			  Date			     Author		      Description
- * ----------------+----------------+-------------------+-------------------------------------------
+ *       =======================================================================
+ *       ========================== Task ID Date Author Description
+ *       ----------------+----------------+-------------------+-----------------
+ *       --------------------------
  *
  */
 @Service(interfaceName = "com.okdeer.mall.advert.service.ColumnAdvertApi", version = "1.0.0")
@@ -78,10 +80,10 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 
 	private List<ColumnAdvert> filterByShowRecord(ColumnAdvertQueryParamDto advertQueryParamDto,
 			List<ColumnAdvert> list) {
-		List<ColumnAdvert> resultList = Lists.newArrayList();
 		// 是否需要记录显示日志
 		boolean isNeedRecord = isNeedShowRecord(advertQueryParamDto.getAdvertType());
 		if (isNeedRecord) {
+			List<ColumnAdvert> resultList = Lists.newArrayList();
 			Assert.hasText(advertQueryParamDto.getDeviceNo(), "设备号不能为空");
 			ColumnAdvertShowRecordParamBo columnAdvertShowRecordParamBo = new ColumnAdvertShowRecordParamBo();
 			columnAdvertShowRecordParamBo.setDeviceNo(advertQueryParamDto.getDeviceNo());
@@ -93,8 +95,11 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 				}
 			}
 			addShowRecord(advertQueryParamDto, resultList);
+			return resultList;
+		} else {
+			return list;
 		}
-		return resultList;
+
 	}
 
 	private void addShowRecord(ColumnAdvertQueryParamDto advertQueryParamDto, List<ColumnAdvert> list) {
@@ -109,7 +114,7 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 	}
 
 	private boolean isNeedShowRecord(AdvertTypeEnum advertType) {
-		
+
 		return false;
 	}
 
@@ -144,11 +149,11 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 
 	private boolean isNeedFilterByVersion(AdvertTypeEnum advertType) {
 		switch (advertType) {
-			case WX_INDEX_BANNER:
-			case POS_MACHINE:
-				return false;
-			default:
-				break;
+		case WX_INDEX_BANNER:
+		case POS_MACHINE:
+			return false;
+		default:
+			break;
 		}
 		return true;
 	}
