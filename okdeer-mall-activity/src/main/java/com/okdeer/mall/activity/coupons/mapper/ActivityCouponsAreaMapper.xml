@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.okdeer.mall.activity.coupons.mapper.ActivityCouponsAreaMapper">	
-    <resultMap id="CouponsResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsArea">
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsArea">
         <id property="id" column="id" javaType="string" jdbcType="VARCHAR"/>
         <result property="couponsId" column="coupons_id" javaType="string" jdbcType="VARCHAR"/>
         <result property="areaId" column="area_id" javaType="string" jdbcType="VARCHAR"/>    
         <result property="couponsAreaType" column="type" javaType="com.okdeer.mall.common.enums.DistrictType" jdbcType="TINYINT"/>            
     </resultMap>
     
+    <sql id="Base_Column_List" >
+        id, coupons_id, area_id,type
+    </sql>
   <!-- Begin V2.2.1 added by zhulq 20170411 -->
-    <select id="findListByType" resultMap="CouponsResultMap" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsArea">
+    <select id="findListByType" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsArea">
       SELECT 
       ACA.id,ACA.coupons_id,ACA.area_id,ACA.type
       FROM activity_coupons AC
@@ -22,5 +25,15 @@
 				or 
 				(ACA.area_id = #{cityId,jdbcType=VARCHAR} and ACA.type = 0)
 			)	
+    </select>
+    
+    <select id="findLimitAreaList" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsArea" resultMap="BaseResultMap">
+    	SELECT <include refid="Base_Column_List" />
+    	FROM activity_coupons_area
+    	WHERE coupons_id = #{couponsId,jdbcType=VARCHAR}
+    	AND (
+    		(type = 1 AND area_id = #{provinceId,jdbcType=VARCHAR})
+    		OR (type = 0 AND area_id = #{cityId,jdbcType=VARCHAR})
+    	)
     </select>
 </mapper>

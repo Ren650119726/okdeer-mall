@@ -2,12 +2,15 @@ package com.okdeer.mall.activity.coupons.mapper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.archive.goods.base.entity.GoodsNavigateCategory;
 import com.okdeer.archive.goods.base.entity.GoodsSpuCategory;
 import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.base.common.exception.ServiceException;
+import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.activity.coupons.bo.ActivityCouponsBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsArea;
@@ -17,8 +20,6 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsStore;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoParams;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery;
 import com.okdeer.mall.common.entity.AreaScTreeVo;
-import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.dal.IBaseCrudMapper;
 
 /**
  * ClassName: ActivityCouponsMapper 
@@ -341,4 +342,14 @@ public interface ActivityCouponsMapper extends IBaseCrudMapper{
 	 */
 	int updateCouponsNum(ActivityCouponsBo couponsBo);
 	// End V2.1 added by maojj 2017-02-23
+
+	// Begin V2.6.4 added by maojj 2017-11-07
+	/**
+		 * @Description: 
+		 * @return   
+		 * @author maojj
+		 * @date 2017年11月7日
+		 */
+	List<ActivityCoupons> findByIds(@Param("couponsIds") Set<String> couponsIds);
+	// End V2.6.4 added by maojj 2017-11-07
 }

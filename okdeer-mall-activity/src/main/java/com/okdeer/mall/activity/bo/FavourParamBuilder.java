@@ -1,7 +1,6 @@
 package com.okdeer.mall.activity.bo;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -64,8 +63,8 @@ public class FavourParamBuilder {
 		paramBO.setUserId(paramDto.getUserId());
 		paramBO.setStoreId(paramDto.getStoreId());
 		paramBO.setStoreType(storeType);
-		paramBO.setCouponsType(EnumAdapter.convert(storeType));
-		paramBO.setTotalAmount(paramDto.getEnjoyFavourTotalAmount());
+		paramBO.setOrderType(EnumAdapter.convert(storeType));
+		paramBO.setTotalAmount(paramDto.getTotalAmount());
 		if(storeType == StoreTypeEnum.SERVICE_STORE){
 			// 服务店代金券，需要根据用户收货地址来确认是否可用。
 			UserAddressVo addr = orderDto.getUserAddrInfo();
@@ -79,6 +78,7 @@ public class FavourParamBuilder {
 		paramBO.setChannel(paramDto.getChannel());
 		paramBO.setGoodsList(goodsList);
 		paramBO.setDeviceId(paramDto.getDeviceId());
+		paramBO.setClientVersion(paramDto.getVersion());
 		return paramBO;
 	}
 	
@@ -98,7 +98,7 @@ public class FavourParamBuilder {
 		paramBO.setUserId(req.getUserId());
 		paramBO.setStoreId(req.getStoreId());
 		paramBO.setStoreType(storeType);
-		paramBO.setCouponsType(EnumAdapter.convert(storeType));
+		paramBO.setOrderType(EnumAdapter.convert(storeType));
 		paramBO.setTotalAmount(req.getTotalAmount());
 		if(storeType == StoreTypeEnum.SERVICE_STORE){
 			paramBO.setAddressId(req.getAddressId());
@@ -142,7 +142,7 @@ public class FavourParamBuilder {
 		paramBO.setUserId(reqDto.getUserId());
 		paramBO.setStoreId(reqDto.getStoreId());
 		paramBO.setStoreType(storeType);
-		paramBO.setCouponsType(EnumAdapter.convert(storeType));
+		paramBO.setOrderType(EnumAdapter.convert(storeType));
 		paramBO.setTotalAmount(reqDto.getTotalAmount());
 		if(storeType == StoreTypeEnum.SERVICE_STORE){
 			//到店消费根据店铺地址查询代金券
@@ -174,7 +174,7 @@ public class FavourParamBuilder {
 		paramBO.setUserId(orderReq.getUserId());
 		paramBO.setStoreId(orderReq.getStoreId());
 		paramBO.setStoreType(storeType);
-		paramBO.setCouponsType(EnumAdapter.convert(storeType));
+		paramBO.setOrderType(EnumAdapter.convert(storeType));
 		paramBO.setTotalAmount(totalAmount);
 		if(storeType == StoreTypeEnum.SERVICE_STORE){
 			//到店消费根据店铺地址查询代金券

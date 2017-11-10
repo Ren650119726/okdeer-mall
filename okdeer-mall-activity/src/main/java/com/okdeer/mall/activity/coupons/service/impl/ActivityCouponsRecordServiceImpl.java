@@ -5,14 +5,13 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -25,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
@@ -33,7 +33,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.okdeer.api.pay.account.dto.PayUpdateAmountDto;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
-import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.base.common.enums.WhetherEnum;
@@ -47,8 +46,12 @@ import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.framework.mq.message.MQMessage;
 import com.okdeer.mall.activity.bo.FavourParamBO;
+import com.okdeer.mall.activity.coupons.bo.ActivityCouponsRecordParamBo;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordBo;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
+import com.okdeer.mall.activity.coupons.bo.UserCouponsBo;
+import com.okdeer.mall.activity.coupons.bo.UserCouponsFilterContext;
+import com.okdeer.mall.activity.coupons.bo.UserCouponsLoader;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -61,8 +64,9 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsStatusCountVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
-import com.okdeer.mall.activity.coupons.enums.ActivityCouponsTermType;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
+import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
+import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.enums.RecordCountRuleEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
@@ -70,14 +74,15 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRandCodeMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordBeforeMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsThirdCodeMapper;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsReceiveStrategy;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
 import com.okdeer.mall.activity.dto.ActivityCouponsRecordBeforeParamDto;
 import com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto;
-import com.okdeer.mall.activity.coupons.service.ActivityCouponsReceiveStrategy;
 import com.okdeer.mall.activity.prize.service.ActivityPrizeRecordService;
 import com.okdeer.mall.activity.service.CouponsFilterStrategy;
 import com.okdeer.mall.activity.service.MaxFavourStrategy;
+import com.okdeer.mall.activity.service.impl.CouponsFilterStrategyFactory;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.enums.GetUserType;
 import com.okdeer.mall.common.enums.UseUserType;
@@ -95,6 +100,7 @@ import com.okdeer.mall.order.vo.RechargeCouponVo;
 import com.okdeer.mall.system.entity.SysUserInvitationCode;
 import com.okdeer.mall.system.mapper.SysUserInvitationCodeMapper;
 import com.okdeer.mall.system.service.InvitationCodeService;
+import com.okdeer.mall.system.utils.ConvertUtil;
 import com.okdeer.mcm.constant.MsgConstant;
 import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
@@ -219,6 +225,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	
 	@Resource 
 	private ActivityCouponsReceiveStrategy activityCouponsReceiveStrategy;
+	
+	@Resource
+	private CouponsFilterStrategyFactory couponsFilterStrategyFactory;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -1589,66 +1598,86 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	}
 
 	@Override
-	public List<Coupons> findValidCoupons(FavourParamBO paramBo, CouponsFilterStrategy favourFilter) throws Exception {
-		if (paramBo.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0) {
-			return new ArrayList<Coupons>();
-		}
-		List<Coupons> couponsList = activityCouponsRecordMapper.findValidCoupons(paramBo);
-		if (CollectionUtils.isEmpty(couponsList)) {
-			return couponsList;
+	public List<Coupons> findValidCoupons(FavourParamBO paramBo) throws Exception {
+		// 查询用户未使用的代金券列表
+		ActivityCouponsRecordParamBo queryParamBo = new ActivityCouponsRecordParamBo();
+		queryParamBo.setCollectUserId(paramBo.getUserId());
+		queryParamBo.setIncludeStatusList(Arrays.asList(new ActivityCouponsRecordStatusEnum[]{
+				ActivityCouponsRecordStatusEnum.UNUSED
+		}));
+		List<UserCouponsBo> userCouponsList = findUserCouponsList(queryParamBo);
+		if(CollectionUtils.isEmpty(userCouponsList)){
+			return Lists.newArrayList();
 		}
 		// 解析出代金券统一设备、同一账户的使用次数
-		countUseRecord(paramBo, couponsList);
-		// 对集合进行数据迭代
-		Iterator<Coupons> it = couponsList.iterator();
-		Coupons coupons = null;
-		while (it.hasNext()) {
-			coupons = it.next();
-			if (coupons.getIsCategory() == Constant.ONE && CollectionUtils.isEmpty(paramBo.getSpuCategoryIds())) {
-				// 如果代金券指定分类，且paramBo的分类为空，则重新查询
-				// 当前店铺商品信息
-				List<GoodsStoreSku> currentStoreSkuList = goodsStoreSkuServiceApi
-						.findStoreSkuForOrder(paramBo.getSkuIdList());
-				// 商品类型ids
-				Set<String> spuCategoryIds = new HashSet<String>();
-				if (CollectionUtils.isNotEmpty(currentStoreSkuList)) {
-					for (GoodsStoreSku goodsStoreSku : currentStoreSkuList) {
-						spuCategoryIds.add(goodsStoreSku.getSpuCategoryId());
-					}
+		countUseRecord(paramBo, userCouponsList);
+		List<Coupons> couponsList = Lists.newArrayList();
+		UserCouponsFilterContext filterContext = new UserCouponsFilterContext();
+		// 过滤可用的用户代金券信息
+		userCouponsList.forEach(userCoupons -> {
+			filterContext.refresh(paramBo);
+			CouponsFilterStrategy filterStrategy = couponsFilterStrategyFactory.get(userCoupons.getCouponsInfo().getType());
+			// 代金券信息
+			ActivityCoupons couponsInfo = userCoupons.getCouponsInfo();
+			if(filterStrategy.accept(userCoupons, paramBo, filterContext)){
+				// 领取记录信息
+				ActivityCouponsRecord collectRec = userCoupons.getCollectRecord();
+				// 如果代金券可用，转换成可用对象
+				Coupons coupons = new Coupons();
+				coupons.setCouponTitle(buildCouponsTitle(couponsInfo));
+				coupons.setType(couponsInfo.getType());
+				coupons.setUsableRange("0");
+				coupons.setId(couponsInfo.getActivityId());
+				coupons.setCouponId(couponsInfo.getId());
+				// 面额.如果是折扣券，优惠面额为折扣的金额。（保留两位小数）
+				if(couponsInfo.getType() == CouponsType.tyzkq.getValue()){
+					coupons.setCouponPrice(ConvertUtil.formatNumber(
+							BigDecimal.valueOf(couponsInfo.getFaceValue()).divide(BigDecimal.valueOf(10))));
+				}else{
+					coupons.setCouponPrice(ConvertUtil.formatNumber(couponsInfo.getFaceValue()));
 				}
-				paramBo.setSpuCategoryIds(spuCategoryIds);
-			}
-			if (!favourFilter.accept(coupons)) {
-				// 如果过滤器不接受该优惠，则将该优惠从列表中移除
-				it.remove();
-			} else {
-				coupons.setFirstUserLimit(coupons.getUseUserType().ordinal());
+				setDiscountAmount(coupons,couponsInfo,filterContext.getEnjoyFavourAmount());
+				coupons.setRecordId(collectRec.getId());
+				coupons.setActivityItemId(couponsInfo.getId());
+				coupons.setCouponsType(collectRec.getCollectType().ordinal());
+				coupons.setArrive(ConvertUtil.formatNumber(couponsInfo.getArriveLimit()));
+				coupons.setFirstUserLimit(couponsInfo.getUseUserType().ordinal());
+				coupons.setActivityType(ActivityTypeEnum.VONCHER.ordinal());
+				// 代金券到期日期（数据库中存储的到期日期为：yyyy-MM-dd 00：00：00 给用户展示时间时减一天）
+				coupons.setIndate(DateUtils.formatDate(DateUtils.addDays(collectRec.getValidTime(), -1), "yyyy-MM-dd"));
 				coupons.setMaxFavourStrategy(
 						genericMaxFavourStrategy.calMaxFavourRule(coupons, paramBo.getTotalAmount()));
+				
+				couponsList.add(coupons);
+				filterContext.addEnabledCouponsId(couponsInfo.getId());
+			}else{
+				// 如果不可用，将代金券id缓存到不可用列表中
+				filterContext.addExcludeCouponsId(couponsInfo.getId());
 			}
-		}
+		});
 		return couponsList;
 	}
 
 	/**
 	 * 统计用户代金券使用记录
 	 */
-	private void countUseRecord(FavourParamBO paramBo, List<Coupons> couponsList) {
+	public void countUseRecord(FavourParamBO paramBo, List<UserCouponsBo> userCouponsList) {
 		// 有设备限制的代金券Id列表
 		List<String> deviceLimitCouponsIds = Lists.newArrayList();
 		// 有账户限制的代金券Id列表
 		List<String> userLimitCouponsIds = Lists.newArrayList();
 		// 用户所有代金券ID
 		List<String> userCouponsIds = Lists.newArrayList();
-		for (Coupons coupons : couponsList) {
-			if (coupons.getDeviceDayLimit() != null && coupons.getDeviceDayLimit() > 0) {
-				deviceLimitCouponsIds.add(coupons.getCouponId());
+		userCouponsList.forEach(userCoupons -> {
+			ActivityCoupons couponsInfo = userCoupons.getCouponsInfo();
+			if (couponsInfo.getDeviceDayLimit() != null && couponsInfo.getDeviceDayLimit() > 0) {
+				deviceLimitCouponsIds.add(couponsInfo.getId());
 			}
-			if (coupons.getAccountDayLimit() != null && coupons.getAccountDayLimit() > 0) {
-				userLimitCouponsIds.add(coupons.getCouponId());
+			if (couponsInfo.getAccountDayLimit() != null && couponsInfo.getAccountDayLimit() > 0) {
+				userLimitCouponsIds.add(couponsInfo.getId());
 			}
-			userCouponsIds.add(coupons.getCouponId());
-		}
+			userCouponsIds.add(couponsInfo.getId());
+		});
 
 		if (CollectionUtils.isNotEmpty(deviceLimitCouponsIds) && StringUtils.isNotEmpty(paramBo.getDeviceId())) {
 			// 根据设备统计使用次数
@@ -1699,6 +1728,40 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		} else {
 			return activityCouponsRecordMapper.countActivityRecord(recParamBo);
 		}
+	}
+	
+	private String buildCouponsTitle(ActivityCoupons couponsInfo){
+		StringBuilder sb = new StringBuilder();
+		if(couponsInfo.getArriveLimit().compareTo(Integer.valueOf(0))  > 0){
+			sb.append("满¥").append(couponsInfo.getArriveLimit()).append("可用");
+		}else{
+			sb.append("无条件使用");
+		}
+		if(couponsInfo.getOrderDiscountMax().compareTo(Integer.valueOf(0)) > 0){
+			// 如果有最大上限
+			sb.append("，最高抵扣¥").append(couponsInfo.getOrderDiscountMax());
+		}
+		return sb.toString();
+	}
+	
+	private void setDiscountAmount(Coupons coupons,ActivityCoupons couponsInfo,BigDecimal enjoyFavoutAmount){
+		BigDecimal discountAmount = null;
+		if (couponsInfo.getType() == CouponsType.tyzkq.getValue()) {
+			// 如果是折扣券，优惠金额等于享受优惠的总金额*(100-折扣比例)/100.且不得超过折扣上限
+			BigDecimal orderDiscountMax = BigDecimal.valueOf(couponsInfo.getOrderDiscountMax());
+			discountAmount = enjoyFavoutAmount.multiply(BigDecimal.valueOf(100 - couponsInfo.getFaceValue()))
+					.divide(BigDecimal.valueOf(100), BigDecimal.ROUND_DOWN);
+			if(orderDiscountMax.compareTo(BigDecimal.ZERO) > 0){
+				// 如果设置了上线，需要取最小值
+				if(discountAmount.compareTo(orderDiscountMax) >= 0){
+					coupons.setIsArriveMaxLimit(1);
+					discountAmount = orderDiscountMax;
+				}
+			}
+		}else{
+			discountAmount = BigDecimal.valueOf(couponsInfo.getFaceValue());
+		}
+		coupons.setDiscountAmount(ConvertUtil.format(discountAmount));
 	}
 
 	/**
@@ -1842,5 +1905,29 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	@Override
 	public void add(ActivityCouponsRecord activityCouponsRecord) {
 		activityCouponsRecordMapper.insertSelective(activityCouponsRecord);
+	}
+
+	@Override
+	public List<UserCouponsBo> findUserCouponsList(ActivityCouponsRecordParamBo paramBo) {
+		Assert.notNull(paramBo, "查询参数对象不能为空");
+		Assert.notNull(paramBo.getCollectUserId(), "领取用户id不能为空");
+		// 查询用户代金券领取记录
+		List<ActivityCouponsRecord> collectRecList = activityCouponsRecordMapper.findCollectRecordList(paramBo);
+		if(CollectionUtils.isEmpty(collectRecList)){
+			return Lists.newArrayList();
+		}
+		// 构建用户代金券装载器
+		UserCouponsLoader userCouponsLoader = new UserCouponsLoader();
+		// 加载领取记录列表
+		userCouponsLoader.loadCollectRecList(collectRecList);
+		// 查询代金券列表
+		List<ActivityCoupons> couponsList = activityCouponsMapper.findByIds(userCouponsLoader.extraCouponsIdList());
+		userCouponsLoader.loadCouponsList(couponsList);
+		// 查询领取活动信息
+		List<String> couponsActIds = Lists.newArrayList();
+		couponsActIds.addAll(userCouponsLoader.extraCouponsActIdList());
+		List<ActivityCollectCoupons> couponsActList = activityCollectCouponsMapper.findByIds(couponsActIds);
+		userCouponsLoader.loadCouponsActList(couponsActList);
+		return userCouponsLoader.retrieveResult();
 	}
 }

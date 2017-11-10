@@ -10,11 +10,11 @@ import org.apache.commons.collections.CollectionUtils;
 import com.google.common.collect.Maps;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordBo;
-import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.enums.RecordCountRuleEnum;
 import com.okdeer.mall.common.enums.UseClientType;
 import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 
 /**
  * ClassName: FavourParamBo 
@@ -43,16 +43,6 @@ public class FavourParamBO {
 	 * 店铺类型
 	 */
 	private StoreTypeEnum storeType;
-
-	/**
-	 * 代金券类型
-	 */
-	private CouponsType couponsType;
-	
-	/**
-	 * 只查该类型代金券
-	 */
-	private CouponsType onlyCouponsType;
 
 	/**
 	 * 订单总金额
@@ -93,17 +83,29 @@ public class FavourParamBO {
 	 * 下单的商品列表
 	 */
 	private List<PlaceOrderItemDto> goodsList;
-	
+
 	/**
 	 * 设备Id
 	 */
 	private String deviceId;
-	
+
 	/**
 	 * 活动统计列表
 	 */
-	private Map<RecordCountRuleEnum,List<ActivityRecordBo>> activityCounter;
-	
+	private Map<RecordCountRuleEnum, List<ActivityRecordBo>> activityCounter;
+
+	// Begin V2.6.4 added by maojj 2017-11-08
+	/**
+	 * 订单类型 
+	 */
+	private OrderTypeEnum orderType;
+
+	/**
+	 * app版本号
+	 */
+	private String clientVersion;
+	// End V2.6.4 added by maojj 2017-11-08
+
 	public String getUserId() {
 		return userId;
 	}
@@ -126,14 +128,6 @@ public class FavourParamBO {
 
 	public void setStoreType(StoreTypeEnum storeType) {
 		this.storeType = storeType;
-	}
-
-	public CouponsType getCouponsType() {
-		return couponsType;
-	}
-
-	public void setCouponsType(CouponsType couponsType) {
-		this.couponsType = couponsType;
 	}
 
 	public BigDecimal getTotalAmount() {
@@ -199,32 +193,32 @@ public class FavourParamBO {
 	public void setGoodsList(List<PlaceOrderItemDto> goodsList) {
 		this.goodsList = goodsList;
 	}
-	
+
 	public String getDeviceId() {
 		return deviceId;
 	}
-	
+
 	public void setDeviceId(String deviceId) {
 		this.deviceId = deviceId;
 	}
-	
+
 	public void putActivityCounter(RecordCountRuleEnum countRule, List<ActivityRecordBo> recordCountList) {
-		if(this.activityCounter == null){
+		if (this.activityCounter == null) {
 			this.activityCounter = Maps.newHashMap();
 		}
-		if(CollectionUtils.isNotEmpty(recordCountList)){
+		if (CollectionUtils.isNotEmpty(recordCountList)) {
 			this.activityCounter.put(countRule, recordCountList);
 		}
 	}
-	
-	public Integer findCountNum(RecordCountRuleEnum countRule,String pkId){
+
+	public Integer findCountNum(RecordCountRuleEnum countRule, String pkId) {
 		List<ActivityRecordBo> recList = this.activityCounter.get(countRule);
-		if(CollectionUtils.isEmpty(recList)){
+		if (CollectionUtils.isEmpty(recList)) {
 			return 0;
 		}
 		ActivityRecordBo findResult = null;
-		for(ActivityRecordBo recBo : recList){
-			if(pkId.equals(recBo.getPkId())){
+		for (ActivityRecordBo recBo : recList) {
+			if (pkId.equals(recBo.getPkId())) {
 				findResult = recBo;
 				break;
 			}
@@ -232,15 +226,20 @@ public class FavourParamBO {
 		return findResult == null ? 0 : findResult.getTotalNum();
 	}
 
-	
-	public CouponsType getOnlyCouponsType() {
-		return onlyCouponsType;
+	public OrderTypeEnum getOrderType() {
+		return orderType;
 	}
 
-	
-	public void setOnlyCouponsType(CouponsType onlyCouponsType) {
-		this.onlyCouponsType = onlyCouponsType;
+	public void setOrderType(OrderTypeEnum orderType) {
+		this.orderType = orderType;
 	}
-	
-	
+
+	public String getClientVersion() {
+		return clientVersion;
+	}
+
+	public void setClientVersion(String clientVersion) {
+		this.clientVersion = clientVersion;
+	}
+
 }

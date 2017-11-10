@@ -6,7 +6,8 @@ import java.util.Map;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.bo.FavourParamBO;
-import com.okdeer.mall.activity.coupons.bo.ActivityCouponsRecordQueryParamBo;
+import com.okdeer.mall.activity.coupons.bo.ActivityCouponsRecordParamBo;
+import com.okdeer.mall.activity.coupons.bo.UserCouponsBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordQueryVo;
@@ -15,7 +16,6 @@ import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto;
-import com.okdeer.mall.activity.service.CouponsFilterStrategy;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.vo.Coupons;
@@ -215,7 +215,7 @@ public interface ActivityCouponsRecordService {
 	 * @author maojj
 	 * @date 2017年2月15日
 	 */
-	List<Coupons> findValidCoupons(FavourParamBO paramBo,CouponsFilterStrategy favourFilter) throws Exception;
+	List<Coupons> findValidCoupons(FavourParamBO paramBo) throws Exception;
 	// End V2.1 added by maojj 2017-02-15
 	
 	/**
@@ -238,4 +238,24 @@ public interface ActivityCouponsRecordService {
 	 * @date 2017年8月25日
 	 */
 	void add(ActivityCouponsRecord activityCouponsRecord);
+	
+	// Begin V2.6.4 added by maojj 2017-11-07
+	/**
+	 * @Description: 查询用户代金券列表
+	 * @param paramBo
+	 * @return   
+	 * @author maojj
+	 * @date 2017年11月7日
+	 */
+	List<UserCouponsBo> findUserCouponsList(ActivityCouponsRecordParamBo paramBo);
+	
+	/**
+	 * 统计用户代金券使用记录
+	 * @param paramBo
+	 * @param userCouponsList   
+	 * @author maojj
+	 * @date 2017年11月9日
+	 */
+	void countUseRecord(FavourParamBO paramBo, List<UserCouponsBo> userCouponsList);
+	// End V2.6.4 added by maojj 2017-11-07
 }

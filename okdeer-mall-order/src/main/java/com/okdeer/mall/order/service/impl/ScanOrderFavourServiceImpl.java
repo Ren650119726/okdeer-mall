@@ -27,6 +27,7 @@ import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.dto.ScanOrderDto;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.order.service.GetPreferentialService;
 import com.okdeer.mall.order.service.ScanOrderFavourService;
@@ -100,8 +101,7 @@ public class ScanOrderFavourServiceImpl implements ScanOrderFavourService{
 		parambo.setChannel(OrderResourceEnum.MEMCARD);
 		parambo.setClientType(UseClientType.ONlY_APP_USE);
 		//便利店通用代金券
-		parambo.setCouponsType(CouponsType.bldty);
-		parambo.setOnlyCouponsType(CouponsType.bldty);
+		parambo.setOrderType(OrderTypeEnum.PHYSICAL_ORDER);
 		parambo.setStoreType(StoreTypeEnum.CLOUD_STORE);
 		parambo.setStoreId(orderDetail.getBranchId());
 		List<String> goods = Lists.newArrayList();

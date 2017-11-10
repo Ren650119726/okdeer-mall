@@ -34,7 +34,6 @@ import com.okdeer.common.utils.JsonDateUtil;
 import com.okdeer.jxc.bill.service.HykPayOrderServiceApi;
 import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
-import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.discount.entity.PreferentialVo;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
@@ -483,9 +482,6 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		parambo.setUserId(vo.getUserId());
 		parambo.setChannel(OrderResourceEnum.MEMCARD);
 		parambo.setClientType(UseClientType.ONlY_APP_USE);
-		//便利店通用代金券
-		parambo.setCouponsType(CouponsType.bldty);
-		parambo.setOnlyCouponsType(CouponsType.bldty);
 		parambo.setStoreType(StoreTypeEnum.CLOUD_STORE);
 		parambo.setStoreId(vo.getBranchId());
 		List<String> goods = Lists.newArrayList();
