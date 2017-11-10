@@ -441,10 +441,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	@Transactional(rollbackFor = Exception.class)
 	public JSONObject addBeforeRecords(String collectId, String phone, String userId, String advertId)
 			throws ServiceException {
-		Map<String, Object> map = new HashMap<String, Object>();
+		Map<String, Object> map = new HashMap<>();
 
 		// 校验成功标识 //如果不存在缓存数据进行加入到缓存中
-		String key = userId + collectId;
+		String key = phone + collectId;
 		boolean checkFlag = checkUserStatusByRedis(key, 6);
 		if (!checkFlag) {
 			map.put("code", 104);
@@ -461,7 +461,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			}
 
 			// 校验活动信息
-			if (!checkCollectPublic(map, coll, userId)) {
+			if (!checkCollectPublic(map, coll, null)) {
 				return JSONObject.fromObject(map);
 			}
 
