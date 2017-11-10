@@ -178,11 +178,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		}
 		// end update by zhulq 修改结束广告时候重新给图片赋值 2016-9-1
 		advert.setIsPay(AdvertIsPayEnum.NOT_PAID);
-		// begin 去掉缴费 add by zhulq 2016-7-14
-		/*
-		 * String tradeNum = TradeNumUtil.getTradeNum(); advert.setTradeNum(tradeNum);
-		 */
-		// end 去掉缴费 add by zhulq 2016-7-14
+		
 		advert.setStatus(AdvertStatusEnum.NOT_STARTING);
 		advert.setDisabled(Disabled.valid);
 		advert.setCreateTime(new Date());
@@ -694,8 +690,10 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 		if(CollectionUtils.isNotEmpty(countList) && CollectionUtils.isNotEmpty(advert.getCvsVersion())
 				&& (advert.getAdvertType().equals(AdvertTypeEnum.USER_APP_INDEX_PARTITION.getIndex())
 					|| advert.getAdvertType().equals(AdvertTypeEnum.USER_APP_SPLASH_SCREEN.getIndex()) 
-			        || advert.getAdvertType().equals(AdvertTypeEnum.USER_APP_INDEX.getIndex()))
-					|| advert.getAdvertType().equals(AdvertTypeEnum.ALIPAY_SUCCESS.getIndex())){
+			        || advert.getAdvertType().equals(AdvertTypeEnum.USER_APP_INDEX.getIndex())
+					|| advert.getAdvertType().equals(AdvertTypeEnum.ALIPAY_SUCCESS.getIndex())
+					|| advert.getAdvertType().equals(AdvertTypeEnum.APP_BOMB_SCREEN.getIndex())
+					)){
 			logger.info("APP首页分割广告/APP闪屏广告/APP首页广告(便利店)");
 			//循环便利店APP版本集合
 			if(CollectionUtils.isNotEmpty(advert.getCvsVersion())){
@@ -837,7 +835,11 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 			} else if (advertType.equals(AdvertTypeEnum.ALIPAY_SUCCESS.getIndex()) && arcossTimeAdvertQty >= 1) {
 				// 同一个区域（城市）、同一个时间段、同一个版本下,最多运营商能上传1张，且时间不能产生交叉；
 				return msg.replace("#", version);
+			} else if (advertType.equals(AdvertTypeEnum.APP_BOMB_SCREEN.getIndex()) && arcossTimeAdvertQty >= 1) {
+				// 同一个区域（城市）、同一个时间段、同一个版本下,最多运营商能上传1首页弹屏广告，且时间不能产生交叉；
+				return msg.replace("#", version);
 			}
+			
 		}
 		return null;
 	}

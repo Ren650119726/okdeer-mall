@@ -28,6 +28,9 @@
 		<result column="business_id" property="businessId" jdbcType="VARCHAR"/>
 		<result column="sort" property="sort" jdbcType="INTEGER"/>
 		<!-- end add by zengjz 2016-11-07 增加字段-->
+		<result column="user_limit_type" property="userLimitType" jdbcType="INTEGER"/>
+		<result column="device_day_limit" property="deviceDayLimit" jdbcType="INTEGER"/>
+		<result column="device_all_limit" property="deviceAllLimit" jdbcType="INTEGER"/>
 	</resultMap>
 
 	<resultMap type="com.okdeer.mall.advert.entity.ColumnAdvertVo" id="columnAdvertVoRsMap" extends="columnAdvertRsMap">
@@ -115,13 +118,15 @@
 	<sql id="base_column_list">
 		id, position_id, belong_type, name, target_type, target, target_url, pic_url,
 		area_type, start_time, end_time, is_pay, trade_num, status, create_time, create_user_id,
-		update_time, update_user_id, disabled, pv, on_shelf_time, off_shelf_time,business_id,sort
+		update_time, update_user_id, disabled, pv, on_shelf_time, off_shelf_time,business_id,sort,
+		user_limit_type,device_day_limit,device_all_limit
 	</sql>
 	
 	<sql id="base_column_list2">
 		ca.id, ca.position_id, ca.belong_type, ca.name, ca.target_type, ca.target, ca.target_url, ca.pic_url,
 		ca.area_type, ca.start_time, ca.end_time, ca.is_pay, ca.trade_num, ca.status, ca.create_time, ca.create_user_id,
-		ca.update_time, ca.update_user_id, ca.disabled, ca.pv, ca.on_shelf_time, ca.off_shelf_time, ca.business_id, ca.sort
+		ca.update_time, ca.update_user_id, ca.disabled, ca.pv, ca.on_shelf_time, ca.off_shelf_time, ca.business_id, ca.sort,
+		ca.user_limit_type,ca.device_day_limit,ca.device_all_limit
 	</sql>
 	
 	<select id="findById" resultMap="columnAdvertRsMap">
@@ -143,7 +148,7 @@
 		SELECT ca.id, ca.position_id, ca.belong_type, ca.name, ca.target_type, ca.target, ca.target_url, ca.pic_url,
 		ca.area_type, ca.start_time, ca.end_time, ca.is_pay, ca.trade_num, ca.status, ca.create_time, ca.create_user_id,
 		ca.update_time, ca.update_user_id, ca.disabled, ca.pv, ca.on_shelf_time, ca.off_shelf_time, caa.status as appStatus,
-		ca.business_id,ca.sort
+		ca.business_id,ca.sort,ca.user_limit_type,ca.device_day_limit,ca.device_all_limit
 		FROM column_advert ca LEFT JOIN column_advert_approval caa ON caa.advert_id = ca.id
 		WHERE caa.status = 1  
 		<if test="status != null">
@@ -159,7 +164,7 @@
 		SELECT ca.id, ca.position_id, ca.belong_type, ca.name, ca.target_type, ca.target, ca.target_url, ca.pic_url,
 		ca.area_type, ca.start_time, ca.end_time, ca.is_pay, ca.trade_num, ca.status, ca.create_time, ca.create_user_id,
 		ca.update_time, ca.update_user_id, ca.disabled, ca.pv, ca.on_shelf_time, ca.off_shelf_time, caa.status as appStatus,
-		ca.business_id,ca.sort
+		ca.business_id,ca.sort,ca.user_limit_type,ca.device_day_limit,ca.device_all_limit
 		FROM column_advert ca LEFT JOIN column_advert_approval caa ON caa.advert_id = ca.id
 		WHERE 1 = 1  
 		<if test="status != null">
@@ -183,7 +188,8 @@
 	
 	<select id="findColumnAdvertPage" resultMap="columnAdvertVoRsMap" parameterType="com.okdeer.mall.advert.entity.ColumnAdvertQueryVo">     
         SELECT ca.id,ca.name,ca.create_time,ca.start_time, ca.end_time, ai.cost, ca.status, 
-       		   ca.pv, pa.full_name as agentName,ap.name AS positionName,ai.advertiser, aap.approval_time,ca.sort 
+       		   ca.pv, pa.full_name as agentName,ap.name AS positionName,ai.advertiser, aap.approval_time,ca.sort,
+       		   ca.user_limit_type,ca.device_day_limit,ca.device_all_limit
 		FROM column_advert_position ap, column_advert_approval aap, column_advert ca
 		LEFT JOIN psms_agent pa ON ca.belong_type = pa.id
 		LEFT JOIN column_advert_info ai ON ca.id = ai.advert_id
@@ -229,7 +235,7 @@
 			SELECT ca.id,ca.name,ca.create_time,ca.start_time, ca.end_time,ai.cost,ca.status, 
 		     	   pa.id,ap.name AS positionName,ai.advertiser, aap.approval_time,
 		     	   aap.status AS approval_status, ca.is_pay, pa.full_name as agentName,
-		     	   aap.log, ca.trade_num
+		     	   aap.log, ca.trade_num,ca.user_limit_type,ca.device_day_limit,ca.device_all_limit
 			FROM column_advert_position ap, column_advert_info ai,  
 			column_advert_approval aap, column_advert ca
 			LEFT JOIN psms_agent pa ON ca.belong_type = pa.id 
@@ -346,7 +352,8 @@
 	      ca.target_url, ci.advertiser, ci.contact,ci.phone,ca.position_id,
 	      ci.id AS advertInfoId,ci.cost, ci.protocol_url,ca.position_id,
 	      caa.id as aaId, caa.area_id, caa.type, ca.area_type,ca.belong_type,
-	      aap.id AS approvalId, aap.status AS auditStatus, aap.log, ca.status,ca.business_id,ca.sort
+	      aap.id AS approvalId, aap.status AS auditStatus, aap.log, ca.status,ca.business_id,ca.sort,
+	      ca.user_limit_type,ca.device_day_limit,ca.device_all_limit
        FROM column_advert_position cp
        LEFT JOIN column_advert ca ON ca.position_id = cp.id
        LEFT JOIN column_advert_approval aap ON aap.advert_id = ca.id
@@ -359,14 +366,18 @@
 	<insert id="insert" parameterType="com.okdeer.mall.advert.entity.ColumnAdvert">
 		INSERT INTO column_advert(id, position_id, belong_type, name, target_type, target_url, pic_url,
 				area_type, start_time, end_time, is_pay, trade_num, status, create_time, create_user_id,
-				update_time, update_user_id, disabled, pv, target, on_shelf_time, off_shelf_time,business_id,sort)
+				update_time, update_user_id, disabled, pv, target, on_shelf_time, off_shelf_time,business_id,
+				sort,user_limit_type,device_day_limit,device_all_limit)
 		VALUES (#{id, jdbcType=VARCHAR}, #{positionId, jdbcType=VARCHAR}, #{belongType, jdbcType=VARCHAR}, 
 				#{name, jdbcType=VARCHAR}, #{targetType, jdbcType=TINYINT}, #{targetUrl, jdbcType=VARCHAR}, 
 				#{picUrl, jdbcType=VARCHAR}, #{areaType, jdbcType=TINYINT}, #{startTime, jdbcType=TIMESTAMP}, 
 				#{endTime, jdbcType=TIMESTAMP}, #{isPay, jdbcType=TINYINT}, #{tradeNum, jdbcType=VARCHAR}, #{status, jdbcType=TINYINT}, 
 				#{createTime, jdbcType=TIMESTAMP}, #{createUserId, jdbcType=VARCHAR}, #{updateTime, jdbcType=TIMESTAMP}, 
 				#{updateUserId, jdbcType=VARCHAR}, #{disabled, jdbcType=INTEGER}, #{pv, jdbcType=INTEGER}, 
-				#{target, jdbcType=TINYINT}, #{onShelfTime, jdbcType=TIMESTAMP}, #{offShelfTime, jdbcType=TIMESTAMP},#{businessId, jdbcType=VARCHAR},#{sort, jdbcType=INTEGER})
+				#{target, jdbcType=TINYINT}, #{onShelfTime, jdbcType=TIMESTAMP}, #{offShelfTime, jdbcType=TIMESTAMP},
+				#{businessId, jdbcType=VARCHAR},#{sort, jdbcType=INTEGER},
+				#{userLimitType, jdbcType=INTEGER},#{deviceDayLimit, jdbcType=INTEGER},#{deviceAllLimit, jdbcType=INTEGER}
+				)
 	</insert>
 	
 	<insert id="add" parameterType="com.okdeer.mall.advert.entity.ColumnAdvert">
@@ -442,6 +453,15 @@
 			<if test="sort != null">
 				sort,
 			</if>
+			<if test="userLimitType != null">
+				user_limit_type,
+			</if>
+			<if test="deviceDayLimit != null">
+				device_day_limit,
+			</if>
+			<if test="deviceAllLimit != null">
+				device_all_limit,
+			</if>
 			<!-- end add by zengjz 2016-11-07 增加字段-->											
 		</trim>
 		VALUES
@@ -515,6 +535,15 @@
 			</if>
 			<if test="sort != null">
 				#{sort, jdbcType=TINYINT},
+			</if>
+			<if test="userLimitType != null">
+				#{userLimitType, jdbcType=TINYINT},
+			</if>
+			<if test="deviceDayLimit != null">
+				#{deviceDayLimit, jdbcType=TINYINT},
+			</if>
+			<if test="deviceAllLimit != null">
+				#{deviceAllLimit, jdbcType=TINYINT},
 			</if>
 			<!-- end add by zengjz 2016-11-07 增加字段-->				
 		</trim>
@@ -591,6 +620,16 @@
 				sort = #{sort, jdbcType=TINYINT},
 			</if>
 			<!-- end add by zengjz 2016-11-07 增加字段-->
+			<if test="userLimitType != null">
+				user_limit_type = #{userLimitType, jdbcType=TINYINT},
+			</if>
+			<if test="deviceDayLimit != null">
+				device_day_limit = #{deviceDayLimit, jdbcType=TINYINT},
+			</if>
+			<if test="deviceAllLimit != null">
+				device_all_limit = #{deviceAllLimit, jdbcType=TINYINT},
+			</if>
+			
 		</set>
 		WHERE id = #{id,jdbcType=VARCHAR}
 	</update>
@@ -610,7 +649,11 @@
 			ca.on_shelf_time,
 			ca.start_time,
 			ca.create_time,
-			ca.business_id,ca.sort
+			ca.business_id,
+			ca.sort,
+			ca.user_limit_type,
+			ca.device_day_limit,
+			ca.device_all_limit
 		FROM
 			column_advert ca 
 			LEFT JOIN column_advert_approval app ON app.advert_id = ca.id 
@@ -698,7 +741,11 @@
 			ca.on_shelf_time,
 			ca.start_time,
 			ca.create_time,
-			ca.business_id,ca.sort
+			ca.business_id,
+			ca.sort,
+			ca.user_limit_type,
+			ca.device_day_limit,
+			ca.device_all_limit
 		FROM
 			column_advert ca 
 			LEFT JOIN column_advert_approval app ON app.advert_id = ca.id 
@@ -795,7 +842,11 @@
 			ca.on_shelf_time,
 			ca.start_time,
 			ca.create_time,
-			ca.business_id,ca.sort
+			ca.business_id,
+			ca.sort,
+			ca.user_limit_type,
+			ca.device_day_limit,
+			ca.device_all_limit
 		FROM
 			column_advert ca 
 			LEFT JOIN column_advert_approval app ON app.advert_id = ca.id 
@@ -885,7 +936,11 @@
 			ca.on_shelf_time,
 			ca.start_time,
 			ca.create_time,
-			ca.business_id,ca.sort
+			ca.business_id,
+			ca.sort,
+			ca.user_limit_type,
+			ca.device_day_limit,
+			ca.device_all_limit
 		FROM
 			column_advert ca 
 			LEFT JOIN column_advert_approval app ON app.advert_id = ca.id 
@@ -1014,7 +1069,8 @@
 	<select id="findMobileDoorAdvert" resultMap="columnAdvertRsMap" parameterType="map">
 		SELECT ca.id, ca.position_id, ca.belong_type, ca.name, ca.target_type, ca.target, ca.target_url, ca.pic_url,
 			   ca.area_type, ca.start_time, ca.end_time, ca.trade_num, ca.status, ca.create_time, ca.create_user_id,
-			   ca.update_time, ca.disabled,ca.business_id,ca.sort
+			   ca.update_time, ca.disabled,ca.business_id,ca.sort,
+			   ca.user_limit_type,ca.device_day_limit,ca.device_all_limit
 		FROM column_advert ca
 		LEFT JOIN column_advert_area area ON area.advert_id = ca.id
 		LEFT JOIN column_advert_position po ON po.id = ca.position_id
@@ -1125,7 +1181,8 @@
 		SELECT 
 		c.id, c.position_id, c.belong_type, c.name, c.target_type, c.target, c.target_url, c.pic_url,
 		c.area_type, c.start_time, c.end_time, c.is_pay, c.trade_num, c.status, c.create_time, c.create_user_id,
-		c.update_time, c.update_user_id, c.disabled, c.pv, c.on_shelf_time, c.off_shelf_time,c.business_id,c.sort
+		c.update_time, c.update_user_id, c.disabled, c.pv, c.on_shelf_time, c.off_shelf_time,c.business_id,c.sort,
+		c.user_limit_type,c.device_day_limit,c.device_all_limit
 		FROM column_advert c
 		left join column_advert_version v on v.advert_id=c.id
 		WHERE 1 = 1
@@ -1141,7 +1198,8 @@
 		SELECT 
 		ca.id, ca.position_id, ca.belong_type, ca.name, ca.target_type, ca.target, ca.target_url, ca.pic_url,
 		ca.area_type, ca.start_time, ca.end_time, ca.is_pay, ca.trade_num, ca.status, ca.create_time, ca.create_user_id,
-		ca.update_time, ca.update_user_id, ca.disabled, ca.pv, ca.on_shelf_time, ca.off_shelf_time,ca.business_id,ca.sort
+		ca.update_time, ca.update_user_id, ca.disabled, ca.pv, ca.on_shelf_time, ca.off_shelf_time,ca.business_id,ca.sort,
+		ca.user_limit_type,ca.device_day_limit,ca.device_all_limit
 		FROM column_advert ca 
 		left join column_advert_version v on v.advert_id=ca.id
 		WHERE 1 = 1
