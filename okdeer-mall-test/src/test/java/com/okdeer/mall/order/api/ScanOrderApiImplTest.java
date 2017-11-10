@@ -10,6 +10,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -17,11 +18,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import javax.annotation.Resource;
-
 import org.junit.Test;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.util.AopTestUtils;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -30,6 +28,7 @@ import com.okdeer.archive.goods.store.service.GoodsStoreSkuPictureServiceApi;
 import com.okdeer.base.common.model.RequestParams;
 import com.okdeer.base.common.model.ResponseData;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
+import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.base.redis.IRedisTemplateWrapper;
 import com.okdeer.jxc.branch.entity.Branches;
 import com.okdeer.jxc.branch.service.BranchesServiceApi;
@@ -39,6 +38,7 @@ import com.okdeer.jxc.pos.service.SelfPayOrderServiceApi;
 import com.okdeer.jxc.pos.vo.SelfPayTradeInfoVo;
 import com.okdeer.jxc.sale.goods.entity.PosGoods;
 import com.okdeer.jxc.sale.goods.service.PosGoodsService;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.base.BaseServiceTest;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
@@ -69,6 +69,8 @@ public class ScanOrderApiImplTest extends BaseServiceTest {
 
 	private ScanOrderApi scanOrderApi;
 
+	private ScanOrderService scanOrderService;
+	
 	@Mock
 	private GoodsStoreSkuPictureServiceApi goodsStoreSkuPictureService;
 
@@ -89,11 +91,15 @@ public class ScanOrderApiImplTest extends BaseServiceTest {
 
 	@Mock
 	RequestHandler<PlaceOrderParamDto, PlaceOrderDto> checkPinMoneyService;
-	
-    private ScanOrderService scanOrderService;
     
     @Mock
 	private TradeOrderService tradeOrderService;
+    
+    @Mock
+    private ActivityCouponsRecordMapper activityCouponsRecordMapper;
+    
+    @Mock
+    private RocketMQProducer rocketMQProducer;
 	
 	protected void initMocks() throws Exception {
 		// 初始化引用
@@ -113,10 +119,13 @@ public class ScanOrderApiImplTest extends BaseServiceTest {
 		ReflectionTestUtils.setField(scanOrderApi, "posGoodsService", posGoodsService);
 		ReflectionTestUtils.setField(scanOrderApi, "branchesServiceApi", branchesServiceApi);
 		ReflectionTestUtils.setField(scanOrderApi, "redisTemplateWrapper", redisTemplateWrapper);
-//		ReflectionTestUtils.setField(scanOrderApi, "scanOrderService", scanOrderService);
+		
 		scanOrderService =(ScanOrderService) AopTestUtils
 				.getTargetObject((ScanOrderService) this.applicationContext.getBean(ScanOrderService.class));
 		ReflectionTestUtils.setField(scanOrderService, "tradeOrderService", tradeOrderService);
+		ReflectionTestUtils.setField(scanOrderService, "activityCouponsRecordMapper", activityCouponsRecordMapper);
+		ReflectionTestUtils.setField(scanOrderService, "rocketMQProducer", rocketMQProducer);
+	
 	}
 
 
@@ -189,6 +198,12 @@ public class ScanOrderApiImplTest extends BaseServiceTest {
 		ScanPosStoreDto dto = scanOrderApi.getJxcStoreId(scanSkuParam.getBranchId());
 		assertEquals(scanSkuParam.getBranchId(), dto.getBranchId());
 	}
+	
+//	@Test
+//	public void testUpdateActivityCoupons() throws Exception {
+// 		when(activityCouponsRecordMapper.updateActivityCouponsStatus(anyMapOf(String.class, Object.class))).thenReturn(Integer.valueOf(1));
+//		scanOrderService.updateActivityCoupons(anyString(), anyString(), anyString(), anyString());
+//	}
 
 	private RequestParams getRequestParams() {
 		RequestParams requestParams = new RequestParams();
@@ -196,4 +211,5 @@ public class ScanOrderApiImplTest extends BaseServiceTest {
 		requestParams.setMachineCode("05E1FAB8-F9BE-44C9-873F-E36E827120DD");
 		return requestParams;
 	}
+	
 }
