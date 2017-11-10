@@ -208,9 +208,28 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		// 设置参与优惠的总金额
 		parserBo.setTotalAmountHaveFavour(filterContext.getEnjoyFavourAmount());
 		// 设置平台优惠金额
-		parserBo.setPlatformPreferential(new BigDecimal(coupons.getFaceValue()));
+		parserBo.setPlatformPreferential(calucateDiscountAmount(coupons, filterContext.getEnjoyFavourAmount()));
 		parserBo.addCoupons(couponsRecord);
 		return true;
+	}
+	
+	private BigDecimal calucateDiscountAmount(ActivityCoupons couponsInfo,BigDecimal enjoyFavoutAmount){
+		BigDecimal discountAmount = null;
+		if (couponsInfo.getType() == CouponsType.tyzkq.getValue()) {
+			// 如果是折扣券，优惠金额等于享受优惠的总金额*(100-折扣比例)/100.且不得超过折扣上限
+			BigDecimal orderDiscountMax = BigDecimal.valueOf(couponsInfo.getOrderDiscountMax());
+			discountAmount = enjoyFavoutAmount.multiply(BigDecimal.valueOf(100 - couponsInfo.getFaceValue()))
+					.divide(BigDecimal.valueOf(100), BigDecimal.ROUND_DOWN);
+			if(orderDiscountMax.compareTo(BigDecimal.ZERO) > 0){
+				// 如果设置了上线，需要取最小值
+				if(discountAmount.compareTo(orderDiscountMax) >= 0){
+					discountAmount = orderDiscountMax;
+				}
+			}
+		}else{
+			discountAmount = BigDecimal.valueOf(couponsInfo.getFaceValue());
+		}
+		return discountAmount;
 	}
 	
 	/**
@@ -300,13 +319,15 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 			// 遍历购买的商品
 			for (CurrentStoreSkuBo storeSkuBo : parserBo.getCurrentSkuMap().values()) {
 				if (limitCtgIds.contains(storeSkuBo.getSpuCategoryId())) {
-					if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && storeSkuBo.getQuantity() == storeSkuBo.getSkuActQuantity()){
+					if (storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()
+							&& storeSkuBo.getQuantity() == storeSkuBo.getSkuActQuantity()) {
 						// 如果商品是低价商品，且商品购买数量=商品低价购买数量，则说明该商品不享受优惠活动
 						continue;
 					}
 					enjoyFavourSkuIdList.add(storeSkuBo.getId());
 					if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
-						totalAmount = totalAmount.add(storeSkuBo.getOnlinePrice().multiply(BigDecimal.valueOf(storeSkuBo.getQuantity()-storeSkuBo.getSkuActQuantity())));
+						totalAmount = totalAmount.add(storeSkuBo.getOnlinePrice().multiply(
+								BigDecimal.valueOf(storeSkuBo.getQuantity() - storeSkuBo.getSkuActQuantity())));
 					}else{
 						totalAmount = totalAmount.add(storeSkuBo.getTotalAmount());
 					}
@@ -323,13 +344,15 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 			// 遍历购买的商品
 			for (CurrentStoreSkuBo storeSkuBo : parserBo.getCurrentSkuMap().values()) {
 				if (limitSkuIds.contains(storeSkuBo.getId())) {
-					if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && storeSkuBo.getQuantity() == storeSkuBo.getSkuActQuantity()){
+					if (storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()
+							&& storeSkuBo.getQuantity() == storeSkuBo.getSkuActQuantity()) {
 						// 如果商品是低价商品，且商品购买数量=商品低价购买数量，则说明该商品不享受优惠活动
 						continue;
 					}
 					enjoyFavourSkuIdList.add(storeSkuBo.getId());
 					if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
-						totalAmount = totalAmount.add(storeSkuBo.getOnlinePrice().multiply(BigDecimal.valueOf(storeSkuBo.getQuantity()-storeSkuBo.getSkuActQuantity())));
+						totalAmount = totalAmount.add(storeSkuBo.getOnlinePrice().multiply(
+								BigDecimal.valueOf(storeSkuBo.getQuantity() - storeSkuBo.getSkuActQuantity())));
 					}else{
 						totalAmount = totalAmount.add(storeSkuBo.getTotalAmount());
 					}
