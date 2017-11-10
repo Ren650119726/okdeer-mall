@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -39,6 +40,9 @@ public class FwdCouponsFilterStrategy extends GenericCouponsFilterStrategy {
 	public boolean isOutOfLimitAreaRange(FavourParamBO paramBo, ActivityCoupons couponsInfo,
 			UserCouponsFilterContext filterContext) {
 		// 服务店，检查用户服务地址
+		if(StringUtils.isEmpty(paramBo.getAddressId())){
+			return true;
+		}
 		// 根据用户地址id查询用户地址信息
 		MemberConsigneeAddress userAddrInfo = filterContext.getAddrInfo(); 
 		if(userAddrInfo == null){

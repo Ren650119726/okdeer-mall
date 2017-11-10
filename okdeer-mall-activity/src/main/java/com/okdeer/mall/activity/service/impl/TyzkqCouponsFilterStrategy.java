@@ -100,6 +100,9 @@ public class TyzkqCouponsFilterStrategy extends GenericCouponsFilterStrategy {
 			case SERVICE_STORE_ORDER:
 			case STORE_CONSUME_ORDER:
 				// 服务店，检查服务地址信息。其中如果是到店消费的订单，addressId对应为店铺默认地址id
+				if(StringUtils.isEmpty(paramBo.getAddressId())){
+					return true;
+				}
 				MemberConsigneeAddress addrInfo = filterContext.getAddrInfo();
 				if(addrInfo == null){
 					addrInfo =  memberConsigneeAddressService.findById(paramBo.getAddressId());
