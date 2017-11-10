@@ -596,8 +596,8 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 								// 查询服务店店铺
 								params.put("type", StoreTypeEnum.SERVICE_STORE);
 							}
-							storeInfos = storeInfoServiceApi.getByProvinceIdAndCityId(params);
-							storeInfoList.addAll(storeInfos);
+//							storeInfos = storeInfoServiceApi.getByProvinceIdAndCityId(params);
+//							storeInfoList.addAll(storeInfos);
 						} else if ("1".equals(areas[1])) {
 							activityCouponsArea.setCouponsAreaType(DistrictType.province);
 							Map<String, Object> params = new HashMap<>();
@@ -612,8 +612,8 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 								// 查询服务店店铺
 								params.put("type", StoreTypeEnum.SERVICE_STORE);
 							}
-							storeInfos = storeInfoServiceApi.getByProvinceIdAndCityId(params);
-							storeInfoList.addAll(storeInfos);
+//							storeInfos = storeInfoServiceApi.getByProvinceIdAndCityId(params);
+//							storeInfoList.addAll(storeInfos);
 						}
 						activityCouponsArea.setAreaId(areas[0]);
 						activityCouponsArea.setCouponsId(coupons.getId());
