@@ -176,13 +176,10 @@ public abstract class AbstractPayResultHandler {
 	 */
 	private void sendOtherService(TradeOrder tradeOrder){
 		try {
-			//不是扫码购订单才返券
-			if(tradeOrder.getOrderResource() != OrderResourceEnum.SWEEP &&
-	        		tradeOrder.getOrderResource() != OrderResourceEnum.WECHAT_MIN &&
-                    tradeOrder.getOrderResource() != OrderResourceEnum.MEMCARD){
+			//不是小程序订单扫码购订单才返券
+			if(tradeOrder.getOrderResource() != OrderResourceEnum.WECHAT_MIN ){
 				orderReturnCouponsService.firstOrderReturnCoupons(tradeOrder);
 				//下单赠送抽奖活动的抽奖次数  九月活动需求 改为已完成订单（原来为消费即可获取抽奖次数）
-				//tradeOrderSubScriberHandler.activityAddPrizeCcount(tradeOrder);
 			}
 			// 3612 会员卡线下订单支付完成后 可以获取抽奖机会
 			if(tradeOrder.getOrderResource() == OrderResourceEnum.MEMCARD){

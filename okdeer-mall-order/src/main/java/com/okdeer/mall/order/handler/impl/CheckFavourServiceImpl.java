@@ -1,27 +1,28 @@
 package com.okdeer.mall.order.handler.impl;
 
-import com.okdeer.mall.order.enums.OrderResourceEnum;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.common.utils.EnumAdapter;
+import com.okdeer.mall.activity.bo.FavourParamBO;
+import com.okdeer.mall.activity.bo.FavourParamBuilder;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
+import com.okdeer.mall.activity.coupons.bo.UserCouponsBo;
+import com.okdeer.mall.activity.coupons.bo.UserCouponsFilterContext;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
@@ -32,6 +33,7 @@ import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRelationStoreMapper;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
 import com.okdeer.mall.activity.discount.enums.ActivityBusinessType;
@@ -43,16 +45,17 @@ import com.okdeer.mall.activity.discount.service.ActivityDiscountRecordService;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.activity.dto.ActivityInfoDto;
 import com.okdeer.mall.activity.dto.ActivityParamDto;
-import com.okdeer.mall.common.consts.Constant;
+import com.okdeer.mall.activity.service.CouponsFilterStrategy;
+import com.okdeer.mall.activity.service.impl.CouponsFilterStrategyFactory;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
-import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.common.enums.UseClientType;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
+import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.PickUpTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.system.service.SysBuyerFirstOrderRecordService;
@@ -73,12 +76,15 @@ import com.okdeer.mall.system.service.SysBuyerFirstOrderRecordService;
 public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto, PlaceOrderDto> {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CheckFavourServiceImpl.class);
+	
+	@Resource
+	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
 
 	/**
 	 * 代金券记录Mapper
 	 */
 	@Resource
-	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
+	private ActivityCouponsRecordService activityCouponsRecordService;
 	
 	@Resource
 	private ActivityCollectCouponsMapper activityCollectCouponsMapper;
@@ -115,6 +121,12 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 	
 	@Resource
 	private ActivityDiscountConditionMapper activityDiscountConditionMapper;
+	
+	@Resource
+	private CouponsFilterStrategyFactory couponsFilterStrategyFactory;
+	
+	@Resource
+	private FavourParamBuilder favourParamBuilder;
 
 	@Override
 	public void process(Request<PlaceOrderParamDto> req, Response<PlaceOrderDto> resp) throws Exception {
@@ -161,147 +173,67 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 	private boolean checkCoupons(PlaceOrderParamDto paramDto, StoreSkuParserBo parserBo, Response<PlaceOrderDto> resp)
 			throws Exception {
 		String recordId = paramDto.getRecordId();
-		ActivityCouponsRecord couponsRecord = activityCouponsRecordMapper.selectByPrimaryKey(recordId);
-		// Begin V2.4 added by maojj 2017-05-31
+		ActivityCouponsRecord couponsRecord = activityCouponsRecordService.selectByPrimaryKey(recordId);
 		// 增加领取记录的校验。校验请求提供的领取记录是否是当前用户
 		if(couponsRecord == null || !couponsRecord.getCollectUserId().equals(paramDto.getUserId())){
 			logger.info("代金券使用检查不通过1：{}",JsonMapper.nonDefaultMapper().toJson(couponsRecord));
 			return false;
 		}
-		// End V2.4 added by maojj 2017-05-31
 		if (couponsRecord.getStatus() != ActivityCouponsRecordStatusEnum.UNUSED) {
 			logger.info("代金券使用检查不通过2：{}",JsonMapper.nonDefaultMapper().toJson(couponsRecord));
 			return false;
 		}
 		// 查询代金券
 		ActivityCoupons coupons = activityCouponsMapper.selectByPrimaryKey(couponsRecord.getCouponsId());
-		// 检查金额是否达到使用下限
-		if (paramDto.getEnjoyFavourTotalAmount().compareTo(BigDecimal.valueOf(0)) == 0
-				|| paramDto.getEnjoyFavourTotalAmount().compareTo(new BigDecimal(coupons.getArriveLimit())) < 0) {
-			// 如果享受优惠的总金额为0或者享受优惠的总金额未达到优惠限制下限，则不符合优惠使用规则
-			logger.info("代金券使用检查不通过3：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
+		// 查询代金券活动信息
+		ActivityCollectCoupons couponsActInfo = activityCollectCouponsMapper.get(coupons.getActivityId());
+		CouponsFilterStrategy filterStrategy = couponsFilterStrategyFactory.get(coupons.getType());
+		// 构建过滤的条件参数
+		// 1、构建用户代金券信息
+		UserCouponsBo userCouponsBo = new UserCouponsBo();
+		userCouponsBo.setCollectRecord(couponsRecord);
+		userCouponsBo.setCouponsInfo(coupons);
+		userCouponsBo.setCouponsActInfo(couponsActInfo);
+		// 2、构建用户优惠请求信息
+		parserBo.refreshReqSkuList(paramDto);
+		FavourParamBO favourParamBo = favourParamBuilder.build(paramDto, resp.getData(), parserBo.getCategoryIdSet(),
+				paramDto.getSkuList());
+		// 统计代金券使用记录
+		activityCouponsRecordService.countUseRecord(favourParamBo,Arrays.asList(new UserCouponsBo[]{userCouponsBo}));
+		// 3、构建过滤上下文对象
+		UserCouponsFilterContext filterContext = new UserCouponsFilterContext();
+		filterContext.setEnjoyFavourAmount(favourParamBo.getTotalAmount());
+		// 检查代金券
+		if(!filterStrategy.accept(userCouponsBo, favourParamBo, filterContext)){
 			return false;
 		}
-		// 检查当前店铺是否可使用该代金券
-		if (coupons.getAreaType() != AreaType.national && activityCouponsRelationStoreMapper
-				.findByStoreIdAndCouponsId(paramDto.getStoreId(), coupons.getId()) == null) {
-			logger.info("代金券使用检查不通过4：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
-			return false;
-		}
-//		if(!coupons.getActivityId().equals(paramDto.getActivityId()) || !coupons.getId().equals(paramDto.getActivityItemId())){
-//			resp.setResult(ResultCodeEnum.ILLEGAL_PARAM);
-//			logger.info("代金券使用检查不通过5：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
-//			return false;
-//		}
-		if(coupons.getUseUserType() == UseUserType.ONlY_NEW_USER){
-			// 仅限首单用户，检查当前用户是否为首单用户。
-			if(!isFirstOrderUser(paramDto.getUserId())){
-				logger.info("代金券使用检查不通过6：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
-				resp.setResult(ResultCodeEnum.ACTIVITY_LIMIT_FIRST_ORDER);
-				return false;
-			}
-		}
-		if (coupons.getUseClientType() != UseClientType.ALLOW_All
-				&& coupons.getUseClientType() != EnumAdapter.convert(paramDto.getChannel())) {
-			logger.info("代金券使用检查不通过7：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
-			return false;
-		}
-		
-		if(coupons.getType() == CouponsType.bld.ordinal()){
-			// 便利店限制品类
-			List<String> categoryIdLimitList = goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(coupons.getId());
-			Map<String, CurrentStoreSkuBo> haveFavourGoodsMap = Maps.newHashMap();
-			BigDecimal totalAmount = BigDecimal.valueOf(0.00);
-			for(CurrentStoreSkuBo storeSkuBo : parserBo.getCurrentSkuMap().values()){
-				if (coupons.getIsCategory() != Constant.ONE || (coupons.getIsCategory() == Constant.ONE
-						&& categoryIdLimitList.contains(storeSkuBo.getSpuCategoryId()))) {
-					if (storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()
-							&& storeSkuBo.getQuantity() == storeSkuBo.getSkuActQuantity()) {
-						// 如果商品是低价商品，且商品购买数量=商品低价购买数量，则说明该商品不享受优惠活动
-						continue;
-					}
-					if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
-						totalAmount = totalAmount.add(storeSkuBo.getOnlinePrice().multiply(
-								BigDecimal.valueOf(storeSkuBo.getQuantity() - storeSkuBo.getSkuActQuantity())));
-					}else{
-						totalAmount = totalAmount.add(storeSkuBo.getTotalAmount());
-					}
-					haveFavourGoodsMap.put(storeSkuBo.getId(), storeSkuBo);
-				}
-			}
-			if (totalAmount.compareTo(BigDecimal.valueOf(0.0)) == 0
-					|| totalAmount.compareTo(BigDecimal.valueOf(coupons.getArriveLimit())) < 0) {
-				// 如果享受优惠的商品总金额为0，标识没有指定分类的商品。如果享受优惠的商品总金额小于代金券的使用条件，也不能使用该代金券
-				resp.setResult(ResultCodeEnum.ACTIVITY_CATEGORY_LIMIT);
-				logger.info("代金券使用检查不通过8：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
-				return false;
-			}
-			parserBo.setHaveFavourGoodsMap(haveFavourGoodsMap);
-			parserBo.setTotalAmountHaveFavour(totalAmount);
-		} else if(coupons.getType() == CouponsType.fwd.ordinal() && coupons.getIsCategory() == Constant.ONE){
-			Set<String> spuCategoryIds = parserBo == null ? null : parserBo.getCategoryIdSet();
-			if(CollectionUtils.isEmpty(spuCategoryIds)){
-				return false;
-			}
-			int count = activityCouponsRecordMapper.findServerBySpuCategoryIds(spuCategoryIds, coupons.getId());
-			if (count != spuCategoryIds.size()) {
-				// 超出指定分类
-				resp.setResult(ResultCodeEnum.ACTIVITY_CATEGORY_LIMIT);
-				logger.info("代金券使用检查不通过9：{}",JsonMapper.nonDefaultMapper().toJson(coupons));
-				return false;
-			}
-		}
-		
-		if(coupons.getDeviceDayLimit() != null && coupons.getDeviceDayLimit() > 0 && StringUtils.isNotEmpty(paramDto.getDeviceId())){
-			// 同一设备id每天最多使用张数 0：不限，大于0有限制
-			int deviceTotalNum = findCountDayFreq(null, paramDto.getDeviceId(), null, coupons.getId());
-			if (coupons.getDeviceDayLimit().intValue() <= deviceTotalNum) {
-				logger.info("代金券使用检查不通过10：{},deviceTotalNum:{}",JsonMapper.nonDefaultMapper().toJson(coupons),deviceTotalNum);
-				return false;
-			}
-		}
-		if(coupons.getAccountDayLimit() != null && coupons.getAccountDayLimit() > 0){
-			// 同一设备id每天最多使用张数 0：不限，大于0有限制
-			int userTotalNum = findCountDayFreq(paramDto.getUserId(), null, null, coupons.getId());
-			if (coupons.getAccountDayLimit().intValue() <= userTotalNum) {
-				logger.info("代金券使用检查不通过11：{},userTotalNum:{}",JsonMapper.nonDefaultMapper().toJson(coupons),userTotalNum);
-				return false;
-			}
-		}
-		ActivityCollectCoupons collectCoupons = activityCollectCouponsMapper.get(coupons.getActivityId());
-		// 代金券活动设备限制
-		if (coupons.getType() != CouponsType.bldyf.ordinal() && collectCoupons != null
-				&& collectCoupons.getDeviceDayLimit() > 0 && StringUtils.isNotEmpty(paramDto.getDeviceId())) {
-			// 同一设备id每天最多使用张数 0：不限，大于0有限制
-			int deviceTotalNum = findCountDayFreq(null, paramDto.getDeviceId(), coupons.getActivityId(), null);
-			if (collectCoupons.getDeviceDayLimit().intValue() <= deviceTotalNum) {
-				logger.info("代金券使用检查不通过12：{},deviceTotalNum:{}",collectCoupons,deviceTotalNum);
-				return false;
-			}
-		}
-		// 代金券活动用户限制
-		if (coupons.getType() != CouponsType.bldyf.ordinal() && collectCoupons != null
-				&& collectCoupons.getAccountDayLimit() > 0) {
-			// 同一设备id每天最多使用张数 0：不限，大于0有限制
-			int userTotalNum = findCountDayFreq(paramDto.getUserId(), null, coupons.getActivityId(), null);
-			if (collectCoupons.getAccountDayLimit().intValue() <= userTotalNum) {
-				logger.info("代金券使用检查不通过13：{},userTotalNum:{}",collectCoupons,userTotalNum);
-				return false;
-			}
-		}
-		parserBo.setPlatformPreferential(new BigDecimal(coupons.getFaceValue()));
+		// 设置参与优惠的商品id列表
+		parserBo.setEnjoyFavourSkuIdList(filterContext.getEnjoyFavourSkuIdList());
+		// 设置参与优惠的总金额
+		parserBo.setTotalAmountHaveFavour(filterContext.getEnjoyFavourAmount());
+		// 设置平台优惠金额
+		parserBo.setPlatformPreferential(calucateDiscountAmount(coupons, filterContext.getEnjoyFavourAmount()));
 		parserBo.addCoupons(couponsRecord);
 		return true;
 	}
 	
-	private int findCountDayFreq(String userId,String deviceId,String activityId,String couponsId){
-		ActivityRecordParamBo recParamBo = new ActivityRecordParamBo();
-		recParamBo.setPkId(couponsId);
-		recParamBo.setCollectId(activityId);
-		recParamBo.setUserId(userId);
-		recParamBo.setDeviceId(deviceId);
-		recParamBo.setRecDate(DateUtils.getDate());
-		return activityCouponsRecordMapper.countDayFreq(recParamBo);
+	private BigDecimal calucateDiscountAmount(ActivityCoupons couponsInfo,BigDecimal enjoyFavoutAmount){
+		BigDecimal discountAmount = null;
+		if (couponsInfo.getType() == CouponsType.tyzkq.getValue()) {
+			// 如果是折扣券，优惠金额等于享受优惠的总金额*(100-折扣比例)/100.且不得超过折扣上限
+			BigDecimal orderDiscountMax = BigDecimal.valueOf(couponsInfo.getOrderDiscountMax());
+			discountAmount = enjoyFavoutAmount.multiply(BigDecimal.valueOf(100 - couponsInfo.getFaceValue()))
+					.divide(BigDecimal.valueOf(100), BigDecimal.ROUND_DOWN);
+			if(orderDiscountMax.compareTo(BigDecimal.ZERO) > 0){
+				// 如果设置了上线，需要取最小值
+				if(discountAmount.compareTo(orderDiscountMax) >= 0){
+					discountAmount = orderDiscountMax;
+				}
+			}
+		}else{
+			discountAmount = BigDecimal.valueOf(couponsInfo.getFaceValue());
+		}
+		return discountAmount;
 	}
 	
 	/**
@@ -312,7 +244,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 	 * @throws Exception 
 	 * @date 2016年7月14日
 	 */
-	private boolean checkDiscount(PlaceOrderParamDto paramDto,StoreSkuParserBo parserBo) throws Exception {
+	private boolean checkDiscount(PlaceOrderParamDto paramDto, StoreSkuParserBo parserBo) throws Exception {
 		String userId = paramDto.getUserId();
 		String activityItemId = paramDto.getActivityItemId();
 		boolean isValid = true;
@@ -383,7 +315,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		LimitSkuType limitSkuType = actInfo.getLimitSku();
 		// 参与活动的商品总金额
 		BigDecimal totalAmount = BigDecimal.valueOf(0.00);
-		Map<String, CurrentStoreSkuBo> haveFavourGoodsMap = Maps.newHashMap();
+		List<String> enjoyFavourSkuIdList = Lists.newArrayList();
 		if (limitSkuType == LimitSkuType.LIMIT_CATEGORY) {
 			// 活动限制的分类Id列表
 			List<String> limitCtgIds = actInfoDto.getBusinessIds(ActivityBusinessType.SKU_CATEGORY);
@@ -391,13 +323,15 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 			// 遍历购买的商品
 			for (CurrentStoreSkuBo storeSkuBo : parserBo.getCurrentSkuMap().values()) {
 				if (limitCtgIds.contains(storeSkuBo.getSpuCategoryId())) {
-					if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && storeSkuBo.getQuantity() == storeSkuBo.getSkuActQuantity()){
+					if (storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()
+							&& storeSkuBo.getQuantity() == storeSkuBo.getSkuActQuantity()) {
 						// 如果商品是低价商品，且商品购买数量=商品低价购买数量，则说明该商品不享受优惠活动
 						continue;
 					}
-					haveFavourGoodsMap.put(storeSkuBo.getId(), storeSkuBo);
+					enjoyFavourSkuIdList.add(storeSkuBo.getId());
 					if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
-						totalAmount = totalAmount.add(storeSkuBo.getOnlinePrice().multiply(BigDecimal.valueOf(storeSkuBo.getQuantity()-storeSkuBo.getSkuActQuantity())));
+						totalAmount = totalAmount.add(storeSkuBo.getOnlinePrice().multiply(
+								BigDecimal.valueOf(storeSkuBo.getQuantity() - storeSkuBo.getSkuActQuantity())));
 					}else{
 						totalAmount = totalAmount.add(storeSkuBo.getTotalAmount());
 					}
@@ -406,7 +340,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 			if (totalAmount.compareTo(BigDecimal.valueOf(0.00)) == 0 || totalAmount.compareTo(condition.getArrive()) < 0) {
 				return false;
 			}
-			parserBo.setHaveFavourGoodsMap(haveFavourGoodsMap);
+			parserBo.setEnjoyFavourSkuIdList(enjoyFavourSkuIdList);
 			parserBo.setTotalAmountHaveFavour(totalAmount);
 		} else if (limitSkuType == LimitSkuType.LIMIT_SKU) {
 			// 限制商品Id列表
@@ -414,13 +348,15 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 			// 遍历购买的商品
 			for (CurrentStoreSkuBo storeSkuBo : parserBo.getCurrentSkuMap().values()) {
 				if (limitSkuIds.contains(storeSkuBo.getId())) {
-					if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && storeSkuBo.getQuantity() == storeSkuBo.getSkuActQuantity()){
+					if (storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()
+							&& storeSkuBo.getQuantity() == storeSkuBo.getSkuActQuantity()) {
 						// 如果商品是低价商品，且商品购买数量=商品低价购买数量，则说明该商品不享受优惠活动
 						continue;
 					}
-					haveFavourGoodsMap.put(storeSkuBo.getId(), storeSkuBo);
+					enjoyFavourSkuIdList.add(storeSkuBo.getId());
 					if(storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
-						totalAmount = totalAmount.add(storeSkuBo.getOnlinePrice().multiply(BigDecimal.valueOf(storeSkuBo.getQuantity()-storeSkuBo.getSkuActQuantity())));
+						totalAmount = totalAmount.add(storeSkuBo.getOnlinePrice().multiply(
+								BigDecimal.valueOf(storeSkuBo.getQuantity() - storeSkuBo.getSkuActQuantity())));
 					}else{
 						totalAmount = totalAmount.add(storeSkuBo.getTotalAmount());
 					}
@@ -429,7 +365,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 			if (totalAmount.compareTo(BigDecimal.valueOf(0.00)) == 0 || totalAmount.compareTo(condition.getArrive()) < 0) {
 				return false;
 			}
-			parserBo.setHaveFavourGoodsMap(haveFavourGoodsMap);
+			parserBo.setEnjoyFavourSkuIdList(enjoyFavourSkuIdList);
 			parserBo.setTotalAmountHaveFavour(totalAmount);
 		} else {
 			// 商品没有任何限制，判定能够享受满减总金额是否达到满减条件的限制金额
@@ -477,7 +413,8 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 				return false;
 			}
 		}
-		if(coupons.getUseClientType() != UseClientType.ALLOW_All && coupons.getUseClientType() != EnumAdapter.convert(paramDto.getChannel())){
+		if (coupons.getUseClientType() != UseClientType.ALLOW_All
+				&& coupons.getUseClientType() != EnumAdapter.convert(paramDto.getChannel())) {
 			return false;
 		}
 		ActivityRecordParamBo recParamBo = null;

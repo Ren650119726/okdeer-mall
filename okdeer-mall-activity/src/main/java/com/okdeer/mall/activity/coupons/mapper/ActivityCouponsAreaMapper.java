@@ -26,4 +26,13 @@ public interface ActivityCouponsAreaMapper extends IBaseCrudMapper{
 	 * @date 2017年4月11日
 	 */
 	List<ActivityCouponsArea> findListByType(ActivityCouponsArea activityCouponsArea);
+	
+	/**
+	 * @Description: 根据地区信息查找代金券限制区域
+	 * @param activityCouponsArea
+	 * @return   
+	 * @author maojj
+	 * @date 2017年11月9日
+	 */
+	List<ActivityCouponsArea> findLimitAreaList(ActivityCouponsArea activityCouponsArea);
 }

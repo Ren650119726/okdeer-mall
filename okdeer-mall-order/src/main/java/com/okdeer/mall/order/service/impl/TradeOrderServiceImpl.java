@@ -6108,6 +6108,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                 if (orderType == 0) {
                     // 实物订单 订单类型
                     map.put("orderType", ActivityCollectOrderTypeEnum.PHYSICAL_ORDER.getValue());
+                    //会员卡订单设置类型
+                    if(tradeOrder.getOrderResource() ==OrderResourceEnum.MEMCARD){
+                    	map.put("orderType", ActivityCollectOrderTypeEnum.MEMCARD.getValue());
+                    
+                    //为扫码购来源的订单类型
+                    }else if(tradeOrder.getOrderResource() ==OrderResourceEnum.SWEEP){
+                    	map.put("orderType", ActivityCollectOrderTypeEnum.SWEEP.getValue());
+                    }
                     // 获取消费返券信息并赠送代金券
                     getOrderCouponsInfo(orderId, userId, map, respDto, tradeOrder.getCreateTime());
                 } else if (orderType == 2 || orderType == 5) {

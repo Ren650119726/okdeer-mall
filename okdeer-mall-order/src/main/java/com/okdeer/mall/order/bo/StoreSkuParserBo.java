@@ -7,8 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 
@@ -24,7 +24,6 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuStock;
 import com.okdeer.archive.goods.store.enums.IsShopNum;
-import com.okdeer.archive.store.enums.StoreActivityTypeEnum;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
@@ -164,9 +163,9 @@ public class StoreSkuParserBo {
 	private boolean isCloseLow;
 	
 	/**
-	 * 享受优惠的商品列映射，key为ID，value为商品信息
+	 * 享受优惠的商品id列表
 	 */
-	private Map<String,CurrentStoreSkuBo> haveFavourGoodsMap;
+	private List<String> enjoyFavourSkuIdList;
 	
 	/**
 	 * 享受优惠的总金额
@@ -789,38 +788,12 @@ public class StoreSkuParserBo {
 		return skuActNumMap;
 	}
 	
-	// Begin V2.3 added by maojj 2017-04-21
-	/**
-	 * @Description: 获取拥有优惠的商品列表
-	 * @return   
-	 * @author maojj
-	 * @date 2017年4月26日
-	 */
-	public Map<String, CurrentStoreSkuBo> getHaveFavourGoodsMap() {
-		if(haveFavourGoodsMap == null){
-			// 如果有优惠商品Map为空，则从商品map中提取享受优惠的商品
-			haveFavourGoodsMap = Maps.newHashMap();
-			CurrentStoreSkuBo currentSku = null;
-			String storeSkuId = null;
-			for(Map.Entry<String, CurrentStoreSkuBo> entry : this.currentSkuMap.entrySet()){
-				storeSkuId = entry.getKey();
-				currentSku = entry.getValue();
-				if (currentSku.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()
-						&& currentSku.getQuantity() == currentSku.getSkuActQuantity()) {
-					// 如果商品是低价商品，且商品购买数量=商品低价购买数量，则说明该商品不享受优惠活动
-					continue;
-				}
-				haveFavourGoodsMap.put(storeSkuId, currentSku);
-			}
-		}else{
-			return haveFavourGoodsMap;
-		}
-		
-		return haveFavourGoodsMap == null ? this.currentSkuMap : haveFavourGoodsMap;
+	public List<String> getEnjoyFavourSkuIdList() {
+		return enjoyFavourSkuIdList;
 	}
 
-	public void setHaveFavourGoodsMap(Map<String, CurrentStoreSkuBo> haveFavourGoodsMap) {
-		this.haveFavourGoodsMap = haveFavourGoodsMap;
+	public void setEnjoyFavourSkuIdList(List<String> enjoyFavourSkuIdList) {
+		this.enjoyFavourSkuIdList = enjoyFavourSkuIdList;
 	}
 
 	public BigDecimal getTotalAmountHaveFavour() {

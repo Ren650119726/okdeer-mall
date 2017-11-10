@@ -517,7 +517,7 @@ public class TradeOrderBuilder {
 		BigDecimal platformFavour = parserBo.getPlatformPreferential();
 		BigDecimal favourSum =  BigDecimal.valueOf(0.00);
 		int index = 0;
-		int haveFavourItemSize = parserBo.getHaveFavourGoodsMap().size();
+		int haveFavourItemSize = parserBo.getEnjoyFavourSkuIdList().size();
 		TradeOrderItem tradeOrderItem = null;
 
 		Collection<CurrentStoreSkuBo> skuBoSet = parserBo.getCurrentSkuMap().values();
@@ -580,7 +580,7 @@ public class TradeOrderBuilder {
 				storeFavourItem = tradeOrder.getStorePreferential();
 			}
 			if (platformFavour.compareTo(referenceValue) > 0) {
-				if(!parserBo.getHaveFavourGoodsMap().containsKey(skuBo.getId())){
+				if(!parserBo.getEnjoyFavourSkuIdList().add(skuBo.getId())){
 					// 如果有优惠的商品项不包含改商品，意味着该商品不享有平台优惠
 					favourItem = BigDecimal.valueOf(0.0);
 				} else if (index++ < haveFavourItemSize - 1) {

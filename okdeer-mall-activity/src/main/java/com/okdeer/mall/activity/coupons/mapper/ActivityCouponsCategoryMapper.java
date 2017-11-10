@@ -4,6 +4,10 @@ import java.util.List;
 import java.util.Map;
 
 import com.okdeer.mall.activity.coupons.bo.ActivityCouponsCategoryParamBo;
+import java.util.Set;
+
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory;
 
 /**
@@ -45,4 +49,15 @@ public interface ActivityCouponsCategoryMapper {
 	 * @date 2017年11月10日
 	 */
 	List<ActivityCouponsCategory> findList(ActivityCouponsCategoryParamBo activityCouponsCategoryParamBo);
+	// Begin V2.6.4 added by maojj 2017-11-09
+	/**
+	 * @Description: 查询限制的商品类目列表
+	 * @param couponsId
+	 * @param categoryIds
+	 * @return   
+	 * @author maojj
+	 * @date 2017年11月9日
+	 */
+	List<String> findLimitCategoryList(@Param("couponsId")String couponsId,@Param("categoryIds")Set<String> categoryIds);
+	// End V2.6.4 added by maojj 2017-11-09
 }

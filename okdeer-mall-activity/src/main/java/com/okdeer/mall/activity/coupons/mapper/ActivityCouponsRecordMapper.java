@@ -8,7 +8,7 @@ import java.util.Set;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseCrudMapper;
-import com.okdeer.mall.activity.bo.FavourParamBO;
+import com.okdeer.mall.activity.coupons.bo.ActivityCouponsRecordParamBo;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordBo;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
@@ -22,7 +22,6 @@ import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto;
 import com.okdeer.mall.common.enums.GetUserType;
 import com.okdeer.mall.common.enums.UseUserType;
-import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.order.vo.RechargeCouponVo;
 
 /**
@@ -160,15 +159,6 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 * @return
 	 */
 	int selectOtherCountByParams(ActivityCouponsRecord activityCouponsRecord);
-
-	/**
-	 * @Description: 查找用户有效的优惠信息
-	 * @param params 查询条件 
-	 * @return List 有效的代金券列表
-	 * @author maojj
-	 * @date 2016年7月16日
-	 */
-	List<Coupons> findValidCoupons(FavourParamBO paramBO);
 
     //Begin 获取用户充值代金券列表 added by zhaoqc
     /**
@@ -382,4 +372,15 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 	 * @date 2017年9月9日
 	 */
 	List<ActivityCouponsRecord> findForJob(Date currentDate);
+	
+	// Begin V2.6.4 added by maojj 2017-11-07
+	/**
+	 * @Description: 查询用户领取记录列表
+	 * @param paramBo
+	 * @return   
+	 * @author maojj
+	 * @date 2017年11月7日
+	 */
+	List<ActivityCouponsRecord> findCollectRecordList(ActivityCouponsRecordParamBo paramBo);
+	// End V2.6.4 added by maojj 2017-11-07
 }

@@ -8,6 +8,7 @@
 package com.okdeer.mall.system.utils;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -62,10 +63,16 @@ public class ConvertUtil {
 	 */
 	private static final TimeZone TZ = TimeZone.getTimeZone(TZID);
 	
+	
 	// Begin added by maojj 2016-09-23
 	private static final String DEFAULT_NULL_STR = "";
 	// End added by maojj 2016-09-23
 
+	/**
+	 * 数值格式化规则
+	 */
+	private static final DecimalFormat df = new DecimalFormat("#.##");
+	
 	/**
 	 * 
 	 * @Description: 时间格式转换
@@ -202,6 +209,17 @@ public class ConvertUtil {
 	 */
 	public static String format(String str,String defaultStr){
 		return str == null ? defaultStr : str;
+	}
+	
+	/**
+	 * @Description: 数值格式化
+	 * @param val 其中val的对象类型只支持：long、int、double、float。不支持string
+	 * @return   
+	 * @author maojj
+	 * @date 2017年11月10日
+	 */
+	public static String formatNumber(Object val) {
+		return df.format(val);
 	}
 	
 	public static Integer format(Integer intVal){
