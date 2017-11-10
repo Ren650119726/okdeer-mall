@@ -38,4 +38,16 @@
 		</foreach>
 	</insert>
     
+    <select id="findLimitCategoryList" parameterType="map" resultType="string">
+    	SELECT category_id
+    	FROM activity_coupons_category
+    	WHERE type = 2
+    	AND coupon_id = #{couponsId,jdbcType=VARCHAR}
+    	<if test="categoryIds != null and categoryIds.size()>0">
+    		AND category_id IN
+    		<foreach collection="categoryIds" item="categoryId" separator="," open="(" close=")">
+    			#{categoryId,jdbcType=VARCHAR}
+    		</foreach>
+    	</if>
+    </select>
 </mapper>

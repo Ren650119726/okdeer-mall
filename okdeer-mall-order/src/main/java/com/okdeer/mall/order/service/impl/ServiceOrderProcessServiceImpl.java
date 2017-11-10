@@ -1289,20 +1289,7 @@ public class ServiceOrderProcessServiceImpl implements ServiceOrderProcessServic
 		
 		FavourParamBO paramBo = favourParamBuilder.build(storeInfo, orderReq, totalAmount);
 		// 获取用户有效的代金券
-		List<Coupons> couponList = activityCouponsRecordService.findValidCoupons(paramBo,new CouponsFilterStrategy() {
-			
-			@Override
-			public boolean accept(Favour favour) throws Exception {
-				Coupons coupons = (Coupons) favour;
-				if (Constant.ONE == coupons.getIsCategory().intValue()) {
-					int count = activityCouponsRecordMapper.findServerBySpuCategoryIds(paramBo.getSpuCategoryIds(), coupons.getCouponId());
-					if (count == Constant.ZERO || count != paramBo.getSpuCategoryIds().size()) {
-						return false;
-					}
-				}
-				return true;
-			}
-		});
+		List<Coupons> couponList = activityCouponsRecordService.findValidCoupons(paramBo);
 		resultJson.put("couponList", JSONArray.fromObject(couponList));
 	}
 	//End added by tangy

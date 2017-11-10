@@ -1,6 +1,8 @@
 package com.okdeer.mall.activity.service;
 
-import com.okdeer.mall.order.vo.Favour;
+import com.okdeer.mall.activity.bo.FavourParamBO;
+import com.okdeer.mall.activity.coupons.bo.UserCouponsBo;
+import com.okdeer.mall.activity.coupons.bo.UserCouponsFilterContext;
 
 /**
  * ClassName: FavourFilter 
@@ -23,5 +25,5 @@ public interface CouponsFilterStrategy {
 	 * @author maojj
 	 * @date 2017年2月15日
 	 */
-	boolean accept(Favour favour) throws Exception;
+	boolean accept(UserCouponsBo userCouponsBo,FavourParamBO paramBo,UserCouponsFilterContext filterContext);
 }

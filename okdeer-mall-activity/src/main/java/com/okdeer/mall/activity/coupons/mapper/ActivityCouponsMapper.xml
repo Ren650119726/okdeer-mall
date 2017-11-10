@@ -613,4 +613,15 @@
 		</where>
 	</update>
 	<!-- Begin V2.1.0 added by maojj 2017-02-23 -->
+	
+	<!-- Begin V2.6.4 added by maojj 2017-11-07 -->
+	<select id="findByIds" parameterType="collection" resultMap="CouponsResultMap">
+		SELECT <include refid="BaseSelectSQL" />
+		  FROM activity_coupons
+		 WHERE id IN
+		 <foreach collection="couponsIds" item="couponsId" open="(" separator="," close=")">  
+  			#{couponsId,jdbcType=VARCHAR}  
+ 		</foreach> 
+	</select>
+	<!-- End V2.6.4 added by maojj 2017-11-07 -->
 </mapper>

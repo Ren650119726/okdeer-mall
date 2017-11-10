@@ -54,7 +54,7 @@ public class GetPreferentialApiImpl implements GetPreferentialApi {
 	@Override
 	public PreferentialVo findPreferentialByUser(FavourParamDto paramDto) throws Exception {
 		FavourParamBO paramBo = BeanMapper.map(paramDto, FavourParamBO.class);
-		paramBo.setCouponsType(EnumAdapter.convert(paramDto.getStoreType()));
+		paramBo.setOrderType(EnumAdapter.convert(paramDto.getStoreType()));
 		paramBo.setClientType(EnumAdapter.convert(paramDto.getChannel()));
 		// 请求商品列表
 		List<String> skuIdList = paramDto.getSkuIdList();

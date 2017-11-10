@@ -723,67 +723,6 @@
 	  </if>
 	</select> -->
 	
-	<!-- 查询用户有效的代金券信息 Begin added by maojj -->
-	<select id="findValidCoupons" parameterType="com.okdeer.mall.activity.bo.FavourParamBO" resultType="com.okdeer.mall.order.vo.Coupons">
-		SELECT
-			t2.name AS couponTitle, t2.type,
-			0 AS usableRange,
-			date_format(date_add(t.valid_time, interval -1 day),'%Y-%m-%d') AS indate,
-			t.coupons_collect_id AS id,
-			t2.id AS couponId,
-			FORMAT(t2.face_value,2) AS couponPrice,
-			t.id AS recordId,
-			t.collect_type AS couponsType,
-			t2.id AS activityItemId ,
-			FORMAT(t2.arrive_limit,2) AS arrive,
-			t2.is_category AS isCategory,
-			t2.use_user_type AS useUserType,
-			t2.use_client_type AS useClientType,
-			t2.device_day_limit AS deviceDayLimit,
-			t2.account_day_limit AS accountDayLimit
-		FROM
-			activity_coupons_record t
-			LEFT JOIN activity_coupons t2 ON t.coupons_id = t2.id
-		WHERE
-			t.collect_user_id = #{userId}
-		AND t.status = 0
-		AND t2.disabled = 0
-		<if test="clientType != null" >
-       		AND (t2.use_client_type = 0 or t2.use_client_type = #{clientType,jdbcType=TINYINT})
-    	</if>
-    	<if test="onlyCouponsType != null">
-    		and t2.type = #{onlyCouponsType,jdbcType=TINYINT}
-    	</if>
-		<if test="couponsType != null">
-			AND (t2.type = 0 OR ( t2.type = #{couponsType,jdbcType=TINYINT}
-			     AND (
-			       <!-- 服务店代金券查询 -->
-			       <if test="storeType != null and storeType.name() == 'SERVICE_STORE'">
-			       t2.area_type = 0 OR
-				   ( (t2.area_type = 3 AND (EXISTS (SELECT 1 FROM activity_coupons_relation_store t1 WHERE t.coupons_id = t1.coupons_id AND t1.store_id = #{storeId} AND t2.area_type = 3)) ) 
-	                   <if test="addressId != null and addressId != '' ">
-	                     OR (t2.area_type = 1 AND EXISTS(SELECT 1 FROM activity_coupons_area aca LEFT JOIN member_consignee_address mca ON mca.id = #{addressId} 
-	                      WHERE aca.coupons_id = t2.id AND ((aca.type = 0 AND aca.area_id = mca.city_id) OR (aca.type = 1 AND aca.area_id = mca.province_id))))
-	                </if>
-		           )
-					</if>
-					<!-- 平台发起的代金券活动，只有云上店可以使用 -->
-					<if test="storeType != null and storeType.name() == 'CLOUD_STORE'">
-					    (EXISTS (SELECT 1 FROM activity_coupons_relation_store t1 WHERE t.coupons_id = t1.coupons_id AND t1.store_id = #{storeId}))
-						OR t2.area_type = 0
-					</if>
-				)
-			  )
-			  <if test="storeType != null and storeType.name() == 'CLOUD_STORE'">
-			  	OR t2.type = 6
-			  </if>
-			) 
-		</if>
-		AND t2.arrive_limit &lt;= #{totalAmount}
-		ORDER BY t2.face_value DESC, t.collect_time DESC
-	</select>
-	<!-- End added by maojj -->
-	
 	<!-- 查询用户有效的手机充值代金券 begin added by zhaoqc -->
 	<select id="findValidRechargeCoupons" parameterType="map" resultMap="rechargeCouponRsMap">
 		select c.name as couponName,0 AS usableRange,
@@ -1059,4 +998,22 @@
      	OR (status = 3 AND effect_time &lt;= #{currentDate,jdbcType=TIMESTAMP})
   	</select>
   	<!-- End V2.6.0_P02 added by maojj 2017-09-09 -->
+  	
+  	<!-- Begin V2.6.4 added by maojj 2017-11-07 -->
+  	<select id="findCollectRecordList" parameterType="com.okdeer.mall.activity.coupons.bo.ActivityCouponsRecordParamBo" resultMap="BaseResultMap">
+    	SELECT <include refid="Base_Column_List" />
+     	FROM activity_coupons_record 
+     	<where>
+     		<if test="collectUserId != null">
+     			AND collect_user_id = #{collectUserId,jdbcType=VARCHAR}
+     		</if>
+     		<if test="includeStatusList != null and includeStatusList.size()>0">
+     			AND status IN 
+     			<foreach collection="includeStatusList" item="status" separator="," open="(" close=")">
+     				#{status,jdbcType=TINYINT}
+     			</foreach>  
+     		</if>
+     	</where>
+  	</select>
+  	<!-- End V2.6.4 added by maojj 2017-11-07 -->
 </mapper> 
