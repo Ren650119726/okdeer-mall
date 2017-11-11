@@ -193,7 +193,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 			Coupons coupons = (Coupons) preferentialVo.getMaxFavourOnline();
 			if(coupons != null){
 				//设置优惠金额
-				vo.setCouponsFaceValue(new BigDecimal(coupons.getCouponPrice()));
+				vo.setCouponsFaceValue(BigDecimal.valueOf(Double.parseDouble(coupons.getDiscountAmount())));
 				vo.setCouponsId(coupons.getCouponId());
 				vo.setRecordId(coupons.getRecordId());
 				vo.setCouponsActivityId(coupons.getId());
