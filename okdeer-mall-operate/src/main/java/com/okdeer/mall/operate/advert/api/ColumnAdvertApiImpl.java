@@ -119,6 +119,9 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 	}
 
 	private List<ColumnAdvert> filterByVersion(ColumnAdvertQueryParamDto advertQueryParamDto, List<ColumnAdvert> list) {
+		if(CollectionUtils.isNotEmpty(list)){
+			return list;
+		}
 		if (!isNeedFilterByVersion(advertQueryParamDto.getAdvertType())) {
 			return list;
 		}
@@ -159,6 +162,9 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 	}
 
 	private List<ColumnAdvert> filterByArea(ColumnAdvertQueryParamDto advertQueryParamDto, List<ColumnAdvert> list) {
+		if(CollectionUtils.isNotEmpty(list)){
+			return list;
+		}
 		List<String> advertIdList = Lists.newArrayList();
 		for (ColumnAdvert columnAdvert : list) {
 			advertIdList.add(columnAdvert.getId());

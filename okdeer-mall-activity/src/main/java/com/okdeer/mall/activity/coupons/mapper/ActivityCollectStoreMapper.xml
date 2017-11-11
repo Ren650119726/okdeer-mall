@@ -41,5 +41,22 @@
 		left JOIN store_info s on (a.store_id = s.id)
 		where collect_coupons_id = #{value}
     </select>
-
+    
+    <select id="findList" parameterType="com.okdeer.mall.activity.coupons.bo.ActivityCollectStoreParamBo" resultMap="ActivityCollectStore">
+    	SELECT <include refid="columns" /> FROM activity_collect_store 
+    	<where>
+    		<if test="collectCouponsId != null and collectCouponsId != '' ">
+				AND collect_coupons_id = #{collectCouponsId, jdbcType=VARCHAR}
+			</if>
+			<if test="collectCouponsIdList != null and collectCouponsIdList.size() > 0">
+				AND advert_id IN 
+				<foreach collection="collectCouponsIdList" item="item" separator="," open="(" close=")">
+					#{item, jdbcType=VARCHAR}
+				</foreach>
+			</if>
+			<if test="storeId != null and storeId != '' ">
+				AND store_id = #{storeId, jdbcType=VARCHAR}
+			</if>
+    	</where>
+    </select>
 </mapper>

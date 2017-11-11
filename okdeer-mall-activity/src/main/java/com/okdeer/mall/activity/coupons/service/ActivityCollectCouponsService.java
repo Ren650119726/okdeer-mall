@@ -14,6 +14,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsSimpleVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectXffqRelation;
+import com.okdeer.mall.activity.dto.ActivityCollectCouponsParamDto;
 import com.okdeer.mall.activity.dto.TakeActivityCouponParamDto;
 import com.okdeer.mall.activity.dto.TakeActivityCouponResultDto;
 
@@ -140,5 +141,13 @@ public interface ActivityCollectCouponsService {
 	 * @author zengjizu
 	 * @date 2017年8月24日
 	 */
-	TakeActivityCouponResultDto takeActivityCoupon(TakeActivityCouponParamDto activityCouponParamDto) throws Exception; 
+	TakeActivityCouponResultDto takeActivityCoupon(TakeActivityCouponParamDto activityCouponParamDto) throws Exception;
+	/**
+	 * @Description: 根据查询参数获取活动列表
+	 * @param activityCollectCouponsParamDto
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年11月10日
+	 */
+	List<ActivityCollectCoupons> findList(ActivityCollectCouponsParamDto activityCollectCouponsParamDto); 
 }

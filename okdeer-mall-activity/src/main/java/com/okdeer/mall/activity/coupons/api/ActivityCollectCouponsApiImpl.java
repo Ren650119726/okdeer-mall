@@ -1,23 +1,57 @@
 
 package com.okdeer.mall.activity.coupons.api;
 
+import java.util.List;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.google.common.collect.Lists;
+import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
+import com.okdeer.mall.activity.coupons.bo.ActivityCollectAreaParamBo;
+import com.okdeer.mall.activity.coupons.bo.ActivityCollectStoreParamBo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectArea;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectStore;
+import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
+import com.okdeer.mall.activity.coupons.service.ActivityCollectAreaService;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsApi;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
+import com.okdeer.mall.activity.coupons.service.ActivityCollectStoreService;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsService;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
 import com.okdeer.mall.activity.dto.ActivityCollectCouponsDto;
+import com.okdeer.mall.activity.dto.ActivityCollectCouponsParamDto;
+import com.okdeer.mall.activity.dto.ActivityCouponsDto;
+import com.okdeer.mall.activity.dto.ActivityCouponsQueryParamDto;
 import com.okdeer.mall.activity.dto.TakeActivityCouponParamDto;
 import com.okdeer.mall.activity.dto.TakeActivityCouponResultDto;
+import com.okdeer.mall.common.enums.AreaType;
 
 @Service(version = "1.0.0")
 public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi {
 
+	private static Logger logger = LoggerFactory.getLogger(ActivityCollectCouponsApiImpl.class);
+
 	@Autowired
 	private ActivityCollectCouponsService activityCollectCouponsService;
+
+	@Autowired
+	private ActivityCouponsServiceApi activityCouponsApi;
 	
+	@Autowired
+	private ActivityCouponsService activityCouponsService;
+
+	@Autowired
+	private ActivityCollectAreaService activityCollectAreaService;
+
+	@Autowired
+	private ActivityCollectStoreService activityCollectStoreService;
+
 	@Override
 	public ActivityCollectCouponsDto findById(String id) {
 		ActivityCollectCoupons activityCollectCoupons = activityCollectCouponsService.get(id);
@@ -27,8 +61,7 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 	@Override
 	public TakeActivityCouponResultDto takeActivityCoupon(TakeActivityCouponParamDto activityCouponParamDto) {
 		try {
-			TakeActivityCouponResultDto takeActivityCouponResultDto = activityCollectCouponsService.takeActivityCoupon(activityCouponParamDto) ;
-			return takeActivityCouponResultDto;
+			return activityCollectCouponsService.takeActivityCoupon(activityCouponParamDto);
 		} catch (Exception e) {
 			TakeActivityCouponResultDto activityCouponResultDto = new TakeActivityCouponResultDto();
 			activityCouponResultDto.setCode(110);
@@ -37,4 +70,117 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 		}
 	}
 
+	@Override
+	public List<ActivityCollectCouponsDto> findList(ActivityCollectCouponsParamDto activityCollectCouponsParamDto) {
+		List<ActivityCollectCoupons> list = activityCollectCouponsService.findList(activityCollectCouponsParamDto);
+		if (CollectionUtils.isEmpty(list)) {
+			return Lists.newArrayList();
+		}
+		// 根据区域参数过滤
+		filterByArea(activityCollectCouponsParamDto, list);
+		// 根据店铺id过滤
+		filterByStore(activityCollectCouponsParamDto, list);
+
+		List<ActivityCollectCouponsDto> dtoList = BeanMapper.mapList(list, ActivityCollectCouponsDto.class);
+
+		if (activityCollectCouponsParamDto.isQueryCoupons()) {
+			// 查询代金卷信息
+			queryRelationCoupons(dtoList);
+		}
+		return dtoList;
+	}
+
+	private void queryRelationCoupons(List<ActivityCollectCouponsDto> dtoList) {
+		
+		ActivityCouponsQueryParamDto activityCouponsQueryParamDto = new ActivityCouponsQueryParamDto();
+		activityCouponsQueryParamDto.setQueryArea(false);
+		activityCouponsQueryParamDto.setQueryCategory(true);
+		
+		for (ActivityCollectCouponsDto activityCollectCouponsDto : dtoList) {
+			List<ActivityCoupons> couponseList = activityCouponsService.getActivityCoupons(activityCollectCouponsDto.getId());
+			List<ActivityCouponsDto> couponseDtoList = BeanMapper.mapList(couponseList, ActivityCouponsDto.class);
+			for (ActivityCouponsDto activityCoupons : couponseDtoList) {
+				ActivityCouponsDto activityCouponsDto = activityCouponsApi
+						.findDetailById(activityCollectCouponsDto.getId(), activityCouponsQueryParamDto);
+				activityCoupons.setActivityCouponsCategory(activityCouponsDto.getActivityCouponsCategory());
+			}
+			activityCollectCouponsDto.setCouponsList(couponseDtoList);
+		}
+	}
+
+	private void filterByArea(ActivityCollectCouponsParamDto activityCollectCouponsParamDto,
+			List<ActivityCollectCoupons> list) {
+		if (CollectionUtils.isEmpty(list)) {
+			return;
+		}
+		List<String> idList = getActivityCollectCouponsIds(list);
+		ActivityCollectAreaParamBo activityCollectAreaParamBo = new ActivityCollectAreaParamBo();
+		activityCollectAreaParamBo.setCollectCouponsIdList(idList);
+
+		List<String> existsIdList = Lists.newArrayList();
+		if (StringUtils.isNotEmpty(activityCollectCouponsParamDto.getProvinceId())) {
+			activityCollectAreaParamBo.setAreaId(activityCollectCouponsParamDto.getProvinceId());
+			activityCollectAreaParamBo.setType(1);
+			List<ActivityCollectArea> areaList = activityCollectAreaService.findList(activityCollectAreaParamBo);
+			areaList.forEach(e -> {
+				if (existsIdList.contains(e.getCollectCouponsId())) {
+					existsIdList.add(e.getCollectCouponsId());
+				}
+			});
+		}
+
+		if (StringUtils.isNotEmpty(activityCollectCouponsParamDto.getCityId())) {
+			activityCollectAreaParamBo.setAreaId(activityCollectCouponsParamDto.getCityId());
+			activityCollectAreaParamBo.setType(0);
+			List<ActivityCollectArea> areaList = activityCollectAreaService.findList(activityCollectAreaParamBo);
+			areaList.forEach(e -> {
+				if (existsIdList.contains(e.getCollectCouponsId())) {
+					existsIdList.add(e.getCollectCouponsId());
+				}
+			});
+		}
+
+		for (ActivityCollectCoupons activityCollectCoupons : list) {
+			if (activityCollectCoupons.getAreaType() == AreaType.area.ordinal()
+					&& !existsIdList.contains(activityCollectCoupons.getId())) {
+				list.remove(activityCollectCoupons);
+			}
+		}
+	}
+
+	private void filterByStore(ActivityCollectCouponsParamDto activityCollectCouponsParamDto,
+			List<ActivityCollectCoupons> list) {
+		if (CollectionUtils.isEmpty(list)) {
+			return;
+		}
+		List<String> idList = getActivityCollectCouponsIds(list);
+		ActivityCollectStoreParamBo activityCollectStoreParamBo = new ActivityCollectStoreParamBo();
+		activityCollectStoreParamBo.setCollectCouponsIdList(idList);
+
+		List<String> existsIdList = Lists.newArrayList();
+		if (StringUtils.isNotEmpty(activityCollectCouponsParamDto.getStoreId())) {
+			activityCollectStoreParamBo.setStoreId(activityCollectCouponsParamDto.getStoreId());
+			List<ActivityCollectStore> areaList = activityCollectStoreService.findList(activityCollectStoreParamBo);
+			areaList.forEach(e -> {
+				if (existsIdList.contains(e.getCollectCouponsId())) {
+					existsIdList.add(e.getCollectCouponsId());
+				}
+			});
+		}
+
+		for (ActivityCollectCoupons activityCollectCoupons : list) {
+			if (activityCollectCoupons.getAreaType() == AreaType.store.ordinal()
+					&& !existsIdList.contains(activityCollectCoupons.getId())) {
+				list.remove(activityCollectCoupons);
+			}
+		}
+	}
+
+	private List<String> getActivityCollectCouponsIds(List<ActivityCollectCoupons> list) {
+		List<String> idList = Lists.newArrayList();
+		for (ActivityCollectCoupons activityCollectCoupons : list) {
+			idList.add(activityCollectCoupons.getId());
+		}
+		return idList;
+	}
 }

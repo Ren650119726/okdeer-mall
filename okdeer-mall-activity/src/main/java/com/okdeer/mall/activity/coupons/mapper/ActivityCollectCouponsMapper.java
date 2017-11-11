@@ -12,6 +12,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsSimpleVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
+import com.okdeer.mall.activity.dto.ActivityCollectCouponsParamDto;
 
 /**
  * @DESC: 商品类目-分类类型关系表dao
@@ -240,4 +241,13 @@ public interface ActivityCollectCouponsMapper {
 	 * @date 2017年7月27日
 	 */
 	List<ActivityCollectCoupons> findByIds(@Param("idList") List<String> idList);
+	
+	/**
+	 * @Description: 根据参数查询列表
+	 * @param activityCollectCouponsParamDto 查询参数
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年11月10日
+	 */
+	List<ActivityCollectCoupons> findList(ActivityCollectCouponsParamDto activityCollectCouponsParamDto);
 }

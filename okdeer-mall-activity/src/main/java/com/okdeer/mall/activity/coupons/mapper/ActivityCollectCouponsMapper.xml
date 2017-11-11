@@ -900,4 +900,29 @@
 	  	 	#{item}
 	  	 </foreach>
 	  </select>
+	  
+	  <select id="findList" parameterType="com.okdeer.mall.activity.dto.ActivityCollectCouponsParamDto">
+	  		SELECT <include refid="columns" /> FROM activity_collect_coupons
+	  		<where>
+	  			<if test="type != null">
+	  				AND type = #{type,jdbcType=TINYINT}
+	  			</if>
+	  			<if test="typeList != null and typeList.size() > 0">
+	  				AND type  IN
+	  				 <foreach collection="typeList" open="(" close=")" separator="," item="item">
+	  	 				#{item,jdbcType=TINYINT}
+	  	 			</foreach>
+	  			</if>
+	  			<if test="status != null">
+	  				AND status = #{status,jdbcType=TINYINT}
+	  			</if>
+	  			<if test="statusList != null and statusList.size() > 0">
+	  				AND status IN
+	  				 <foreach collection="statusList" open="(" close=")" separator="," item="item">
+	  	 				#{item,jdbcType=TINYINT}
+	  	 			</foreach>
+	  			</if>
+	  		</where>
+	  		ORDER BY start_time DESC
+	  </select>
 </mapper>
