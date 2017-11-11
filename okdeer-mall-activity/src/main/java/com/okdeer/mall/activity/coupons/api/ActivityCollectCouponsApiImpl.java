@@ -1,6 +1,8 @@
 
 package com.okdeer.mall.activity.coupons.api;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Lists;
+import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.activity.coupons.bo.ActivityCollectAreaParamBo;
@@ -18,16 +21,21 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCollectArea;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectStore;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
+import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory;
+import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectAreaService;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsApi;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectStoreService;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsReceiveStrategy;
+import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
 import com.okdeer.mall.activity.dto.ActivityCollectCouponsDto;
 import com.okdeer.mall.activity.dto.ActivityCollectCouponsParamDto;
 import com.okdeer.mall.activity.dto.ActivityCouponsDto;
 import com.okdeer.mall.activity.dto.ActivityCouponsQueryParamDto;
+import com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto;
 import com.okdeer.mall.activity.dto.TakeActivityCouponParamDto;
 import com.okdeer.mall.activity.dto.TakeActivityCouponResultDto;
 import com.okdeer.mall.common.enums.AreaType;
@@ -42,9 +50,12 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 
 	@Autowired
 	private ActivityCouponsServiceApi activityCouponsApi;
-	
+
 	@Autowired
 	private ActivityCouponsService activityCouponsService;
+
+	@Autowired
+	private ActivityCouponsRecordService activityCouponsRecordService;
 
 	@Autowired
 	private ActivityCollectAreaService activityCollectAreaService;
@@ -85,27 +96,71 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 
 		if (activityCollectCouponsParamDto.isQueryCoupons()) {
 			// 查询代金卷信息
-			queryRelationCoupons(dtoList);
+			queryRelationCoupons(activityCollectCouponsParamDto, dtoList);
 		}
 		return dtoList;
 	}
 
-	private void queryRelationCoupons(List<ActivityCollectCouponsDto> dtoList) {
-		
+	private void queryRelationCoupons(ActivityCollectCouponsParamDto activityCollectCouponsParamDto,
+			List<ActivityCollectCouponsDto> dtoList) {
+
 		ActivityCouponsQueryParamDto activityCouponsQueryParamDto = new ActivityCouponsQueryParamDto();
 		activityCouponsQueryParamDto.setQueryArea(false);
 		activityCouponsQueryParamDto.setQueryCategory(true);
-		
+
 		for (ActivityCollectCouponsDto activityCollectCouponsDto : dtoList) {
-			List<ActivityCoupons> couponseList = activityCouponsService.getActivityCoupons(activityCollectCouponsDto.getId());
+			List<ActivityCoupons> couponseList = activityCouponsService
+					.getActivityCoupons(activityCollectCouponsDto.getId());
 			List<ActivityCouponsDto> couponseDtoList = BeanMapper.mapList(couponseList, ActivityCouponsDto.class);
+
+			ActivityCouponsRecordQueryParamDto activityCouponsRecord = new ActivityCouponsRecordQueryParamDto();
+			activityCouponsRecord.setCouponsCollectId(activityCollectCouponsDto.getId());
+			
 			for (ActivityCouponsDto activityCoupons : couponseDtoList) {
 				ActivityCouponsDto activityCouponsDto = activityCouponsApi
 						.findDetailById(activityCollectCouponsDto.getId(), activityCouponsQueryParamDto);
 				activityCoupons.setActivityCouponsCategory(activityCouponsDto.getActivityCouponsCategory());
+
+				activityCouponsRecord.setCouponsId(activityCoupons.getId());
+				activityCouponsRecord.setCollectType(ActivityCouponsType.coupons.ordinal());
+				if (activityCoupons.getRemainNum() <= 0) {
+					// 剩余数量小于0 显示已领完
+					activityCoupons.setIsReceive(0);
+				}
+				// 当前登陆用户id
+				if (StringUtils.isNotEmpty(activityCollectCouponsParamDto.getUserId())) {
+					activityCouponsRecord.setCollectUserId(activityCollectCouponsParamDto.getUserId());
+					try {
+						int currentRecordCount = activityCouponsRecordService
+								.selectCountByParams(activityCouponsRecord);
+						if (currentRecordCount >= activityCoupons.getEveryLimit().intValue()) {
+							// 已领取
+							activityCoupons.setIsReceive(1);
+						} else {
+							// 立即领取
+							activityCoupons.setIsReceive(2);
+						}
+					} catch (ServiceException e) {
+						logger.error("查询代金卷信息出错", e);
+					}
+				}
+				activityCoupons.setCategoryNames(mergeCategoryNames(activityCoupons));
 			}
 			activityCollectCouponsDto.setCouponsList(couponseDtoList);
 		}
+
+	}
+
+	private String mergeCategoryNames(ActivityCouponsDto activityCoupons) {
+		// 根据代金卷类型判断使用的分类
+		StringBuilder categoryNames = new StringBuilder();
+		List<ActivityCouponsCategory> cates = activityCoupons.getActivityCouponsCategory();
+		if (cates != null) {
+			for (ActivityCouponsCategory category : cates) {
+				categoryNames.append(category.getCategoryName() + "、");
+			}
+		}
+		return categoryNames.toString().substring(0, categoryNames.length() - 1);
 	}
 
 	private void filterByArea(ActivityCollectCouponsParamDto activityCollectCouponsParamDto,

@@ -64,6 +64,7 @@ import com.okdeer.mall.activity.coupons.entity.CouponsInfoParams;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsTermType;
+import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsCategoryMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
@@ -1218,6 +1219,16 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			return null;
 		}
 		ActivityCouponsDto dto = BeanMapper.map(activityCoupons, ActivityCouponsDto.class);
+		
+		activityCoupons.setStartTime(activityCouponsReceiveStrategy.getEffectTime(activityCoupons));
+		// 代金券失效时间
+		Date expireTime = activityCouponsReceiveStrategy.getExpireTime(activityCoupons);
+		// 失效时间为0点0分0秒，给用户展示将时间往后推迟一天。
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(expireTime);
+		cal.add(Calendar.DATE, -1);
+		activityCoupons.setEndTime(cal.getTime());
+		
 		if (activityCouponsQueryParamDto.isQueryCategory()) {
 			// 查询分类信息
 			ActivityCouponsCategoryParamBo activityCouponsCategoryParamBo = new ActivityCouponsCategoryParamBo();
