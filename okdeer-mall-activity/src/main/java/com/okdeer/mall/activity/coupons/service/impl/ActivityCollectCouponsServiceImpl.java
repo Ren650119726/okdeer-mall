@@ -23,10 +23,8 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Lists;
 import com.okdeer.archive.store.entity.StoreInfo;
-import com.okdeer.archive.system.entity.PsmsAgent;
 import com.okdeer.archive.system.entity.SysBuyerUser;
 import com.okdeer.archive.system.entity.SysUser;
-import com.okdeer.archive.system.service.IPsmsAgentServiceApi;
 import com.okdeer.archive.system.service.ISysUserServiceApi;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.DateUtils;
@@ -54,7 +52,6 @@ import com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsApprovalStat
 import com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsStatus;
 import com.okdeer.mall.activity.coupons.enums.ActivityCollectCouponsType;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
-import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectAreaMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCommunityMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
@@ -533,7 +530,6 @@ public class ActivityCollectCouponsServiceImpl
 						cal.setTime(expireTime);
 						cal.add(Calendar.DATE, -1);
 						activityCoupons.setEndTime(cal.getTime());
-						activityCoupons.setFaceValue(calculCouponsFaceValue(activityCoupons));
 						// End V2.6.0_P02 added by maojj 2017-09-11
 
 						activityCouponsRecord.setCouponsId(activityCoupons.getId());
@@ -598,24 +594,6 @@ public class ActivityCollectCouponsServiceImpl
 		return result;
 	}
 
-	/**
-	 * @Description: 计算优惠卷面值
-	 * @param activityCoupons
-	 * @param round 1: 除以 10 2:除以 100
-	 * @return
-	 * @author zengjizu
-	 * @date 2017年11月10日
-	 */
-	private BigDecimal calculCouponsFaceValue(ActivityCoupons activityCoupons, int round) {
-		if (activityCoupons.getType() == CouponsType.tyzkq.getValue()) {
-			int divide = 10;
-			if (round == 2) {
-				divide = 100;
-			}
-			return new BigDecimal(activityCoupons.getFaceValue()).divide(new BigDecimal(divide));
-		}
-		return new BigDecimal(activityCoupons.getFaceValue());
-	}
 
 	/**
 	 * @desc 用于判断某个时间段内活动是否冲突
@@ -1027,9 +1005,7 @@ public class ActivityCollectCouponsServiceImpl
 	
 	@Override
 	public List<ActivityCollectCoupons> findList(ActivityCollectCouponsParamDto activityCollectCouponsParamDto) {
-		List<ActivityCollectCoupons> list = activityCollectCouponsMapper.findList(activityCollectCouponsParamDto);
-		
-		return null;
+		return activityCollectCouponsMapper.findList(activityCollectCouponsParamDto);
 	}
 
 	private void addActivityCouponsOrderRecord(ActivityCollectCoupons activityCollectCoupons,

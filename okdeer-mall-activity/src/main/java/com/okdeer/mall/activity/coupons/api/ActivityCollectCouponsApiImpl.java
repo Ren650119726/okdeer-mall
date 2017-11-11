@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Lists;
-import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.activity.coupons.bo.ActivityCollectAreaParamBo;
@@ -19,7 +18,6 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCollectArea;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectStore;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
-import com.okdeer.mall.activity.coupons.entity.ActivityCouponsLimitCategory;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectAreaService;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsApi;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
