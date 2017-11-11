@@ -52,6 +52,7 @@ import com.okdeer.mall.order.enums.OrderCancelType;
 import com.okdeer.mall.order.enums.OrderIsShowEnum;
 import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
 import com.okdeer.mall.order.handler.MemberCardOrderService;
@@ -483,6 +484,7 @@ public class MemberCardOrderServiceImpl implements MemberCardOrderService {
 		parambo.setChannel(OrderResourceEnum.MEMCARD);
 		parambo.setClientType(UseClientType.ONlY_APP_USE);
 		parambo.setStoreType(StoreTypeEnum.CLOUD_STORE);
+		parambo.setOrderType(OrderTypeEnum.PHYSICAL_ORDER);
 		parambo.setStoreId(vo.getBranchId());
 		List<String> goods = Lists.newArrayList();
 		vo.getList().forEach(e -> goods.add(e.getGoodsSkuId()));
