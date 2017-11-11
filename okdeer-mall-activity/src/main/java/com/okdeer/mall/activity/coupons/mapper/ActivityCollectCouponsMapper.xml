@@ -901,7 +901,7 @@
 	  	 </foreach>
 	  </select>
 	  
-	  <select id="findList" parameterType="com.okdeer.mall.activity.dto.ActivityCollectCouponsParamDto">
+	  <select id="findList" parameterType="com.okdeer.mall.activity.dto.ActivityCollectCouponsParamDto" resultMap="ActivityCollectCoupons">
 	  		SELECT <include refid="columns" /> FROM activity_collect_coupons
 	  		<where>
 	  			<if test="type != null">
