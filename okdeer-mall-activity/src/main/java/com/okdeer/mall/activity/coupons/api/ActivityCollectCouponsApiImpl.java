@@ -1,8 +1,6 @@
 
 package com.okdeer.mall.activity.coupons.api;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -27,7 +25,6 @@ import com.okdeer.mall.activity.coupons.service.ActivityCollectAreaService;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsApi;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectStoreService;
-import com.okdeer.mall.activity.coupons.service.ActivityCouponsReceiveStrategy;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
@@ -103,7 +100,6 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 
 	private void queryRelationCoupons(ActivityCollectCouponsParamDto activityCollectCouponsParamDto,
 			List<ActivityCollectCouponsDto> dtoList) {
-
 		ActivityCouponsQueryParamDto activityCouponsQueryParamDto = new ActivityCouponsQueryParamDto();
 		activityCouponsQueryParamDto.setQueryArea(false);
 		activityCouponsQueryParamDto.setQueryCategory(true);
@@ -113,42 +109,43 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 					.getActivityCoupons(activityCollectCouponsDto.getId());
 			List<ActivityCouponsDto> couponseDtoList = BeanMapper.mapList(couponseList, ActivityCouponsDto.class);
 
-			ActivityCouponsRecordQueryParamDto activityCouponsRecord = new ActivityCouponsRecordQueryParamDto();
-			activityCouponsRecord.setCouponsCollectId(activityCollectCouponsDto.getId());
-			
 			for (ActivityCouponsDto activityCoupons : couponseDtoList) {
 				ActivityCouponsDto activityCouponsDto = activityCouponsApi
 						.findDetailById(activityCollectCouponsDto.getId(), activityCouponsQueryParamDto);
 				activityCoupons.setActivityCouponsCategory(activityCouponsDto.getActivityCouponsCategory());
-
-				activityCouponsRecord.setCouponsId(activityCoupons.getId());
-				activityCouponsRecord.setCollectType(ActivityCouponsType.coupons.ordinal());
 				if (activityCoupons.getRemainNum() <= 0) {
 					// 剩余数量小于0 显示已领完
 					activityCoupons.setIsReceive(0);
-				}
-				// 当前登陆用户id
-				if (StringUtils.isNotEmpty(activityCollectCouponsParamDto.getUserId())) {
-					activityCouponsRecord.setCollectUserId(activityCollectCouponsParamDto.getUserId());
-					try {
-						int currentRecordCount = activityCouponsRecordService
-								.selectCountByParams(activityCouponsRecord);
-						if (currentRecordCount >= activityCoupons.getEveryLimit().intValue()) {
-							// 已领取
-							activityCoupons.setIsReceive(1);
-						} else {
-							// 立即领取
-							activityCoupons.setIsReceive(2);
-						}
-					} catch (ServiceException e) {
-						logger.error("查询代金卷信息出错", e);
-					}
+				} else {
+					queryUserIsReceiveCoupons(activityCollectCouponsParamDto.getUserId(), activityCoupons);
 				}
 				activityCoupons.setCategoryNames(mergeCategoryNames(activityCoupons));
 			}
 			activityCollectCouponsDto.setCouponsList(couponseDtoList);
 		}
+	}
 
+	private void queryUserIsReceiveCoupons(String userId, ActivityCouponsDto activityCoupons) {
+		ActivityCouponsRecordQueryParamDto activityCouponsRecord = new ActivityCouponsRecordQueryParamDto();
+		activityCouponsRecord.setCouponsCollectId(activityCoupons.getActivityId());
+		activityCouponsRecord.setCouponsId(activityCoupons.getId());
+		activityCouponsRecord.setCollectType(ActivityCouponsType.coupons.ordinal());
+		// 当前登陆用户id
+		if (StringUtils.isNotEmpty(userId)) {
+			activityCouponsRecord.setCollectUserId(userId);
+			try {
+				int currentRecordCount = activityCouponsRecordService.selectCountByParams(activityCouponsRecord);
+				if (currentRecordCount >= activityCoupons.getEveryLimit().intValue()) {
+					// 已领取
+					activityCoupons.setIsReceive(1);
+				} else {
+					// 立即领取
+					activityCoupons.setIsReceive(2);
+				}
+			} catch (ServiceException e) {
+				logger.error("查询代金卷信息出错", e);
+			}
+		}
 	}
 
 	private String mergeCategoryNames(ActivityCouponsDto activityCoupons) {
