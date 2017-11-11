@@ -110,8 +110,8 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 			List<ActivityCouponsDto> couponseDtoList = BeanMapper.mapList(couponseList, ActivityCouponsDto.class);
 
 			for (ActivityCouponsDto activityCoupons : couponseDtoList) {
-				ActivityCouponsDto activityCouponsDto = activityCouponsApi
-						.findDetailById(activityCollectCouponsDto.getId(), activityCouponsQueryParamDto);
+				ActivityCouponsDto activityCouponsDto = activityCouponsApi.findDetailById(activityCoupons.getId(),
+						activityCouponsQueryParamDto);
 				activityCoupons.setActivityCouponsCategory(activityCouponsDto.getActivityCouponsCategory());
 				if (activityCoupons.getRemainNum() <= 0) {
 					// 剩余数量小于0 显示已领完
@@ -152,12 +152,15 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 		// 根据代金卷类型判断使用的分类
 		StringBuilder categoryNames = new StringBuilder();
 		List<ActivityCouponsCategory> cates = activityCoupons.getActivityCouponsCategory();
-		if (cates != null) {
+		if (CollectionUtils.isNotEmpty(cates)) {
 			for (ActivityCouponsCategory category : cates) {
 				categoryNames.append(category.getCategoryName() + "、");
 			}
+			if (categoryNames.length() > 0) {
+				return categoryNames.toString().substring(0, categoryNames.length() - 1);
+			}
 		}
-		return categoryNames.toString().substring(0, categoryNames.length() - 1);
+		return null;
 	}
 
 	private void filterByArea(ActivityCollectCouponsParamDto activityCollectCouponsParamDto,
@@ -191,13 +194,15 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 				}
 			});
 		}
-
+		List<ActivityCollectCoupons> removeList = Lists.newArrayList();
 		for (ActivityCollectCoupons activityCollectCoupons : list) {
 			if (activityCollectCoupons.getAreaType() == AreaType.area.ordinal()
 					&& !existsIdList.contains(activityCollectCoupons.getId())) {
-				list.remove(activityCollectCoupons);
+				removeList.add(activityCollectCoupons);
 			}
 		}
+		
+		list.removeAll(removeList);
 	}
 
 	private void filterByStore(ActivityCollectCouponsParamDto activityCollectCouponsParamDto,
@@ -219,13 +224,14 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 				}
 			});
 		}
-
+		List<ActivityCollectCoupons> removeList = Lists.newArrayList();
 		for (ActivityCollectCoupons activityCollectCoupons : list) {
 			if (activityCollectCoupons.getAreaType() == AreaType.store.ordinal()
 					&& !existsIdList.contains(activityCollectCoupons.getId())) {
-				list.remove(activityCollectCoupons);
+				removeList.add(activityCollectCoupons);
 			}
 		}
+		list.removeAll(removeList);
 	}
 
 	private List<String> getActivityCollectCouponsIds(List<ActivityCollectCoupons> list) {

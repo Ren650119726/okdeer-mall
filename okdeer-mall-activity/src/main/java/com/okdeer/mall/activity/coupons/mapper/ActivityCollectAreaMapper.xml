@@ -44,7 +44,7 @@
 				AND collect_coupons_id = #{collectCouponsId, jdbcType=VARCHAR}
 			</if>
 			<if test="collectCouponsIdList != null and collectCouponsIdList.size() > 0">
-				AND advert_id IN 
+				AND collect_coupons_id IN 
 				<foreach collection="collectCouponsIdList" item="item" separator="," open="(" close=")">
 					#{item, jdbcType=VARCHAR}
 				</foreach>

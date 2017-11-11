@@ -65,6 +65,7 @@ import com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsTermType;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
+import com.okdeer.mall.activity.coupons.enums.CategoryLimit;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsCategoryMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
@@ -1229,7 +1230,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		cal.add(Calendar.DATE, -1);
 		activityCoupons.setEndTime(cal.getTime());
 		
-		if (activityCouponsQueryParamDto.isQueryCategory()) {
+		if (activityCoupons.getIsCategoryLimit() == CategoryLimit.yes && activityCouponsQueryParamDto.isQueryCategory()) {
 			// 查询分类信息
 			ActivityCouponsCategoryParamBo activityCouponsCategoryParamBo = new ActivityCouponsCategoryParamBo();
 			activityCouponsCategoryParamBo.setCouponId(id);
