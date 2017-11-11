@@ -18,6 +18,7 @@ import com.okdeer.mall.member.member.vo.UserAddressVo;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
+import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.vo.ServiceOrderReq;
 import com.okdeer.mall.order.vo.ServiceOrderResp;
@@ -57,9 +58,19 @@ public class FavourParamBuilder {
 	public FavourParamBO build(PlaceOrderParamDto paramDto, PlaceOrderDto orderDto, Set<String> spuCategoryIds,
 			List<PlaceOrderItemDto> goodsList) {
 		FavourParamBO paramBO = new FavourParamBO();
+		// 店铺信息
+		StoreInfo storeInfo = (StoreInfo)paramDto.get("storeInfo");
 		// 获取店铺类型
-		StoreTypeEnum storeType = ((StoreInfo)paramDto.get("storeInfo")).getType();
-		
+		StoreTypeEnum storeType = null;
+		if(storeInfo == null){
+			if(paramDto.getChannel() == OrderResourceEnum.MEMCARD 
+					|| paramDto.getChannel() == OrderResourceEnum.SWEEP
+					|| paramDto.getChannel() == OrderResourceEnum.WECHAT_MIN){
+				storeType = StoreTypeEnum.CLOUD_STORE;
+			}
+		}else{
+			storeType = storeInfo.getType();
+		}
 		paramBO.setUserId(paramDto.getUserId());
 		paramBO.setStoreId(paramDto.getStoreId());
 		paramBO.setStoreType(storeType);
