@@ -307,7 +307,7 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 	 * @date 2017年11月9日
 	 */
 	public void excludeLowSku(OrderTypeEnum orderType,List<PlaceOrderItemDto> goodsList,UserCouponsFilterContext filterContext){
-		// 只有遍历店订单需要进行处理
+		// 只有线上便利店订单需要进行处理
 		if(orderType != OrderTypeEnum.PHYSICAL_ORDER || CollectionUtils.isEmpty(goodsList)){
 			return;
 		}

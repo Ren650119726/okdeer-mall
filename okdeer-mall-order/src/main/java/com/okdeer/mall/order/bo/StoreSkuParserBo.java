@@ -636,6 +636,9 @@ public class StoreSkuParserBo {
 		CurrentStoreSkuBo skuBo = null;
 		for(PlaceOrderItemDto itemDto : skuList){
 			skuBo = this.currentSkuMap.get(itemDto.getStoreSkuId());
+			if(skuBo == null){
+				continue;
+			}
 			itemDto.setSkuActType(skuBo.getActivityType());
 			if(skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
 				itemDto.setSkuActPrice(skuBo.getActPrice());

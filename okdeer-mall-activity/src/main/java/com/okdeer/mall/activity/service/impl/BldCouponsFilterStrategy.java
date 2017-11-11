@@ -17,6 +17,7 @@ import com.okdeer.mall.activity.coupons.bo.UserCouponsFilterContext;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.order.dto.PlaceOrderItemDto;
+import com.okdeer.mall.order.enums.OrderResourceEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 
 @Service("bldCouponsFilterStrategy")
@@ -32,7 +33,10 @@ public class BldCouponsFilterStrategy extends GenericCouponsFilterStrategy {
 
 	@Override
 	public boolean isOutOfLimitOrderType(FavourParamBO paramBo, ActivityCoupons couponsInfo) {
-		return paramBo.getOrderType() != OrderTypeEnum.PHYSICAL_ORDER;
+		// 便利店代金券隐藏约束：只能支持线上便利店使用，不能支持线下便利店订单如：扫码购、会员卡、微信小程序
+		OrderResourceEnum orderChannel = paramBo.getChannel();
+		return paramBo.getOrderType() != OrderTypeEnum.PHYSICAL_ORDER || orderChannel == OrderResourceEnum.MEMCARD
+				|| orderChannel == OrderResourceEnum.SWEEP || orderChannel == OrderResourceEnum.WECHAT_MIN;
 	}
 
 	@Override
