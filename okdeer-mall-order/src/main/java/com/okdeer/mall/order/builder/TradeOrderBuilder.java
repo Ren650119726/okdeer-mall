@@ -517,7 +517,8 @@ public class TradeOrderBuilder {
 		BigDecimal platformFavour = parserBo.getPlatformPreferential();
 		BigDecimal favourSum =  BigDecimal.valueOf(0.00);
 		int index = 0;
-		int haveFavourItemSize = parserBo.getEnjoyFavourSkuIdList().size();
+		int haveFavourItemSize = CollectionUtils.isEmpty(parserBo.getEnjoyFavourSkuIdList()) ? 0
+				: parserBo.getEnjoyFavourSkuIdList().size();
 		TradeOrderItem tradeOrderItem = null;
 
 		Collection<CurrentStoreSkuBo> skuBoSet = parserBo.getCurrentSkuMap().values();
