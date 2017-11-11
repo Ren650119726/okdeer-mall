@@ -15,6 +15,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
+import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.common.utils.EnumAdapter;
@@ -202,7 +203,12 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		activityCouponsRecordService.countUseRecord(favourParamBo,Arrays.asList(new UserCouponsBo[]{userCouponsBo}));
 		// 3、构建过滤上下文对象
 		UserCouponsFilterContext filterContext = new UserCouponsFilterContext();
-		filterContext.setEnjoyFavourAmount(favourParamBo.getTotalAmount());
+		if(paramDto.getChannel() == OrderResourceEnum.MEMCARD 
+				|| paramDto.getChannel() == OrderResourceEnum.SWEEP){
+			filterContext.setEnjoyFavourAmount(parserBo.getTotalAmountHaveFavour());
+		}else{
+			filterContext.setEnjoyFavourAmount(favourParamBo.getTotalAmount());
+		}
 		// 检查代金券
 		if(!filterStrategy.accept(userCouponsBo, favourParamBo, filterContext)){
 			return false;
