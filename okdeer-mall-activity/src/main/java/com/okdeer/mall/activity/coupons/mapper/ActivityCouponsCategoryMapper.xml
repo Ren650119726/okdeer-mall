@@ -10,7 +10,7 @@
     </resultMap> 
              
     <sql id="BaseColumnSql">
-    	id,couponId,categoryId,type
+    	id,coupon_id,category_id,type
     </sql> 
              
     <select id="findActivityCouponsCategoryByCouponsId" parameterType="map" resultMap="BaseResultMap">
