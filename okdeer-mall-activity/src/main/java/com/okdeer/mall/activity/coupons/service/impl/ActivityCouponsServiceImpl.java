@@ -1,6 +1,7 @@
 
 package com.okdeer.mall.activity.coupons.service.impl;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -1221,14 +1222,14 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		}
 		ActivityCouponsDto dto = BeanMapper.map(activityCoupons, ActivityCouponsDto.class);
 		
-		activityCoupons.setStartTime(activityCouponsReceiveStrategy.getEffectTime(activityCoupons));
+		dto.setStartTime(activityCouponsReceiveStrategy.getEffectTime(activityCoupons));
 		// 代金券失效时间
 		Date expireTime = activityCouponsReceiveStrategy.getExpireTime(activityCoupons);
 		// 失效时间为0点0分0秒，给用户展示将时间往后推迟一天。
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(expireTime);
 		cal.add(Calendar.DATE, -1);
-		activityCoupons.setEndTime(cal.getTime());
+		dto.setEndTime(cal.getTime());
 		
 		if (activityCoupons.getIsCategoryLimit() == CategoryLimit.yes && activityCouponsQueryParamDto.isQueryCategory()) {
 			// 查询分类信息
@@ -1275,8 +1276,34 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 					}
 				});
 			}
-			
+			mergeCategoryNames(dto);
 		}
+		String faceValueShowName = getCouponsFaceValueShowName(activityCoupons);
+		dto.setFaceValueShowName(faceValueShowName);
 		return dto;
+	}
+	
+	private String mergeCategoryNames(ActivityCouponsDto activityCoupons) {
+		// 根据代金卷类型判断使用的分类
+		StringBuilder categoryNames = new StringBuilder();
+		List<ActivityCouponsCategory> cates = activityCoupons.getActivityCouponsCategory();
+		if (CollectionUtils.isNotEmpty(cates)) {
+			for (ActivityCouponsCategory category : cates) {
+				categoryNames.append(category.getCategoryName() + "、");
+			}
+			if (categoryNames.length() > 0) {
+				return categoryNames.toString().substring(0, categoryNames.length() - 1);
+			}
+		}
+		return null;
+	}
+	
+	private String getCouponsFaceValueShowName(ActivityCoupons activityCoupons){
+		if(activityCoupons.getType() == CouponsType.tyzkq.getValue()){
+			BigDecimal bg =  new BigDecimal(activityCoupons.getFaceValue()).subtract(new BigDecimal("10"));
+			return bg.toString()+"折";
+		}else{
+			return "¥"+activityCoupons.getFaceValue();
+		}
 	}
 }

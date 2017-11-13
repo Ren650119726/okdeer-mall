@@ -65,17 +65,6 @@ public interface ActivityCouponsRecordService {
 	 */
 	int selectCountByParams(ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParam) throws ServiceException;
 
-	/**
-	 * 
-	 * 根据领取人id、领取状态，查询领取的代金券详细信息
-	 * 
-	 * @author wusw
-	 * @param couponsCollectRecord
-	 * @return
-	 * @throws ServiceException
-	 */
-	List<ActivityCouponsRecordQueryVo> findMyCouponsDetailByParams(ActivityCouponsRecordStatusEnum status,
-			String currentOperateUserId,Boolean flag) throws ServiceException;
 
 	/**
 	 * 

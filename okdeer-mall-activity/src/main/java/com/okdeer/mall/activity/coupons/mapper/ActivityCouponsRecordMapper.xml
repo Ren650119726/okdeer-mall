@@ -1007,6 +1007,9 @@
      		<if test="collectUserId != null">
      			AND collect_user_id = #{collectUserId,jdbcType=VARCHAR}
      		</if>
+     		<if test="status != null">
+     			AND status = #{status,jdbcType=TINYINT}
+     		</if>
      		<if test="includeStatusList != null and includeStatusList.size()>0">
      			AND status IN 
      			<foreach collection="includeStatusList" item="status" separator="," open="(" close=")">

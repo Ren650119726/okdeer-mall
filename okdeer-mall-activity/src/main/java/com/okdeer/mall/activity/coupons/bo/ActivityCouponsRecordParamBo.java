@@ -1,3 +1,4 @@
+
 package com.okdeer.mall.activity.coupons.bo;
 
 import java.util.List;
@@ -24,6 +25,8 @@ public class ActivityCouponsRecordParamBo {
 
 	private List<ActivityCouponsRecordStatusEnum> includeStatusList;
 
+	private ActivityCouponsRecordStatusEnum status;
+
 	public String getCollectUserId() {
 		return collectUserId;
 	}
@@ -38,6 +41,14 @@ public class ActivityCouponsRecordParamBo {
 
 	public void setIncludeStatusList(List<ActivityCouponsRecordStatusEnum> includeStatusList) {
 		this.includeStatusList = includeStatusList;
+	}
+
+	public ActivityCouponsRecordStatusEnum getStatus() {
+		return status;
+	}
+
+	public void setStatus(ActivityCouponsRecordStatusEnum status) {
+		this.status = status;
 	}
 
 }
