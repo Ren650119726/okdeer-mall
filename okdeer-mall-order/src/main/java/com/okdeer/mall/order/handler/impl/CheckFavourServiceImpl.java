@@ -205,9 +205,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		UserCouponsFilterContext filterContext = new UserCouponsFilterContext();
 		if(paramDto.getChannel() == OrderResourceEnum.MEMCARD 
 				|| paramDto.getChannel() == OrderResourceEnum.SWEEP){
-			filterContext.setEnjoyFavourAmount(parserBo.getTotalAmountHaveFavour());
-		}else{
-			filterContext.setEnjoyFavourAmount(favourParamBo.getTotalAmount());
+			favourParamBo.setTotalAmount(parserBo.getTotalAmountHaveFavour());
 		}
 		// 检查代金券
 		if(!filterStrategy.accept(userCouponsBo, favourParamBo, filterContext)){
