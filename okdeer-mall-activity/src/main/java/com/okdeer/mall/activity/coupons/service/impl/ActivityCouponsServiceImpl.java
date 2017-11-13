@@ -1300,10 +1300,10 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	
 	private String getCouponsFaceValueShowName(ActivityCoupons activityCoupons){
 		if(activityCoupons.getType() == CouponsType.tyzkq.getValue()){
-			BigDecimal bg =  new BigDecimal(activityCoupons.getFaceValue()).subtract(new BigDecimal("10"));
-			return bg.toString()+"折";
+			BigDecimal bg =  new BigDecimal(activityCoupons.getFaceValue()).divide(new BigDecimal("10"));
+			return bg.toString();
 		}else{
-			return "¥"+activityCoupons.getFaceValue();
+			return ""+activityCoupons.getFaceValue();
 		}
 	}
 }
