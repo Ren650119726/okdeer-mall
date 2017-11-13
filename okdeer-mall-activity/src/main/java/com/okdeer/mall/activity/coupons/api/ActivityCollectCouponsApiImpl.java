@@ -107,6 +107,13 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 		for (ActivityCollectCouponsDto activityCollectCouponsDto : dtoList) {
 			List<ActivityCoupons> couponseList = activityCouponsService
 					.getActivityCoupons(activityCollectCouponsDto.getId());
+			couponseList.sort((obj1,obj2)->{
+				if(obj1.getCreateTime().getTime()>obj1.getCreateTime().getTime()){
+					return -1;
+				}
+				return 1;
+			});
+			
 			List<ActivityCouponsDto> couponseDtoList = BeanMapper.mapList(couponseList, ActivityCouponsDto.class);
 
 			for (ActivityCouponsDto activityCoupons : couponseDtoList) {
