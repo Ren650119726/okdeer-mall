@@ -357,7 +357,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		Map<String, Object> map = new HashMap<String, Object>();
 		// 校验成功标识 //如果不存在缓存数据进行加入到缓存中
 		String key = currentOperatUserId + couponsId;
-		boolean checkFlag = checkUserStatusByRedis(key, 6);
+		boolean checkFlag = checkUserStatusByRedis(key, 20);
 		if (!checkFlag) {
 			map.put("code", 104);
 			map.put("msg", "用户调用次数超限");
@@ -445,7 +445,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 		// 校验成功标识 //如果不存在缓存数据进行加入到缓存中
 		String key = phone + collectId;
-		boolean checkFlag = checkUserStatusByRedis(key, 6);
+		boolean checkFlag = checkUserStatusByRedis(key, 20);
 		if (!checkFlag) {
 			map.put("code", 104);
 			map.put("msg", "用户调用次数超限");
@@ -523,7 +523,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		Map<String, Object> map = new HashMap<>();
 		// 校验成功标识 //如果不存在缓存数据进行加入到缓存中
 		String key = phone + collectId;
-		boolean checkFlag = checkUserStatusByRedis(key, 6);
+		boolean checkFlag = checkUserStatusByRedis(key, 20);
 		if (!checkFlag) {
 			map.put("code", 104);
 			map.put("msg", "用户调用次数超限");
@@ -662,7 +662,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		}
 		// 校验成功标识 //如果不存在缓存数据进行加入到缓存中
 		String key = "drawCoupons" + userId;
-		boolean checkFlag = checkUserStatusByRedis(key, 6);
+		boolean checkFlag = checkUserStatusByRedis(key, 20);
 		if (!checkFlag) {
 			return;
 		}
@@ -735,7 +735,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		Map<String, Object> map = new HashMap<String, Object>();
 		// 校验成功标识 //如果不存在缓存数据进行加入到缓存中
 		String key = "exchangeCode" + currentOperatUserId + exchangeCode;
-		boolean checkFlag = checkUserStatusByRedis(key, 6);
+		boolean checkFlag = checkUserStatusByRedis(key, 20);
 		if (!checkFlag) {
 			map.put("code", 104);
 			map.put("msg", "用户调用次数超限");
@@ -777,7 +777,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		Map<String, Object> map = new HashMap<String, Object>();
 		// 校验成功标识 //如果不存在缓存数据进行加入到缓存中
 		String key = userId + activityCoupons.getActivityId();
-		boolean checkFlag = checkUserStatusByRedis(key, 6);
+		boolean checkFlag = checkUserStatusByRedis(key, 20);
 		if (!checkFlag) {
 			map.put("code", 104);
 			map.put("msg", "用户调用次数超限");
@@ -1822,7 +1822,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		Map<String, Object> map = new HashMap<>();
 		// 校验成功标识 //如果不存在缓存数据进行加入到缓存中
 		String key = userId + collectId;
-		boolean checkFlag = checkUserStatusByRedis(key, 6);
+		boolean checkFlag = checkUserStatusByRedis(key, 20);
 		if (!checkFlag) {
 			map.put("code", 104);
 			map.put("msg", "用户调用次数超限");
