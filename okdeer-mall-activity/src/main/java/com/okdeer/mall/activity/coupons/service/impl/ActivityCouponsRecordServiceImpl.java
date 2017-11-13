@@ -311,9 +311,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		//按时间排序
 		list.sort((obj1, obj2) -> {
 			if (obj1.getCollectTime().getTime() > obj2.getCollectTime().getTime()) {
-				return 1;
+				return -1;
 			}
-			return -1;
+			return 1;
 		});
 		List<ActivityCouponsRecordDto> dtoList = BeanMapper.mapList(list, ActivityCouponsRecordDto.class);
 		ActivityCouponsQueryParamDto activityCouponsQueryParamDto = new ActivityCouponsQueryParamDto();
