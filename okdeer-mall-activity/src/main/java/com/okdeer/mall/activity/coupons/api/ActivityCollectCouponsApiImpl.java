@@ -107,13 +107,13 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 		for (ActivityCollectCouponsDto activityCollectCouponsDto : dtoList) {
 			List<ActivityCoupons> couponseList = activityCouponsService
 					.getActivityCoupons(activityCollectCouponsDto.getId());
-			couponseList.sort((obj1,obj2)->{
-				if(obj1.getCreateTime().getTime()>obj1.getCreateTime().getTime()){
+			couponseList.sort((obj1, obj2) -> {
+				if (obj1.getCreateTime().getTime() > obj1.getCreateTime().getTime()) {
 					return -1;
 				}
 				return 1;
 			});
-			
+
 			List<ActivityCouponsDto> couponseDtoList = BeanMapper.mapList(couponseList, ActivityCouponsDto.class);
 
 			for (ActivityCouponsDto activityCoupons : couponseDtoList) {
@@ -152,10 +152,10 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 			} catch (ServiceException e) {
 				logger.error("查询代金卷信息出错", e);
 			}
+		} else {
+			activityCoupons.setIsReceive(2);
 		}
 	}
-
-	
 
 	private void filterByArea(ActivityCollectCouponsParamDto activityCollectCouponsParamDto,
 			List<ActivityCollectCoupons> list) {
@@ -195,7 +195,7 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 				removeList.add(activityCollectCoupons);
 			}
 		}
-		
+
 		list.removeAll(removeList);
 	}
 
