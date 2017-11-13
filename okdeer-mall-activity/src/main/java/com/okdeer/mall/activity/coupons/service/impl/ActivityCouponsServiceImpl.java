@@ -92,6 +92,7 @@ import com.okdeer.mall.common.utils.RandomStringUtil;
 
 /**
  * 代金券管理实现类
+ * 
  * @project yschome-mall
  * @author zhulq
  * @date 2016年1月21日 下午3:22:25
@@ -143,7 +144,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	@Reference(version = "1.0.0", check = false)
 	private IAddressService addressService;
 
-	@Reference(version = "1.0.0", check = false)
+	@Reference(version = "1.0.0", check = false,timeout=5000)
 	private GoodsNavigateCategoryServiceApi goodsNavigateCategoryServiceApi;
 
 	@Reference(version = "1.0.0", check = false)
@@ -252,7 +253,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 
 	/**
 	 * @Description: 根据发行量生成随机码并保存到数据库
-	 * @param coupons   
+	 * @param coupons
 	 * @author maojj
 	 * @date 2016年10月25日
 	 */
@@ -293,7 +294,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 
 	/**
 	 * @Description: 根据发行量生成随机码并保存到数据库(增量)
-	 * @param coupons   
+	 * @param coupons
 	 * @author maojj
 	 * @date 2016年10月25日
 	 */
@@ -334,8 +335,10 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 
 	/**
 	 * @Description: 随机N个不重复的随机数
-	 * @param randCodeSet 随机数的Set集合。利用set的无重复特性
-	 * @param randCodeNum 需要生成的随机数的数量
+	 * @param randCodeSet
+	 *            随机数的Set集合。利用set的无重复特性
+	 * @param randCodeNum
+	 *            需要生成的随机数的数量
 	 * @author maojj
 	 * @date 2016年10月25日
 	 */
@@ -528,7 +531,8 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		int store = this.getStore(id);
 		int relationStores = this.getCouponsRelationStroe(id);
 		/*
-		 * if (category > 0) { couponsManageService.deleteCouponsLimitCategory(id); }
+		 * if (category > 0) {
+		 * couponsManageService.deleteCouponsLimitCategory(id); }
 		 */
 		if (area > 0) {
 			this.deleteCouponsArea(id);
@@ -608,8 +612,9 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 								// 查询服务店店铺
 								params.put("type", StoreTypeEnum.SERVICE_STORE);
 							}
-//							storeInfos = storeInfoServiceApi.getByProvinceIdAndCityId(params);
-//							storeInfoList.addAll(storeInfos);
+							// storeInfos =
+							// storeInfoServiceApi.getByProvinceIdAndCityId(params);
+							// storeInfoList.addAll(storeInfos);
 						} else if ("1".equals(areas[1])) {
 							activityCouponsArea.setCouponsAreaType(DistrictType.province);
 							Map<String, Object> params = new HashMap<>();
@@ -624,8 +629,9 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 								// 查询服务店店铺
 								params.put("type", StoreTypeEnum.SERVICE_STORE);
 							}
-//							storeInfos = storeInfoServiceApi.getByProvinceIdAndCityId(params);
-//							storeInfoList.addAll(storeInfos);
+							// storeInfos =
+							// storeInfoServiceApi.getByProvinceIdAndCityId(params);
+							// storeInfoList.addAll(storeInfos);
 						}
 						activityCouponsArea.setAreaId(areas[0]);
 						activityCouponsArea.setCouponsId(coupons.getId());
@@ -877,8 +883,9 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 
 	/**
 	 * 获取最近一个进行中的注册活动的代金券活动关联的代金券集合
-	 * @param map 有以下key
-	 * type 0代金券领取活动，1注册活动
+	 * 
+	 * @param map
+	 *            有以下key type 0代金券领取活动，1注册活动
 	 */
 	public List<ActivityCoupons> listCouponsByType(Map<String, Object> map) throws ServiceException {
 		return activityCouponsMapper.listCouponsByType(map);
@@ -936,7 +943,8 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 						}
 					}
 				} /*
-					 * else if (area.getCouponsAreaType() == DistrictType.province) { cityMap.put("0", "所属范围内都可以用"); }
+					 * else if (area.getCouponsAreaType() ==
+					 * DistrictType.province) { cityMap.put("0", "所属范围内都可以用"); }
 					 */
 			}
 
@@ -1221,7 +1229,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			return null;
 		}
 		ActivityCouponsDto dto = BeanMapper.map(activityCoupons, ActivityCouponsDto.class);
-		
+
 		dto.setStartTime(activityCouponsReceiveStrategy.getEffectTime(activityCoupons));
 		// 代金券失效时间
 		Date expireTime = activityCouponsReceiveStrategy.getExpireTime(activityCoupons);
@@ -1230,13 +1238,15 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		cal.setTime(expireTime);
 		cal.add(Calendar.DATE, -1);
 		dto.setEndTime(cal.getTime());
-		
-		if (activityCoupons.getIsCategoryLimit() == CategoryLimit.yes && activityCouponsQueryParamDto.isQueryCategory()) {
+		System.out.print("8a8080075fa9edaf015fa9edafa60000".equals(id));
+		if (activityCoupons.getIsCategory() == 1 && activityCouponsQueryParamDto.isQueryCategory()) {
 			// 查询分类信息
 			ActivityCouponsCategoryParamBo activityCouponsCategoryParamBo = new ActivityCouponsCategoryParamBo();
 			activityCouponsCategoryParamBo.setCouponId(id);
 			List<ActivityCouponsCategory> categoryList = activityCouponsCategoryMapper
 					.findList(activityCouponsCategoryParamBo);
+			
+			dto.setActivityCouponsCategory(categoryList);
 			List<String> navigateCategoryIdList = Lists.newArrayList();
 			List<String> spuCategoryIdList = Lists.newArrayList();
 			categoryList.forEach(e -> {
@@ -1253,36 +1263,38 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 				goodsNavigateCategoryParamDto.setSort(false);
 				List<GoodsNavigateCategoryDto> navigateCategoryList = goodsNavigateCategoryServiceApi
 						.findList(goodsNavigateCategoryParamDto);
+
 				Map<String, String> navigateCategoryMap = navigateCategoryList.stream()
 						.collect(Collectors.toMap(GoodsNavigateCategoryDto::getId, GoodsNavigateCategoryDto::getName));
 				categoryList.forEach(e -> {
-					if(e.getType() == 1){
+					if (e.getType() == 1) {
 						e.setCategoryName(navigateCategoryMap.get(e.getCategoryId()));
 					}
 				});
 			}
-			
+
 			if (CollectionUtils.isNotEmpty(spuCategoryIdList)) {
 				GoodsSpuCategoryParamDto paramDto = new GoodsSpuCategoryParamDto();
 				paramDto.setIdList(spuCategoryIdList);
 				List<GoodsSpuCategory> navigateCategoryList = goodsSpuCategoryServiceApi
 						.findSpuCategoryByParam(paramDto);
-				
+
 				Map<String, String> navigateCategoryMap = navigateCategoryList.stream()
 						.collect(Collectors.toMap(GoodsSpuCategory::getId, GoodsSpuCategory::getName));
 				categoryList.forEach(e -> {
-					if(e.getType() == 2){
+					if (e.getType() == 2) {
 						e.setCategoryName(navigateCategoryMap.get(e.getCategoryId()));
 					}
 				});
 			}
-			mergeCategoryNames(dto);
+			String categoryNames = mergeCategoryNames(dto);
+			dto.setCategoryNames(categoryNames);
 		}
 		String faceValueShowName = getCouponsFaceValueShowName(activityCoupons);
 		dto.setFaceValueShowName(faceValueShowName);
 		return dto;
 	}
-	
+
 	private String mergeCategoryNames(ActivityCouponsDto activityCoupons) {
 		// 根据代金卷类型判断使用的分类
 		StringBuilder categoryNames = new StringBuilder();
@@ -1297,13 +1309,13 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		}
 		return null;
 	}
-	
-	private String getCouponsFaceValueShowName(ActivityCoupons activityCoupons){
-		if(activityCoupons.getType() == CouponsType.tyzkq.getValue()){
-			BigDecimal bg =  new BigDecimal(activityCoupons.getFaceValue()).divide(new BigDecimal("10"));
+
+	private String getCouponsFaceValueShowName(ActivityCoupons activityCoupons) {
+		if (activityCoupons.getType() == CouponsType.tyzkq.getValue()) {
+			BigDecimal bg = new BigDecimal(activityCoupons.getFaceValue()).divide(new BigDecimal("10"));
 			return bg.toString();
-		}else{
-			return ""+activityCoupons.getFaceValue();
+		} else {
+			return "" + activityCoupons.getFaceValue();
 		}
 	}
 }
