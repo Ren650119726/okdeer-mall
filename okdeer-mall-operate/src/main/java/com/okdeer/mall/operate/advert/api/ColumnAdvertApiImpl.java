@@ -160,6 +160,7 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 		switch (advertType) {
 		case WX_INDEX_BANNER:
 		case POS_MACHINE:
+		case APP_BOMB_SCREEN:
 			return false;
 		default:
 			break;
