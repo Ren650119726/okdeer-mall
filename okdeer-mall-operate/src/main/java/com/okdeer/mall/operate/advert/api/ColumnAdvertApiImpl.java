@@ -112,10 +112,16 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 		}
 		columnAdvertShowRecordService.save(saveList);
 	}
-
+	
+	/**
+	 * @Description: 是否需要记录显示记录
+	 * @param advertType
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年11月11日
+	 */
 	private boolean isNeedShowRecord(AdvertTypeEnum advertType) {
-
-		return false;
+		return advertType == AdvertTypeEnum.APP_BOMB_SCREEN;
 	}
 
 	private List<ColumnAdvert> filterByVersion(ColumnAdvertQueryParamDto advertQueryParamDto, List<ColumnAdvert> list) {

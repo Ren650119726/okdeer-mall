@@ -112,6 +112,7 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 			for (ActivityCouponsDto activityCoupons : couponseDtoList) {
 				ActivityCouponsDto activityCouponsDto = activityCouponsApi.findDetailById(activityCoupons.getId(),
 						activityCouponsQueryParamDto);
+				BeanMapper.copy(activityCouponsDto, activityCoupons);
 				activityCoupons.setActivityCouponsCategory(activityCouponsDto.getActivityCouponsCategory());
 				if (activityCoupons.getRemainNum() <= 0) {
 					// 剩余数量小于0 显示已领完
@@ -119,7 +120,6 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 				} else {
 					queryUserIsReceiveCoupons(activityCollectCouponsParamDto.getUserId(), activityCoupons);
 				}
-				activityCoupons.setCategoryNames(mergeCategoryNames(activityCoupons));
 			}
 			activityCollectCouponsDto.setCouponsList(couponseDtoList);
 		}
@@ -148,20 +148,7 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 		}
 	}
 
-	private String mergeCategoryNames(ActivityCouponsDto activityCoupons) {
-		// 根据代金卷类型判断使用的分类
-		StringBuilder categoryNames = new StringBuilder();
-		List<ActivityCouponsCategory> cates = activityCoupons.getActivityCouponsCategory();
-		if (CollectionUtils.isNotEmpty(cates)) {
-			for (ActivityCouponsCategory category : cates) {
-				categoryNames.append(category.getCategoryName() + "、");
-			}
-			if (categoryNames.length() > 0) {
-				return categoryNames.toString().substring(0, categoryNames.length() - 1);
-			}
-		}
-		return null;
-	}
+	
 
 	private void filterByArea(ActivityCollectCouponsParamDto activityCollectCouponsParamDto,
 			List<ActivityCollectCoupons> list) {
