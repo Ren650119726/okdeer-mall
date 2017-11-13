@@ -165,7 +165,7 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 			activityCollectAreaParamBo.setType(1);
 			List<ActivityCollectArea> areaList = activityCollectAreaService.findList(activityCollectAreaParamBo);
 			areaList.forEach(e -> {
-				if (existsIdList.contains(e.getCollectCouponsId())) {
+				if (!existsIdList.contains(e.getCollectCouponsId())) {
 					existsIdList.add(e.getCollectCouponsId());
 				}
 			});
@@ -176,7 +176,7 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 			activityCollectAreaParamBo.setType(0);
 			List<ActivityCollectArea> areaList = activityCollectAreaService.findList(activityCollectAreaParamBo);
 			areaList.forEach(e -> {
-				if (existsIdList.contains(e.getCollectCouponsId())) {
+				if (!existsIdList.contains(e.getCollectCouponsId())) {
 					existsIdList.add(e.getCollectCouponsId());
 				}
 			});
@@ -206,7 +206,7 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 			activityCollectStoreParamBo.setStoreId(activityCollectCouponsParamDto.getStoreId());
 			List<ActivityCollectStore> areaList = activityCollectStoreService.findList(activityCollectStoreParamBo);
 			areaList.forEach(e -> {
-				if (existsIdList.contains(e.getCollectCouponsId())) {
+				if (!existsIdList.contains(e.getCollectCouponsId())) {
 					existsIdList.add(e.getCollectCouponsId());
 				}
 			});

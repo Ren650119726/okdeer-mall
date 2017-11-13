@@ -1222,14 +1222,14 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		}
 		ActivityCouponsDto dto = BeanMapper.map(activityCoupons, ActivityCouponsDto.class);
 		
-		activityCoupons.setStartTime(activityCouponsReceiveStrategy.getEffectTime(activityCoupons));
+		dto.setStartTime(activityCouponsReceiveStrategy.getEffectTime(activityCoupons));
 		// 代金券失效时间
 		Date expireTime = activityCouponsReceiveStrategy.getExpireTime(activityCoupons);
 		// 失效时间为0点0分0秒，给用户展示将时间往后推迟一天。
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(expireTime);
 		cal.add(Calendar.DATE, -1);
-		activityCoupons.setEndTime(cal.getTime());
+		dto.setEndTime(cal.getTime());
 		
 		if (activityCoupons.getIsCategoryLimit() == CategoryLimit.yes && activityCouponsQueryParamDto.isQueryCategory()) {
 			// 查询分类信息
