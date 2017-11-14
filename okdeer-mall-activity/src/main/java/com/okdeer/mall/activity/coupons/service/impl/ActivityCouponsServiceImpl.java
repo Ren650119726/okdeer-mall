@@ -1238,7 +1238,6 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		cal.setTime(expireTime);
 		cal.add(Calendar.DATE, -1);
 		dto.setEndTime(cal.getTime());
-		System.out.print("8a8080075fa9edaf015fa9edafa60000".equals(id));
 		if (activityCoupons.getIsCategory() == 1 && activityCouponsQueryParamDto.isQueryCategory()) {
 			// 查询分类信息
 			ActivityCouponsCategoryParamBo activityCouponsCategoryParamBo = new ActivityCouponsCategoryParamBo();
