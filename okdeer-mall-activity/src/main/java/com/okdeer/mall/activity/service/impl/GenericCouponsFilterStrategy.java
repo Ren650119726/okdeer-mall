@@ -2,8 +2,6 @@ package com.okdeer.mall.activity.service.impl;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -12,12 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
-import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
-import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
-import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
-import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.coupons.bo.UserCouponsBo;
 import com.okdeer.mall.activity.coupons.bo.UserCouponsFilterContext;
@@ -89,6 +82,11 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 		if(CollectionUtils.isNotEmpty(excludeCouponsActIdList) && excludeCouponsActIdList.contains(couponsInfo.getActivityId())){
 			return false;
 		}
+		// 检查是否到达订单金额限制
+		if(!isArriveOrderAmount(paramBo.getTotalAmount(), BigDecimal.valueOf(couponsInfo.getArriveLimit()))){
+			LOG.debug("用户{}使用代金券{}订单金额为{}未达到金额上限",paramBo.getUserId(),couponsId,paramBo.getTotalAmount());
+			return false;
+		}
 		// 检查是否超过订单类型限制
 		if (isOutOfLimitOrderType(paramBo, couponsInfo)) {
 			 LOG.debug("订单类型{}渠道{}使用代金券{}超出订单类型限制",paramBo.getOrderType(),paramBo.getChannel(),couponsId);
@@ -102,11 +100,6 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 		// 检查是否超出用户类型限制
 		if(isOutOfLimitUserType(paramBo.getUserId(), filterContext, couponsInfo.getUseUserType())){
 			LOG.debug("用户{}使用代金券{}超出用户类型限制",paramBo.getUserId(),couponsId);
-			return false;
-		}
-		// 检查是否到达订单金额限制
-		if(!isArriveOrderAmount(paramBo.getTotalAmount(), BigDecimal.valueOf(couponsInfo.getArriveLimit()))){
-			LOG.debug("用户{}使用代金券{}订单金额为{}未达到金额上限",paramBo.getUserId(),couponsId,paramBo.getTotalAmount());
 			return false;
 		}
 		// 检查是否超出代金券使用范围
@@ -206,7 +199,8 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 	 * @date 2017年11月9日
 	 */
 	public boolean isArriveOrderAmount(BigDecimal orderAmount,BigDecimal limitAmount){
-		return orderAmount.compareTo(limitAmount) >= 0;
+		// 如果订单金额为0，无需享受优惠
+		return orderAmount.compareTo(BigDecimal.ZERO) > 0 && orderAmount.compareTo(limitAmount) >= 0;
 	}
 	
 	/**
