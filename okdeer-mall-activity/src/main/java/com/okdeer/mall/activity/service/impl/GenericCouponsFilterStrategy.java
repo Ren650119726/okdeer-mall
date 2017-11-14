@@ -331,7 +331,7 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 	 * @date 2017年11月9日
 	 */
 	public boolean isOutOfLimitUserDayUseInCoupons(Integer limitUseNum,FavourParamBO paramBo,String couponsId){
-		if(limitUseNum > 1){
+		if(limitUseNum > 0){
 			// 代金券每日限制账号使用次数
 			if(limitUseNum.compareTo(paramBo.findCountNum(RecordCountRuleEnum.COUPONS_BY_USER, couponsId)) < 1){
 				return true;
@@ -350,7 +350,7 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 	 * @date 2017年11月9日
 	 */
 	public boolean isOutOfLimitDeviceDayUseInCoupons(Integer limitUseNum,FavourParamBO paramBo,String couponsId){
-		if(limitUseNum > 1){
+		if(limitUseNum > 0){
 			// 代金券每日限制账号使用次数
 			if(limitUseNum.compareTo(paramBo.findCountNum(RecordCountRuleEnum.COUPONS_BY_DEVICE, couponsId)) < 1){
 				return true;
@@ -371,7 +371,7 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 	 */
 	public boolean isOutOfLimitUserDayUseInAct(Integer limitUseNum, FavourParamBO paramBo, String couponsActId,
 			UserCouponsFilterContext filterContext) {
-		if(limitUseNum > 1){
+		if(limitUseNum > 0){
 			// 代金券每日限制账号使用次数
 			if(limitUseNum.compareTo(paramBo.findCountNum(RecordCountRuleEnum.COUPONS_COLLECT_BY_USER, couponsActId)) < 1){
 				// 活动不可用，将活动缓存到不可用列表中
@@ -397,7 +397,7 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 	 */
 	public boolean isOutOfLimitDeviceDayUseInAct(Integer limitUseNum, FavourParamBO paramBo, String couponsActId,
 			UserCouponsFilterContext filterContext) {
-		if(limitUseNum > 1){
+		if(limitUseNum > 0){
 			// 代金券每日限制账号使用次数
 			if(limitUseNum.compareTo(paramBo.findCountNum(RecordCountRuleEnum.COUPONS_COLLECT_BY_DEVICE, couponsActId)) < 1){
 				// 活动不可用，将活动缓存到不可用列表中
