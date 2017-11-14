@@ -299,10 +299,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	// begin update by zhulq 2016-10-17 新增方法提供给之前的版本
 	@Override
 	@Transactional(readOnly = true)
-	public List<ActivityCouponsRecordDto> findMyCouponsDetailByParams(ActivityCouponsRecordStatusEnum status,
+	public List<ActivityCouponsRecordDto> findMyCouponsDetailByParams(List<ActivityCouponsRecordStatusEnum> statusList,
 			String currentOperateUserId) throws ServiceException {
 		ActivityCouponsRecordParamBo paramBo = new ActivityCouponsRecordParamBo();
-		paramBo.setStatus(status);
+		paramBo.setIncludeStatusList(statusList);
 		paramBo.setCollectUserId(currentOperateUserId);
 		List<ActivityCouponsRecord> list = activityCouponsRecordMapper.findCollectRecordList(paramBo);
 		if(CollectionUtils.isEmpty(list)){
