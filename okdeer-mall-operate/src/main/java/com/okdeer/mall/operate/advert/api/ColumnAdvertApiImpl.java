@@ -1,6 +1,7 @@
 
 package com.okdeer.mall.operate.advert.api;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -9,6 +10,7 @@ import org.springframework.util.Assert;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Lists;
+import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.mall.advert.dto.ColumnAdvertDto;
 import com.okdeer.mall.advert.dto.ColumnAdvertQueryParamDto;
@@ -89,10 +91,22 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 			columnAdvertShowRecordParamBo.setDeviceNo(advertQueryParamDto.getDeviceNo());
 			for (ColumnAdvert columnAdvert : list) {
 				columnAdvertShowRecordParamBo.setAdvertId(columnAdvert.getId());
-				int count = columnAdvertShowRecordService.findCountByParam(columnAdvertShowRecordParamBo);
-				if (count < 10) {
-					resultList.add(columnAdvert);
+				if (columnAdvert.getUserLimitType() == 1) {
+					//判断是否超过设备总次数限制
+					int count = columnAdvertShowRecordService.findCountByParam(columnAdvertShowRecordParamBo);
+					if (count >= columnAdvert.getDeviceAllLimit()) {
+						continue;
+					}
+					Date currentTime = new Date();
+					columnAdvertShowRecordParamBo.setStartCreateTime(DateUtils.formatDate(currentTime, "yyyy-MM-dd 00:00:00"));
+					columnAdvertShowRecordParamBo.setEndCreateTime(DateUtils.formatDate(currentTime, "yyyy-MM-dd 23:59:59"));
+					count = columnAdvertShowRecordService.findCountByParam(columnAdvertShowRecordParamBo);
+					//判断是否超过了总次数限制
+					if(count >= columnAdvert.getDeviceDayLimit()){
+						continue;
+					}
 				}
+				resultList.add(columnAdvert);
 			}
 			addShowRecord(advertQueryParamDto, resultList);
 			return resultList;
@@ -103,6 +117,9 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 	}
 
 	private void addShowRecord(ColumnAdvertQueryParamDto advertQueryParamDto, List<ColumnAdvert> list) {
+		if(CollectionUtils.isEmpty(list)){
+			return ;
+		}
 		List<ColumnAdvertShowRecord> saveList = Lists.newArrayList();
 		for (ColumnAdvert columnAdvert : list) {
 			ColumnAdvertShowRecord columnAdvertShowRecord = new ColumnAdvertShowRecord();
@@ -112,7 +129,7 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 		}
 		columnAdvertShowRecordService.save(saveList);
 	}
-	
+
 	/**
 	 * @Description: 是否需要记录显示记录
 	 * @param advertType
@@ -125,7 +142,7 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 	}
 
 	private List<ColumnAdvert> filterByVersion(ColumnAdvertQueryParamDto advertQueryParamDto, List<ColumnAdvert> list) {
-		if(CollectionUtils.isNotEmpty(list)){
+		if (CollectionUtils.isNotEmpty(list)) {
 			return list;
 		}
 		if (!isNeedFilterByVersion(advertQueryParamDto.getAdvertType())) {
@@ -169,7 +186,7 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 	}
 
 	private List<ColumnAdvert> filterByArea(ColumnAdvertQueryParamDto advertQueryParamDto, List<ColumnAdvert> list) {
-		if(CollectionUtils.isNotEmpty(list)){
+		if (CollectionUtils.isNotEmpty(list)) {
 			return list;
 		}
 		List<String> advertIdList = Lists.newArrayList();
