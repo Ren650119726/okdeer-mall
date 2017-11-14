@@ -82,6 +82,9 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 
 	private List<ColumnAdvert> filterByShowRecord(ColumnAdvertQueryParamDto advertQueryParamDto,
 			List<ColumnAdvert> list) {
+		if (CollectionUtils.isEmpty(list)) {
+			return list;
+		}
 		// 是否需要记录显示日志
 		boolean isNeedRecord = isNeedShowRecord(advertQueryParamDto.getAdvertType());
 		if (isNeedRecord) {
@@ -142,7 +145,7 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 	}
 
 	private List<ColumnAdvert> filterByVersion(ColumnAdvertQueryParamDto advertQueryParamDto, List<ColumnAdvert> list) {
-		if (CollectionUtils.isNotEmpty(list)) {
+		if (CollectionUtils.isEmpty(list)) {
 			return list;
 		}
 		if (!isNeedFilterByVersion(advertQueryParamDto.getAdvertType())) {
@@ -186,7 +189,7 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 	}
 
 	private List<ColumnAdvert> filterByArea(ColumnAdvertQueryParamDto advertQueryParamDto, List<ColumnAdvert> list) {
-		if (CollectionUtils.isNotEmpty(list)) {
+		if (CollectionUtils.isEmpty(list)) {
 			return list;
 		}
 		List<String> advertIdList = Lists.newArrayList();
