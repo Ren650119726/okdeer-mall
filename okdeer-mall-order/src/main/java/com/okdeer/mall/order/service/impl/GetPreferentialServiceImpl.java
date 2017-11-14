@@ -20,10 +20,8 @@ import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.coupons.bo.ActivityRecordParamBo;
-import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
-import com.okdeer.mall.activity.coupons.enums.RecordCountRuleEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
@@ -34,9 +32,7 @@ import com.okdeer.mall.activity.discount.enums.LimitSkuType;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountRecordService;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.activity.dto.ActivityInfoDto;
-import com.okdeer.mall.activity.service.CouponsFilterStrategy;
 import com.okdeer.mall.activity.service.FavourFilterStrategy;
-import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.service.GetPreferentialService;
@@ -155,7 +151,17 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 	 * @date 2017年2月17日
 	 */
 	private List<Coupons> getCouponsList(FavourParamBO paramBo) throws Exception {
-		return activityCouponsRecordService.findValidCoupons(paramBo);
+		List<Coupons> couponsList = activityCouponsRecordService.findValidCoupons(paramBo);
+		if (CollectionUtils.isNotEmpty(couponsList)) {
+			Collections.sort(couponsList, new Comparator<Coupons>() {
+
+				@Override
+				public int compare(Coupons o1, Coupons o2) {
+					return o2.getMaxFavourStrategy().compareTo(o1.getMaxFavourStrategy());
+				}
+			});
+		}
+		return couponsList;
 	}
 
 	/**
