@@ -313,6 +313,7 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 						.subtract(goodsItem.getSkuPrice().multiply(BigDecimal.valueOf(goodsItem.getSkuActQuantity())));
 			}
 		}
+		filterContext.setEnjoyFavourAmount(enjoyFavourAmount);
 	}
 	
 	/**
