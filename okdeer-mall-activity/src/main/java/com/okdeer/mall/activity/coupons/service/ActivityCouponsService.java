@@ -15,7 +15,6 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsStore;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoParams;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery;
 import com.okdeer.mall.activity.dto.TakeActivityCouponParamDto;
-import com.okdeer.mall.common.entity.AreaScTreeVo;
 
 
 /**
@@ -26,12 +25,6 @@ import com.okdeer.mall.common.entity.AreaScTreeVo;
  */
 public interface ActivityCouponsService {
 
-	/**
-	 * 根据城市id 查询店铺 
-	 * @param parStoreInfo  对象
-	 * @return 店铺信息
-	 */
-	List<AreaScTreeVo> getStoreInfoByCityId(StoreInfo parStoreInfo);
 
 	/**
 	 * 获取代金券信息
