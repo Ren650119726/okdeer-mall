@@ -2,6 +2,7 @@ package com.okdeer.mall.activity.service.impl;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
@@ -66,9 +67,10 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 		// 代金券id
 		String couponsId = couponsInfo.getId();
 		// 可用的代金券Id列表
-		List<String> enabledCouponsIdList = filterContext.getEnabledCouponsIdList();
-		if(CollectionUtils.isNotEmpty(enabledCouponsIdList) && enabledCouponsIdList.contains(couponsId)){
+		Map<String,BigDecimal> enabledCouponsMap = filterContext.getEnabledCouponsMap();
+		if(enabledCouponsMap != null && enabledCouponsMap.containsKey(couponsId)){
 			// 如果代金券已经被被检查过，且判定代金券为可用，则直接返回，不用重新检查。
+			filterContext.setEnjoyFavourAmount(enabledCouponsMap.get(couponsId));
 			return true;
 		}
 		// 不可用的代金券id列表

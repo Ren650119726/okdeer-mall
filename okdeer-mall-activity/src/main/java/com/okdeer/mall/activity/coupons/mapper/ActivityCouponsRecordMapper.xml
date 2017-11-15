@@ -245,7 +245,7 @@
    <select id="selectAllRecords" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo" resultMap="RecordVoMap">
 	  select A.id, A.collect_type, A.coupons_id, A.coupons_collect_id, A.collect_time, A.collect_user_id, B.name, B.activity_id, B.arrive_limit, 
              B.valid_day, A.valid_time, A.STATUS, A.order_id, T.order_no, A.room_id, C.name as activity_name, D.login_name as user_name, 
-             B.face_value, B.belong_type, B.use_user_type, B.use_client_type 
+             B.face_value, B.belong_type, B.use_user_type, B.use_client_type,B.type as couponsType
       FROM activity_coupons_record A
       LEFT JOIN activity_coupons B ON B.id = A.coupons_id
       LEFT JOIN activity_collect_coupons C ON C.id = B.activity_id
@@ -273,6 +273,12 @@
 	  </if>
 	  <if test="activityId !=null and activityId !=''">
 	  		AND A.coupons_collect_id = #{activityId,jdbcType=VARCHAR}
+	  </if>
+	  <if test="idList !=null and idList.size() > 0">
+	  		AND A.id IN 
+		  <foreach collection="idList" item="item" open="(" close=")" separator=",">
+	           #{item,jdbcType=VARCHAR}
+	      </foreach>
 	  </if>
 	  ORDER BY 
 		A.collect_time 
