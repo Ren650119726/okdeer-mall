@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.dal.IBaseCrudMapper;
+import com.okdeer.mall.activity.coupons.bo.CouponsRelationStoreParamBo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRelationStore;
 
 /**
@@ -63,4 +64,13 @@ public interface ActivityCouponsRelationStoreMapper extends IBaseCrudMapper{
 	 * @date 2017年7月11日
 	 */
 	ActivityCouponsRelationStore findByStoreIdAndCouponsId(@Param("storeId")String storeId,@Param("couponsId")String couponsId);
+	
+	/**
+	 * @Description: 查询列表根据参数
+	 * @param paramBo
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年11月15日
+	 */
+	List<ActivityCouponsRelationStore> findlist(CouponsRelationStoreParamBo paramBo);
 }

@@ -49,6 +49,9 @@ import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.mall.activity.coupons.bo.ActivityCouponsBo;
 import com.okdeer.mall.activity.coupons.bo.ActivityCouponsCategoryParamBo;
+import com.okdeer.mall.activity.coupons.bo.CouponsRelationStoreParamBo;
+import com.okdeer.mall.activity.coupons.dto.ActivityCouponsAreaDto;
+import com.okdeer.mall.activity.coupons.dto.ActivityCouponsRelationStoreDto;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsArea;
@@ -66,6 +69,7 @@ import com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsTermType;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsAreaMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsCategoryMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRandCodeMapper;
@@ -129,6 +133,9 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	@Autowired
 	private ActivityCouponsRelationStoreMapper couponsRelationStoreMapper;
 
+	@Autowired
+	private ActivityCouponsAreaMapper activityCouponsAreaMapper;
+
 	/**
 	 * 导入店铺关联小区的信息
 	 */
@@ -141,7 +148,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	@Reference(version = "1.0.0", check = false)
 	private IAddressService addressService;
 
-	@Reference(version = "1.0.0", check = false,timeout=5000)
+	@Reference(version = "1.0.0", check = false, timeout = 5000)
 	private GoodsNavigateCategoryServiceApi goodsNavigateCategoryServiceApi;
 
 	@Reference(version = "1.0.0", check = false)
@@ -170,7 +177,6 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	 */
 	private static final int RAND_CODE_LENGTH = 8;
 	// End added by maojj 2016-10-25
-
 
 	@Override
 	public PageUtils<CouponsInfoQuery> getCouponsInfo(CouponsInfoParams couponsInfoParams, int pageNum, int pageSize)
@@ -524,8 +530,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		int store = this.getStore(id);
 		int relationStores = this.getCouponsRelationStroe(id);
 		/*
-		 * if (category > 0) {
-		 * couponsManageService.deleteCouponsLimitCategory(id); }
+		 * if (category > 0) { couponsManageService.deleteCouponsLimitCategory(id); }
 		 */
 		if (area > 0) {
 			this.deleteCouponsArea(id);
@@ -936,8 +941,7 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 						}
 					}
 				} /*
-					 * else if (area.getCouponsAreaType() ==
-					 * DistrictType.province) { cityMap.put("0", "所属范围内都可以用"); }
+					 * else if (area.getCouponsAreaType() == DistrictType.province) { cityMap.put("0", "所属范围内都可以用"); }
 					 */
 			}
 
@@ -1231,60 +1235,89 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		cal.setTime(expireTime);
 		cal.add(Calendar.DATE, -1);
 		dto.setEndTime(cal.getTime());
+
 		if (activityCoupons.getIsCategory() == 1 && activityCouponsQueryParamDto.isQueryCategory()) {
-			// 查询分类信息
-			ActivityCouponsCategoryParamBo activityCouponsCategoryParamBo = new ActivityCouponsCategoryParamBo();
-			activityCouponsCategoryParamBo.setCouponId(id);
-			List<ActivityCouponsCategory> categoryList = activityCouponsCategoryMapper
-					.findList(activityCouponsCategoryParamBo);
-			
+			List<ActivityCouponsCategory> categoryList = queryActivityCouponsCategory(activityCoupons);
 			dto.setActivityCouponsCategory(categoryList);
-			List<String> navigateCategoryIdList = Lists.newArrayList();
-			List<String> spuCategoryIdList = Lists.newArrayList();
-			categoryList.forEach(e -> {
-				if (e.getType() == 1 && !navigateCategoryIdList.contains(e.getCategoryId())) {
-					navigateCategoryIdList.add(e.getCategoryId());
-				} else if (e.getType() == 2 && !spuCategoryIdList.contains(e.getCategoryId())) {
-					spuCategoryIdList.add(e.getCategoryId());
-				}
-			});
-
-			if (CollectionUtils.isNotEmpty(navigateCategoryIdList)) {
-				GoodsNavigateCategoryParamDto goodsNavigateCategoryParamDto = new GoodsNavigateCategoryParamDto();
-				goodsNavigateCategoryParamDto.setIdList(navigateCategoryIdList);
-				goodsNavigateCategoryParamDto.setSort(false);
-				List<GoodsNavigateCategoryDto> navigateCategoryList = goodsNavigateCategoryServiceApi
-						.findList(goodsNavigateCategoryParamDto);
-
-				Map<String, String> navigateCategoryMap = navigateCategoryList.stream()
-						.collect(Collectors.toMap(GoodsNavigateCategoryDto::getId, GoodsNavigateCategoryDto::getName));
-				categoryList.forEach(e -> {
-					if (e.getType() == 1) {
-						e.setCategoryName(navigateCategoryMap.get(e.getCategoryId()));
-					}
-				});
-			}
-
-			if (CollectionUtils.isNotEmpty(spuCategoryIdList)) {
-				GoodsSpuCategoryParamDto paramDto = new GoodsSpuCategoryParamDto();
-				paramDto.setIdList(spuCategoryIdList);
-				List<GoodsSpuCategory> navigateCategoryList = goodsSpuCategoryServiceApi
-						.findSpuCategoryByParam(paramDto);
-
-				Map<String, String> navigateCategoryMap = navigateCategoryList.stream()
-						.collect(Collectors.toMap(GoodsSpuCategory::getId, GoodsSpuCategory::getName));
-				categoryList.forEach(e -> {
-					if (e.getType() == 2) {
-						e.setCategoryName(navigateCategoryMap.get(e.getCategoryId()));
-					}
-				});
-			}
 			String categoryNames = mergeCategoryNames(dto);
 			dto.setCategoryNames(categoryNames);
+		}
+		if (activityCouponsQueryParamDto.isQueryArea()) {
+			if (activityCoupons.getAreaType() == AreaType.area) {
+				ActivityCouponsArea activityCouponsArea = new ActivityCouponsArea();
+				activityCouponsArea.setCouponsId(id);
+				List<ActivityCouponsArea> areaList = activityCouponsAreaMapper.findLimitAreaList(activityCouponsArea);
+				if (CollectionUtils.isNotEmpty(areaList)) {
+					dto.setActivityCouponsAreaList(BeanMapper.mapList(areaList, ActivityCouponsAreaDto.class));
+				}
+			} else if (activityCoupons.getAreaType() == AreaType.store) {
+				CouponsRelationStoreParamBo paramBo = new CouponsRelationStoreParamBo();
+				paramBo.setCouponsId(id);
+				List<ActivityCouponsRelationStore> storeList = couponsRelationStoreMapper.findlist(paramBo);
+				if (CollectionUtils.isNotEmpty(storeList)) {
+					dto.setActivityCouponsRelationStoreList(
+							BeanMapper.mapList(storeList, ActivityCouponsRelationStoreDto.class));
+				}
+			}
 		}
 		String faceValueShowName = getCouponsFaceValueShowName(activityCoupons);
 		dto.setFaceValueShowName(faceValueShowName);
 		return dto;
+	}
+
+	/**
+	 * @Description: 查询代金卷关联分类信息
+	 * @param activityCoupons
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年11月15日
+	 */
+	private List<ActivityCouponsCategory> queryActivityCouponsCategory(ActivityCoupons activityCoupons) {
+		// 查询分类信息
+		ActivityCouponsCategoryParamBo activityCouponsCategoryParamBo = new ActivityCouponsCategoryParamBo();
+		activityCouponsCategoryParamBo.setCouponId(activityCoupons.getId());
+		List<ActivityCouponsCategory> categoryList = activityCouponsCategoryMapper
+				.findList(activityCouponsCategoryParamBo);
+		List<String> navigateCategoryIdList = Lists.newArrayList();
+		List<String> spuCategoryIdList = Lists.newArrayList();
+		categoryList.forEach(e -> {
+			if (e.getType() == 1 && !navigateCategoryIdList.contains(e.getCategoryId())) {
+				navigateCategoryIdList.add(e.getCategoryId());
+			} else if (e.getType() == 2 && !spuCategoryIdList.contains(e.getCategoryId())) {
+				spuCategoryIdList.add(e.getCategoryId());
+			}
+		});
+
+		if (CollectionUtils.isNotEmpty(navigateCategoryIdList)) {
+			GoodsNavigateCategoryParamDto goodsNavigateCategoryParamDto = new GoodsNavigateCategoryParamDto();
+			goodsNavigateCategoryParamDto.setIdList(navigateCategoryIdList);
+			goodsNavigateCategoryParamDto.setSort(false);
+			List<GoodsNavigateCategoryDto> navigateCategoryList = goodsNavigateCategoryServiceApi
+					.findList(goodsNavigateCategoryParamDto);
+
+			Map<String, String> navigateCategoryMap = navigateCategoryList.stream()
+					.collect(Collectors.toMap(GoodsNavigateCategoryDto::getId, GoodsNavigateCategoryDto::getName));
+			categoryList.forEach(e -> {
+				if (e.getType() == 1) {
+					e.setCategoryName(navigateCategoryMap.get(e.getCategoryId()));
+				}
+			});
+		}
+
+		if (CollectionUtils.isNotEmpty(spuCategoryIdList)) {
+			GoodsSpuCategoryParamDto paramDto = new GoodsSpuCategoryParamDto();
+			paramDto.setIdList(spuCategoryIdList);
+			List<GoodsSpuCategory> navigateCategoryList = goodsSpuCategoryServiceApi.findSpuCategoryByParam(paramDto);
+
+			Map<String, String> navigateCategoryMap = navigateCategoryList.stream()
+					.collect(Collectors.toMap(GoodsSpuCategory::getId, GoodsSpuCategory::getName));
+			categoryList.forEach(e -> {
+				if (e.getType() == 2) {
+					e.setCategoryName(navigateCategoryMap.get(e.getCategoryId()));
+				}
+			});
+		}
+		return categoryList;
 	}
 
 	private String mergeCategoryNames(ActivityCouponsDto activityCoupons) {
