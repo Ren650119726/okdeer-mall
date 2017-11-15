@@ -8,7 +8,6 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.archive.goods.base.entity.GoodsNavigateCategory;
 import com.okdeer.archive.goods.base.entity.GoodsSpuCategory;
-import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.dal.IBaseCrudMapper;
 import com.okdeer.mall.activity.coupons.bo.ActivityCouponsBo;
@@ -19,7 +18,6 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsLimitCategory;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsStore;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoParams;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery;
-import com.okdeer.mall.common.entity.AreaScTreeVo;
 
 /**
  * ClassName: ActivityCouponsMapper 
@@ -33,14 +31,6 @@ import com.okdeer.mall.common.entity.AreaScTreeVo;
  *		重构4.1			 2016年9月27日 			zhulq    新增查询对应类目名称
  */
 public interface ActivityCouponsMapper extends IBaseCrudMapper{
-	
-	/**
-	 * 根据parStoreInfo 得到店铺信息
-	 * @param parStoreInfo 对象
-	 * @return 店铺信息
-	 */
-	List<AreaScTreeVo> selectStoreInfoByCityId(StoreInfo parStoreInfo);
-	
 	/**
 	 * 查询一级导航类目
 	 * @param goodsSpuCategory 对象

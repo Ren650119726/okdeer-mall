@@ -65,8 +65,6 @@ import com.okdeer.mall.activity.coupons.entity.CouponsInfoParams;
 import com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsTermType;
-import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
-import com.okdeer.mall.activity.coupons.enums.CategoryLimit;
 import com.okdeer.mall.activity.coupons.enums.CouponsType;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsCategoryMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
@@ -84,7 +82,6 @@ import com.okdeer.mall.activity.dto.ActivityCouponsQueryParamDto;
 import com.okdeer.mall.activity.dto.ActivityCouponsRecordBeforeParamDto;
 import com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto;
 import com.okdeer.mall.activity.dto.TakeActivityCouponParamDto;
-import com.okdeer.mall.common.entity.AreaScTreeVo;
 import com.okdeer.mall.common.enums.AreaType;
 import com.okdeer.mall.common.enums.AuditStatusEnum;
 import com.okdeer.mall.common.enums.DistrictType;
@@ -174,10 +171,6 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 	private static final int RAND_CODE_LENGTH = 8;
 	// End added by maojj 2016-10-25
 
-	@Override
-	public List<AreaScTreeVo> getStoreInfoByCityId(StoreInfo parStoreInfo) {
-		return activityCouponsMapper.selectStoreInfoByCityId(parStoreInfo);
-	}
 
 	@Override
 	public PageUtils<CouponsInfoQuery> getCouponsInfo(CouponsInfoParams couponsInfoParams, int pageNum, int pageSize)
