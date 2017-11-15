@@ -6197,7 +6197,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                 totalValue = totalValue + r.getTotalValue();
             }
             respDto.setTotalValue(totalValue);
-            respDto.setVouContent("恭喜您获得" + recordList.size() + "张代金券");
+            respDto.setVouContent("恭喜您获得" + activityCouponsList.size() + "张代金券");
             respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_SUCCESS_TIPS);
             return;
         }
@@ -6271,7 +6271,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         addActivityCouponsRecord(lstCouponsRecords, lstActivityCouponsIds, record);
         if (totalValue != 0) {
             respDto.setTotalValue(totalValue);
-            respDto.setVouContent("恭喜您获得" + totalValue + "元代金券");
+            respDto.setVouContent("恭喜您获得" + activityCouponsList.size() + "张代金券");
             respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_SUCCESS_TIPS);
         }
     }
