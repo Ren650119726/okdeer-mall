@@ -6187,17 +6187,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         List<ActivityCouponsOrderRecord> recordList = activityCouponsOrderRecordMapper.findByParam(activityCouponsOrderRecordParamBo);
         if (CollectionUtils.isNotEmpty(recordList)) {
             // 该订单已经参与过消费返券活动
-			/*logger.info(ORDER_COUPONS_ALREADY, orderId, userId);
-			respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_ALREADY_TIPS);
-			return;*/
-            // 该订单已经参与过消费返券活动
             int totalValue = 0;
             for (ActivityCouponsOrderRecord r : recordList) {
                 // 赠送的代金券总面额
                 totalValue = totalValue + r.getTotalValue();
             }
+            //根据活动id查询已领取代金券数量
+            ActivityCouponsRecordQueryParamDto paramBo = new ActivityCouponsRecordQueryParamDto();
+            paramBo.setCouponsCollectId(collCoupons.getId());
             respDto.setTotalValue(totalValue);
-            respDto.setVouContent("恭喜您获得" + activityCouponsList.size() + "张代金券");
+            respDto.setVouContent("恭喜您获得" + activityCouponsRecordMapper.selectCountByParams(paramBo) + "张代金券");
             respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_SUCCESS_TIPS);
             return;
         }
@@ -6271,7 +6270,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         addActivityCouponsRecord(lstCouponsRecords, lstActivityCouponsIds, record);
         if (totalValue != 0) {
             respDto.setTotalValue(totalValue);
-            respDto.setVouContent("恭喜您获得" + activityCouponsList.size() + "张代金券");
+            respDto.setVouContent("恭喜您获得" + lstCouponsRecords.size() + "张代金券");
             respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_SUCCESS_TIPS);
         }
     }
