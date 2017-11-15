@@ -130,8 +130,12 @@ public class ActivityProcess implements TradeOrderRefundsListener, TradeOrderCha
 				logger.error("发送扣减积分信息出错", e);
 				throw new MallApiException(e);
 			}
-			// 退换优惠券
-			returnVoncher(tradeOrderRefundContext);
+			
+			if(tradeOrder.getType() == OrderTypeEnum.PHONE_PAY_ORDER|| tradeOrder.getType() == OrderTypeEnum.TRAFFIC_PAY_ORDER){
+				//如果是充值订单，则退换优惠卷
+				// 退换优惠券
+				returnVoncher(tradeOrderRefundContext);
+			}
 		}
 	}
 
