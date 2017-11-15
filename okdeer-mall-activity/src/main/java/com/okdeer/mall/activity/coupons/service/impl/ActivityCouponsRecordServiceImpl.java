@@ -271,6 +271,14 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				cal.setTime(vo.getValidTime());
 				cal.add(Calendar.DATE, -1); // 减1天
 				vo.setValidTime(cal.getTime());
+				
+				//折扣券的时候，要显示***折
+				if(vo.getCouponsType() == CouponsType.tyzkq.getValue().intValue()){
+					BigDecimal tempFaveValue = new BigDecimal(vo.getFaceValue()).divide(new BigDecimal(10));
+					vo.setFaceValueStr(tempFaveValue.toPlainString() + "折");
+				} else {
+					vo.setFaceValueStr(vo.getFaceValue() + "元");
+				}
 			}
 			/*
 			 * if (CollectionUtils.isNotEmpty(recordIds)) { List<ActivityCouponsRecordVo> list =
