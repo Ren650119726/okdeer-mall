@@ -274,6 +274,12 @@
 	  <if test="activityId !=null and activityId !=''">
 	  		AND A.coupons_collect_id = #{activityId,jdbcType=VARCHAR}
 	  </if>
+	  <if test="idList !=null and idList.size() > 0">
+	  		AND A.id IN 
+		  <foreach collection="idList" item="item" open="(" close=")" separator=",">
+	           #{item,jdbcType=VARCHAR}
+	      </foreach>
+	  </if>
 	  ORDER BY 
 		A.collect_time 
 	  DESC 
