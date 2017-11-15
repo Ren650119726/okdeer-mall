@@ -40,6 +40,7 @@ public class PhysicalOrderPayHandler extends AbstractPayResultHandler {
 	
 	@Override
 	public void postProcessOrder(TradeOrder tradeOrder) throws Exception {
+		super.postProcessOrder(tradeOrder);
 		//支付完成
 		TradeOrderContext tradeOrderContext = new TradeOrderContext();
 		tradeOrderContext.setTradeOrder(tradeOrder);
