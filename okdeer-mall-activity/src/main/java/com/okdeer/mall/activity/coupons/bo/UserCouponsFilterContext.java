@@ -2,11 +2,13 @@ package com.okdeer.mall.activity.coupons.bo;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
@@ -24,12 +26,10 @@ import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
  */
 public class UserCouponsFilterContext {
 	
-	private FavourParamBO paramBo;
-
 	/**
-	 * 可用的代金券id列表
+	 * 可享受优惠的代金券id与可享受优惠的金额对应关系
 	 */
-	private List<String> enabledCouponsIdList;
+	private Map<String,BigDecimal> enabledCouponsMap;
 
 	/**
 	 * 需要排除的代金券id列表
@@ -80,10 +80,10 @@ public class UserCouponsFilterContext {
 	 * 增加可用的代金券
 	 */
 	public void addEnabledCouponsId(String couponsId) {
-		if (enabledCouponsIdList == null) {
-			enabledCouponsIdList = Lists.newArrayList();
+		if(enabledCouponsMap == null){
+			enabledCouponsMap = Maps.newHashMap();
 		}
-		enabledCouponsIdList.add(couponsId);
+		enabledCouponsMap.put(couponsId, this.enjoyFavourAmount);
 	}
 
 	public void addExcludeCouponsId(String couponsId) {
@@ -98,14 +98,6 @@ public class UserCouponsFilterContext {
 			excludeCouponsActIdList = Lists.newArrayList();
 		}
 		excludeCouponsActIdList.add(couponsActId);
-	}
-
-	public List<String> getEnabledCouponsIdList() {
-		return enabledCouponsIdList;
-	}
-
-	public void setEnabledCouponsIdList(List<String> enabledCouponsIdList) {
-		this.enabledCouponsIdList = enabledCouponsIdList;
 	}
 
 	public List<String> getExcludeCouponsIdList() {
@@ -164,4 +156,8 @@ public class UserCouponsFilterContext {
 		this.enjoyFavourSkuIdList = enjoyFavourSkuIdList;
 	}
 
+	
+	public Map<String, BigDecimal> getEnabledCouponsMap() {
+		return enabledCouponsMap;
+	}
 }
