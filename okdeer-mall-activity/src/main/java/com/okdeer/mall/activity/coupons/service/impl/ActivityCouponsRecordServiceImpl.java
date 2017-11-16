@@ -298,7 +298,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 					
 					Calendar calLoseTime = Calendar.getInstance();
 					calLoseTime.setTime(calValidTime.getTime());
-					calLoseTime.add(Calendar.DATE, vo.getValidDay());
+					calLoseTime.add(Calendar.DATE, vo.getValidDay() - 1);
 					
 					vo.setValidDayStr(
 							DateUtils.formatDate(calValidTime.getTime(),"yyyy-MM-dd") + " - "+
