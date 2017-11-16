@@ -117,14 +117,13 @@ import net.sf.json.JSONObject;
  * @date 2016-04-08 19:39:19
  * @version 1.0.0
  * @copyright ©2005-2020 yschome.com Inc. All rights reserved
- * =================================================================================================
- *     Task ID			  Date			     Author		      Description
- * ----------------+----------------+-------------------+-------------------------------------------
- *		V4.1			2016-07-04			maojj			事务控制使用注解
- *		V1.1.0			2016-9-19		wushp				各种状态代金券数量统计
- *		V1.2			 2016-11-21			tuzhd			  代金劵提醒定时任务
- *		V1.3			2016-12-19          zhulq				异业代金卷领取成功后操作
- *		V2.1			2017-02-15			maojj			增加查询用户有效的代金券记录
+ *            ==================================================================
+ *            =============================== Task ID Date Author Description
+ *            ----------------+----------------+-------------------+------------
+ *            ------------------------------- V4.1 2016-07-04 maojj 事务控制使用注解
+ *            V1.1.0 2016-9-19 wushp 各种状态代金券数量统计 V1.2 2016-11-21 tuzhd 代金劵提醒定时任务
+ *            V1.3 2016-12-19 zhulq 异业代金卷领取成功后操作 V2.1 2017-02-15 maojj
+ *            增加查询用户有效的代金券记录
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi")
 class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceApi, ActivityCouponsRecordService {
@@ -190,12 +189,12 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	@Value("${mcm.sys.token}")
 	private String msgToken;
 
-	/**取消订单短信1*/
+	/** 取消订单短信1 */
 	@Value("${sms.coupons.notice}")
 	private String smsIsNoticeCouponsRecordStyle;
 
 	/**
-	 * 短信  service
+	 * 短信 service
 	 */
 	@Reference(version = "1.0.0")
 	private ISmsService smsService;
@@ -226,7 +225,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	@Reference(version = "1.0.0", check = false)
 	private TradeOrderServiceApi tradeOrderService;
-	
+
 	@Autowired
 	private ActivityCouponsServiceApi activityCouponsApi;
 
@@ -271,9 +270,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				cal.setTime(vo.getValidTime());
 				cal.add(Calendar.DATE, -1); // 减1天
 				vo.setValidTime(cal.getTime());
-				
-				//折扣券的时候，要显示***折
-				if(vo.getCouponsType() == CouponsType.tyzkq.getValue().intValue()){
+
+				// 折扣券的时候，要显示***折
+				if (vo.getCouponsType() == CouponsType.tyzkq.getValue().intValue()) {
 					BigDecimal tempFaveValue = new BigDecimal(vo.getFaceValue()).divide(new BigDecimal(10));
 					vo.setFaceValueStr(tempFaveValue.toPlainString() + "折");
 				} else {
@@ -281,10 +280,12 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				}
 			}
 			/*
-			 * if (CollectionUtils.isNotEmpty(recordIds)) { List<ActivityCouponsRecordVo> list =
-			 * activityCouponsRecordMapper.findOrderByRecordId(recordIds); for (ActivityCouponsRecordVo recordVo :
-			 * recordInfos) { for (ActivityCouponsRecordVo record : list) { recordVo.setOrderNo(record.getOrderNo()); }
-			 * } }
+			 * if (CollectionUtils.isNotEmpty(recordIds)) {
+			 * List<ActivityCouponsRecordVo> list =
+			 * activityCouponsRecordMapper.findOrderByRecordId(recordIds); for
+			 * (ActivityCouponsRecordVo recordVo : recordInfos) { for
+			 * (ActivityCouponsRecordVo record : list) {
+			 * recordVo.setOrderNo(record.getOrderNo()); } } }
 			 */
 		}
 		PageUtils<ActivityCouponsRecordVo> pageUtils = new PageUtils<ActivityCouponsRecordVo>(recordInfos);
@@ -313,22 +314,27 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		paramBo.setIncludeStatusList(statusList);
 		paramBo.setCollectUserId(currentOperateUserId);
 		List<ActivityCouponsRecord> list = activityCouponsRecordMapper.findCollectRecordList(paramBo);
-		if(CollectionUtils.isEmpty(list)){
+		if (CollectionUtils.isEmpty(list)) {
 			return Lists.newArrayList();
 		}
-		//按时间排序
+		// 按时间排序
 		list.sort((obj1, obj2) -> {
+			if (obj1.getCollectTime().getTime() == obj2.getCollectTime().getTime()) {
+				return 0;
+			}
 			if (obj1.getCollectTime().getTime() > obj2.getCollectTime().getTime()) {
 				return -1;
 			}
 			return 1;
 		});
+
 		List<ActivityCouponsRecordDto> dtoList = BeanMapper.mapList(list, ActivityCouponsRecordDto.class);
 		ActivityCouponsQueryParamDto activityCouponsQueryParamDto = new ActivityCouponsQueryParamDto();
 		activityCouponsQueryParamDto.setQueryArea(false);
 		activityCouponsQueryParamDto.setQueryCategory(true);
 		for (ActivityCouponsRecordDto activityCouponsRecordDto : dtoList) {
-			ActivityCouponsDto activityCouponsDto = activityCouponsApi.findDetailById(activityCouponsRecordDto.getCouponsId(), activityCouponsQueryParamDto);
+			ActivityCouponsDto activityCouponsDto = activityCouponsApi
+					.findDetailById(activityCouponsRecordDto.getCouponsId(), activityCouponsQueryParamDto);
 			activityCouponsRecordDto.setActivityCouponsDto(activityCouponsDto);
 		}
 		return dtoList;
@@ -364,10 +370,14 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	/**
 	 * 根据活动ID领取代金劵 存在邀请人用户id需要确认是否记录邀请人
-	 * @param collectId 活动id集合
-	 * @param userId 用户id
-	 * @param activityCouponsType 活动类型
-	 * @return tuzhiding 
+	 * 
+	 * @param collectId
+	 *            活动id集合
+	 * @param userId
+	 *            用户id
+	 * @param activityCouponsType
+	 *            活动类型
+	 * @return tuzhiding
 	 * @throws Exception
 	 */
 	@Transactional(rollbackFor = Exception.class)
@@ -377,11 +387,16 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	/**
 	 * 根据活动ID领取代金劵
-	 * @param collectId 活动id集合
-	 * @param userId 用户id
-	 * @param activityCouponsType 活动类型
-	 * @param invitaUserId 邀请人用户id
-	 * @return tuzhiding 
+	 * 
+	 * @param collectId
+	 *            活动id集合
+	 * @param userId
+	 *            用户id
+	 * @param activityCouponsType
+	 *            活动类型
+	 * @param invitaUserId
+	 *            邀请人用户id
+	 * @return tuzhiding
 	 * @throws ServiceException
 	 */
 	@Override
@@ -392,11 +407,11 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	}
 
 	/**
-	 * @DESC 校验预领取记录
-	 * 1、存在未使用的新人代金券则 不能领取返回false
-	 * 2、持续的活动领取过不能再领取
-	 * @param phone 手机号
-	 * @param collectId 代金券活动id
+	 * @DESC 校验预领取记录 1、存在未使用的新人代金券则 不能领取返回false 2、持续的活动领取过不能再领取
+	 * @param phone
+	 *            手机号
+	 * @param collectId
+	 *            代金券活动id
 	 * @return
 	 */
 	private boolean checkNewUserCoupons(String userId, ActivityCollectCoupons coll) {
@@ -413,12 +428,18 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	/**
 	 * 根据活动ID及用户手机号码领取代金劵
-	 * @param collectId 活动id集合
-	 * @param phone 用户手机号码
-	 * @param activityCouponsType 活动类型
-	 * @param userId 	邀请的用户id 没有null
-	 * @param advertId 	H5活动id
-	 * @return tuzhiding 
+	 * 
+	 * @param collectId
+	 *            活动id集合
+	 * @param phone
+	 *            用户手机号码
+	 * @param activityCouponsType
+	 *            活动类型
+	 * @param userId
+	 *            邀请的用户id 没有null
+	 * @param advertId
+	 *            H5活动id
+	 * @return tuzhiding
 	 * @throws ServiceException
 	 */
 	@Override
@@ -563,11 +584,11 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	}
 
 	/**
-	 * @DESC 校验预领取记录
-	 * 1、存在未使用的新人代金券则 不能领取返回false
-	 * 2、持续的活动领取过不能再领取
-	 * @param phone 手机号
-	 * @param collectId 代金券活动id
+	 * @DESC 校验预领取记录 1、存在未使用的新人代金券则 不能领取返回false 2、持续的活动领取过不能再领取
+	 * @param phone
+	 *            手机号
+	 * @param collectId
+	 *            代金券活动id
 	 * @return
 	 */
 	private boolean checkBeforeCoupons(String phone, ActivityCollectCoupons coll) {
@@ -587,7 +608,9 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	/**
 	 * 注册送完代金劵后将预代金劵送到用户的账户中
-	 *  @param userId 用户id
+	 * 
+	 * @param userId
+	 *            用户id
 	 */
 	public void insertCopyRecords(String userId, String phone, String machineCode) {
 		try {
@@ -748,10 +771,15 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	/**
 	 * 根据随机码进行领取代金劵
-	 * @param activityCoupons 活动信息
-	 * @param userId 用户id
-	 * @param successMsg 成功提示语
-	 * @param activityCouponsType  活动类型
+	 * 
+	 * @param activityCoupons
+	 *            活动信息
+	 * @param userId
+	 *            用户id
+	 * @param successMsg
+	 *            成功提示语
+	 * @param activityCouponsType
+	 *            活动类型
 	 * @author zhulq
 	 * @date 2016年10月26日
 	 */
@@ -805,10 +833,15 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	/**
 	 * 判断当前登陆用户领取的指定代金券数量是否已经超过限领数量，所有用户领取的指定代金券总数量是否已经超过代金券的总发行数量，否则，插入代金券领取记录
-	 * @param activityCoupons 活动信息
-	 * @param userId 用户id
-	 * @param successMsg 成功提示语
-	 * @param activityCouponsType  活动类型
+	 * 
+	 * @param activityCoupons
+	 *            活动信息
+	 * @param userId
+	 *            用户id
+	 * @param successMsg
+	 *            成功提示语
+	 * @param activityCouponsType
+	 *            活动类型
 	 * @author zhulq
 	 * @date 2016年10月26日
 	 */
@@ -846,10 +879,13 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	/**
 	 * @Description: 进行公共代金劵活动校验
-	 * @param map 返回值
-	 * @param collect 活动对象
-	 * @param userId 用户id
-	 * @return boolean  
+	 * @param map
+	 *            返回值
+	 * @param collect
+	 *            活动对象
+	 * @param userId
+	 *            用户id
+	 * @return boolean
 	 * @author tuzhd
 	 * @date 2017年6月30日
 	 */
@@ -878,11 +914,16 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	/**
 	 * @Description: 进行公共代金劵领取校验
-	 * @param map 返回结果
-	 * @param activityCoupons 活动信息
-	 * @param userId 用户id
-	 * @param activityCouponsType 活动类型
-	 * @param record 代金劵记录对象
+	 * @param map
+	 *            返回结果
+	 * @param activityCoupons
+	 *            活动信息
+	 * @param userId
+	 *            用户id
+	 * @param activityCouponsType
+	 *            活动类型
+	 * @param record
+	 *            代金劵记录对象
 	 * @author zhulq
 	 * @date 2016年10月26日
 	 */
@@ -915,8 +956,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	/**
 	 * @Description: 更新随机码表记录
-	 * @param radeCode 随机码 
-	 * @param userId 用户id
+	 * @param radeCode
+	 *            随机码
+	 * @param userId
+	 *            用户id
 	 * @author zhulq
 	 * @date 2016年10月26日
 	 */
@@ -936,8 +979,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	// Begin V2.6.0_P01 modified by maojj 2017-09-09
 	/**
 	 * @Description: 更新保存领取代金劵记录
-	 * @param record 代金劵信息
-	 * @param coupons 活动信息
+	 * @param record
+	 *            代金劵信息
+	 * @param coupons
+	 *            活动信息
 	 * @author zhulq
 	 * @date 2016年10月26日
 	 */
@@ -953,8 +998,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	/**
 	 * @Description: 更新保存预领取代金劵记录
-	 * @param record 代金劵信息
-	 * @param coupons 活动信息
+	 * @param record
+	 *            代金劵信息
+	 * @param coupons
+	 *            活动信息
 	 * @author tuzhiding
 	 * @date 2016年10月26日
 	 */
@@ -970,10 +1017,13 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	}
 
 	/**
-	 * @Description:  校验代金卷的日领取量
-	 * @param map 返回结果
-	 * @param record 代金卷记录对象
-	 * @param collect 活动信息
+	 * @Description: 校验代金卷的日领取量
+	 * @param map
+	 *            返回结果
+	 * @param record
+	 *            代金卷记录对象
+	 * @param collect
+	 *            活动信息
 	 * @author zhulq
 	 * @date 2016年10月26日
 	 */
@@ -1001,10 +1051,14 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	/**
 	 * @Description: 检验优惠码的领取
-	 * @param map 返回结果
-	 * @param userId 用户id
-	 * @param record 代金卷记录对象
-	 * @param coupons 代金卷信息
+	 * @param map
+	 *            返回结果
+	 * @param userId
+	 *            用户id
+	 * @param record
+	 *            代金卷记录对象
+	 * @param coupons
+	 *            代金卷信息
 	 * @author zhulq
 	 * @date 2016年10月26日
 	 */
@@ -1036,10 +1090,14 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	/**
 	 * @Description: 检验优惠码的领取
-	 * @param map 返回结果
-	 * @param userId 用户id
-	 * @param record 代金卷记录对象
-	 * @param coupons 代金卷信息
+	 * @param map
+	 *            返回结果
+	 * @param userId
+	 *            用户id
+	 * @param record
+	 *            代金卷记录对象
+	 * @param coupons
+	 *            代金卷信息
 	 * @author zhulq
 	 * @date 2016年10月26日
 	 */
@@ -1176,6 +1234,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	/**
 	 * 添加根据条件查询代金券信息
+	 * 
 	 * @param params
 	 * @return
 	 */
@@ -1258,6 +1317,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	/**
 	 * 验证优惠券的使用限制
+	 * 
 	 * @param paramBo
 	 * @param rule
 	 * @param couponVo
@@ -1337,9 +1397,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	}
 
 	/**
-	 * @Description: * 1、当代金券设置的领取后的有效期大于3天，则在代金券结束前第三天发送；2、当代金券设置的领取后的有效期大于1天小于或等于3天，
-	 * 则在代金券的有效期最后一天发送；当代金券设置的领取后的有效期等于1天，则不会发送推送和短线
-	 * @return List<String>  
+	 * @Description: * 1、当代金券设置的领取后的有效期大于3天，则在代金券结束前第三天发送；2、
+	 *               当代金券设置的领取后的有效期大于1天小于或等于3天，
+	 *               则在代金券的有效期最后一天发送；当代金券设置的领取后的有效期等于1天，则不会发送推送和短线
+	 * @return List<String>
 	 * @author tuzhd
 	 * @date 2016年11月21日
 	 */
@@ -1348,10 +1409,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	}
 
 	/**
-	 * @Description: 执行代金劵提醒JOB   
-	 * @return void  
-	 * @throws
-	 * @author tuzhd
+	 * @Description: 执行代金劵提醒JOB
+	 * @return void
+	 * @throws @author
+	 *             tuzhd
 	 * @date 2016年11月21日
 	 */
 	public void procesRecordNoticeJob() {
@@ -1399,7 +1460,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	/**
 	 * @Description: 根据手机号发送短信
-	 * @param mobile   手机号码
+	 * @param mobile
+	 *            手机号码
 	 * @author tuzhd
 	 * @date 2016年11月21日
 	 */
@@ -1425,10 +1487,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @Description: 根据用户id及手机号码进行消息发送 代金劵到期提醒功能
 	 * @param userId
 	 * @param phone
-	 * @throws Exception   
-	 * @return void  
-	 * @throws
-	 * @author tuzhd
+	 * @throws Exception
+	 * @return void
+	 * @throws @author
+	 *             tuzhd
 	 * @date 2016年11月21日
 	 */
 	private void sendPosMessage(List<PushUser> pushUsers) {
@@ -1503,8 +1565,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	}
 
 	/**
-	 * 根据邀请人id查询邀请记录信息
-	 * (non-Javadoc)
+	 * 根据邀请人id查询邀请记录信息 (non-Javadoc)
+	 * 
 	 * @see findInviteInfoByInviteUserId(java.lang.String)
 	 */
 	@Override
@@ -1513,11 +1575,11 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	}
 
 	/**
-	 * @Description: 邀新活动 被邀用户下单完成后给 邀请人送代金劵及抽奖次数 
-	 * 1、是否完成首单
-	 * 2、活动是否未结束
-	 * @param userId 被邀请人id
-	 * @param collectCouponsIds 邀请人获得的代金劵奖励id
+	 * @Description: 邀新活动 被邀用户下单完成后给 邀请人送代金劵及抽奖次数 1、是否完成首单 2、活动是否未结束
+	 * @param userId
+	 *            被邀请人id
+	 * @param collectCouponsIds
+	 *            邀请人获得的代金劵奖励id
 	 * @author tuzhd
 	 * @date 2016年12月13日
 	 */
@@ -1535,8 +1597,11 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			// 查询用户的手机邀请预领取记录
 			for (ActivityCouponsRecordBefore record : list) {
 				/*
-				 * ColumnAdvert columnAdvert = columnAdvertService.findAdvertById(record.getActivityId()); //判断活动是否结束
-				 * 结束时间大于当前时间未结束 if(columnAdvert.getEndTime().getTime() <= new Date().getTime()){ return; }
+				 * ColumnAdvert columnAdvert =
+				 * columnAdvertService.findAdvertById(record.getActivityId());
+				 * //判断活动是否结束 结束时间大于当前时间未结束
+				 * if(columnAdvert.getEndTime().getTime() <= new
+				 * Date().getTime()){ return; }
 				 */
 				// 执行 给邀请人送代金劵及抽奖次数 1
 				sysBuyerExtService.updateAddPrizeCount(record.getInviteUserId(), 1);
@@ -1571,10 +1636,12 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	}
 
 	/**
-	 * @Description:  tuzhd根据用户id查询其是否存在已使用的新用户专享代金劵 用于首单条件判断
-	 * @param useUserType 使用用户类型
-	 * @param userId 用户id
-	 * @return int  统计结果
+	 * @Description: tuzhd根据用户id查询其是否存在已使用的新用户专享代金劵 用于首单条件判断
+	 * @param useUserType
+	 *            使用用户类型
+	 * @param userId
+	 *            用户id
+	 * @return int 统计结果
 	 * @author tuzhd
 	 * @date 2016年12月31日
 	 */
@@ -1696,7 +1763,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 * @param userId
 	 * @param deviceId
 	 * @param isFindCollectActivity
-	 * @return   
+	 * @return
 	 * @author guocp
 	 * @date 2017年8月4日
 	 */
@@ -1750,8 +1817,11 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 
 	/**
 	 * 校验代金券领取的用户状态，避免短时间内并发操作
-	 * @param key 存储的redis key
-	 * @param times 超时时间
+	 * 
+	 * @param key
+	 *            存储的redis key
+	 * @param times
+	 *            超时时间
 	 * @return
 	 */
 	private boolean checkUserStatusByRedis(String key, int times) {
@@ -1766,8 +1836,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	}
 
 	/**
-	 * 移除校验代金券领取的用户状	 
-	 * @param key 存储的redis key
+	 * 移除校验代金券领取的用户状
+	 * 
+	 * @param key
+	 *            存储的redis key
 	 * @return
 	 */
 	private void removeRedisUserStatus(String key) {

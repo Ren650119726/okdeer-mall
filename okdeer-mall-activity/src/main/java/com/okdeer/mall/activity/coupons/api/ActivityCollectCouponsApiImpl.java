@@ -109,6 +109,9 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 
 			couponseList = filterByActivityType(activityCollectCouponsParamDto.getType(), couponseList);
 			couponseList.sort((obj1, obj2) -> {
+				if(obj1.getCreateTime().getTime() == obj2.getCreateTime().getTime()){
+					return 0;
+				}
 				if (obj1.getCreateTime().getTime() > obj2.getCreateTime().getTime()) {
 					return -1;
 				}
