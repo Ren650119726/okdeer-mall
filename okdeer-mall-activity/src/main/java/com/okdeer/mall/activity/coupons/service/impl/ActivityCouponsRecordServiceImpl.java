@@ -278,6 +278,33 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				} else {
 					vo.setFaceValueStr(vo.getFaceValue() + "元");
 				}
+				
+				//v2.6.4有效期要改为区间段的显示方式，
+				//0：设置领取后多少天生效，生效后多少天失效。1：设置设置有效时间范围'
+				if(vo.getTermType() == 1){
+					if(vo.getCouponsEndTime() != null && vo.getCouponsStartTime() != null){
+						vo.setValidDayStr(
+								DateUtils.formatDate(vo.getCouponsStartTime(),"yyyy-MM-dd") + " - "+
+								DateUtils.formatDate(vo.getCouponsEndTime(),"yyyy-MM-dd")
+							);
+					}
+				} else {
+					//当前时间11-9 折扣券A:生效时间领取后2天有效，失效时间生效后3天失效 折扣券B: 有效期 11-9-11.20 用户13723472527 在11-10 领取折扣券A B
+					//1. 有效期显示2017-11-11-2017-11-13
+					//2. 有效期显示2017-11-09-2017-11-20
+					Calendar calValidTime = Calendar.getInstance();
+					calValidTime.setTime(vo.getCollectTime());
+					calValidTime.add(Calendar.DATE, vo.getEffectDay());
+					
+					Calendar calLoseTime = Calendar.getInstance();
+					calLoseTime.setTime(calValidTime.getTime());
+					calLoseTime.add(Calendar.DATE, vo.getValidDay());
+					
+					vo.setValidDayStr(
+							DateUtils.formatDate(calValidTime.getTime(),"yyyy-MM-dd") + " - "+
+							DateUtils.formatDate(calLoseTime.getTime(),"yyyy-MM-dd")
+						);
+				}
 			}
 			/*
 			 * if (CollectionUtils.isNotEmpty(recordIds)) {
