@@ -6189,22 +6189,18 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             // 该订单已经参与过消费返券活动
             int totalValue = 0;
             for (ActivityCouponsOrderRecord r : recordList) {
-                // 赠送的代金券总面额
+                // 赠送的代金券总面额 改为存总张数
                 totalValue = totalValue + r.getTotalValue();
             }
-            //根据活动id查询已领取代金券数量
-            ActivityCouponsRecordQueryParamDto paramBo = new ActivityCouponsRecordQueryParamDto();
-            paramBo.setCouponsCollectId(collCoupons.getId());
-            respDto.setTotalValue(totalValue);
-            respDto.setVouContent("恭喜您获得" + activityCouponsRecordMapper.selectCountByParams(paramBo) + "张代金券");
+            respDto.setVouContent("恭喜您获得" + totalValue + "张代金券");
             respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_SUCCESS_TIPS);
             return;
         }
 
         // 待插入的代金券领取记录
-        List<ActivityCouponsRecord> lstCouponsRecords = new ArrayList<ActivityCouponsRecord>();
+        List<ActivityCouponsRecord> lstCouponsRecords = new ArrayList<>();
         // 代金券ids：用于更新代金券剩余量
-        List<String> lstActivityCouponsIds = new ArrayList<String>();
+        List<String> lstActivityCouponsIds = new ArrayList<>();
         // 赠送的代金券总面额
         int totalValue = 0;
         // 代金卷活动类型：0代金券领取活动，1注册活动，2开门成功送代金券活动3 邀请注册送代金券活动4 消费返券活动
@@ -6255,8 +6251,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             lstCouponsRecords.add(activityCouponsRecord);
             // 更新代金券已使用数量和剩余数量
             lstActivityCouponsIds.add(coupons.getId());
-            // 赠送的代金券总面额
-            totalValue = totalValue + coupons.getFaceValue();
+            // 赠送的代金券总面额 改为存总张数
+            totalValue++;
         }
         ActivityCouponsOrderRecord record = new ActivityCouponsOrderRecord();
         record.setId(UuidUtils.getUuid());
@@ -6270,7 +6266,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
         addActivityCouponsRecord(lstCouponsRecords, lstActivityCouponsIds, record);
         if (totalValue != 0) {
             respDto.setTotalValue(totalValue);
-            respDto.setVouContent("恭喜您获得" + lstCouponsRecords.size() + "张代金券");
+            respDto.setVouContent("恭喜您获得" + totalValue + "张代金券");
             respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_SUCCESS_TIPS);
         }
     }
