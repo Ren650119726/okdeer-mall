@@ -270,6 +270,17 @@ public class GetPreferentialServiceImpl implements GetPreferentialService {
 						return false;
 					}
 					paramBo.setTotalAmount(totalAmount);
+				} else {
+					// 如果都不限，优惠总金额需要剔除参与特价的商品
+					paramBo.setTotalAmount(
+							BigDecimal
+									.valueOf(
+											goodsList.stream()
+													.mapToDouble(e -> e.getSkuPrice()
+															.multiply(BigDecimal
+																	.valueOf(e.getQuantity() - e.getSkuActQuantity()))
+															.doubleValue())
+													.sum()));
 				}
 				return true;
 			}
