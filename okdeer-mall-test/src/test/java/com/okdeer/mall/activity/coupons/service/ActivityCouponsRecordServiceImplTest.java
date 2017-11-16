@@ -112,7 +112,7 @@ public class ActivityCouponsRecordServiceImplTest extends BaseServiceTest {
 		beforeMethod(this, "couponsRecordsTest");
 		
 		activityCouponsRecordService.findCouponsCountByUser(UseUserType.ALLOW_All, "141577260798e5eb9e1b8a0645b486c7");
-		activityCouponsRecordService.findMyCouponsDetailByParams(ActivityCouponsRecordStatusEnum.USED, "141577260798e5eb9e1b8a0645b486c7", true);
+//		activityCouponsRecordService.findMyCouponsDetailByParams(ActivityCouponsRecordStatusEnum.USED, "141577260798e5eb9e1b8a0645b486c7", true);
 		ActivityCouponsRecordQueryParamDto param = new ActivityCouponsRecordQueryParamDto();
 		param.setStatus(0);
 		activityCouponsRecordService.selectCountByParams(param);
