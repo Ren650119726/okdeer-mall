@@ -581,7 +581,7 @@ public class TradeOrderBuilder {
 				storeFavourItem = tradeOrder.getStorePreferential();
 			}
 			if (platformFavour.compareTo(referenceValue) > 0) {
-				if(!parserBo.getEnjoyFavourSkuIdList().add(skuBo.getId())){
+				if(!parserBo.getEnjoyFavourSkuIdList().contains(skuBo.getId())){
 					// 如果有优惠的商品项不包含改商品，意味着该商品不享有平台优惠
 					favourItem = BigDecimal.valueOf(0.0);
 				} else if (index++ < haveFavourItemSize - 1) {

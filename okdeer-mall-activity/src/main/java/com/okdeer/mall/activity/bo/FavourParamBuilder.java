@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -53,10 +54,11 @@ public class FavourParamBuilder {
 	 * @param postProcessor
 	 * @return   
 	 * @author maojj
+	 * @throws Exception 
 	 * @date 2017年2月15日
 	 */
 	public FavourParamBO build(PlaceOrderParamDto paramDto, PlaceOrderDto orderDto, Set<String> spuCategoryIds,
-			List<PlaceOrderItemDto> goodsList) {
+			List<PlaceOrderItemDto> goodsList) throws Exception {
 		FavourParamBO paramBO = new FavourParamBO();
 		// 店铺信息
 		StoreInfo storeInfo = (StoreInfo)paramDto.get("storeInfo");
@@ -76,12 +78,19 @@ public class FavourParamBuilder {
 		paramBO.setStoreType(storeType);
 		paramBO.setOrderType(EnumAdapter.convert(storeType));
 		paramBO.setTotalAmount(paramDto.getTotalAmount());
+		paramBO.setAddressId(paramDto.getUserAddrId());
 		if(storeType == StoreTypeEnum.SERVICE_STORE){
 			// 服务店代金券，需要根据用户收货地址来确认是否可用。
 			UserAddressVo addr = orderDto.getUserAddrInfo();
 			if(addr != null){
 				// 如果能获取用户默认地址，根据用户默认地址查询用户有效的代金券。
 				paramBO.setAddressId(addr.getAddressId());
+			}else if(paramDto.getSkuType() == OrderTypeEnum.STORE_CONSUME_ORDER){
+				// 如果是到店消费订单。地址为店铺默认地址id
+				MemberConsigneeAddress address = memberConsigneeAddressService.findByStoreId(paramDto.getStoreId());
+				if (address != null) {
+					paramBO.setAddressId(address.getId());
+				}
 			}
 		}
 		paramBO.setClientType(EnumAdapter.convert(paramDto.getChannel()));

@@ -837,7 +837,7 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 				return msg.replace("#", version);
 			} else if (advertType.equals(AdvertTypeEnum.APP_BOMB_SCREEN.getIndex()) && arcossTimeAdvertQty >= 1) {
 				// 同一个区域（城市）、同一个时间段、同一个版本下,最多运营商能上传1首页弹屏广告，且时间不能产生交叉；
-				return msg.replace("#", version);
+				return msg.replace("#", "");
 			}
 			
 		}

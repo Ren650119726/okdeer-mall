@@ -57,20 +57,6 @@ public class ActivityCouponsRecordMapperTest {
 	public void testFind(){
 		mapper.findByQueryVo(null);
 	}
-	
-	@Test
-	public void testFindValidCoupons() {
-		FavourParamBO paramBo = new FavourParamBO();
-		paramBo.setUserId("141102938903bd0f97c9a9694854bd8c");
-		paramBo.setStoreId("141102938903bd0f97c9a9694854bd8c");
-		paramBo.setTotalAmount(BigDecimal.valueOf(510));
-		
-//		List<Coupons> coupons = activityCouponsRecordMapper.findValidCoupons(paramBo);
-//		System.out.println(">>>>>>>>>>>>" + JSONArray.fromObject(coupons));
-//		for(Coupons bean : coupons) {
-//			System.out.println(bean.getCouponPrice());
-//		}
-	}
 
 	@Test
 	public void testFindTotalRewardAmount(){

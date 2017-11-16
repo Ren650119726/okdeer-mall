@@ -203,11 +203,8 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 		activityCouponsRecordService.countUseRecord(favourParamBo,Arrays.asList(new UserCouponsBo[]{userCouponsBo}));
 		// 3、构建过滤上下文对象
 		UserCouponsFilterContext filterContext = new UserCouponsFilterContext();
-		if(paramDto.getChannel() == OrderResourceEnum.MEMCARD 
-				|| paramDto.getChannel() == OrderResourceEnum.SWEEP){
-			filterContext.setEnjoyFavourAmount(parserBo.getTotalAmountHaveFavour());
-		}else{
-			filterContext.setEnjoyFavourAmount(favourParamBo.getTotalAmount());
+		if(paramDto.getChannel() == OrderResourceEnum.SWEEP){
+			favourParamBo.setTotalAmount(parserBo.getTotalAmountHaveFavour());
 		}
 		// 检查代金券
 		if(!filterStrategy.accept(userCouponsBo, favourParamBo, filterContext)){

@@ -2,8 +2,7 @@ package com.okdeer.mall.activity.service.impl;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
@@ -12,12 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
-import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
-import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
-import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
-import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.coupons.bo.UserCouponsBo;
 import com.okdeer.mall.activity.coupons.bo.UserCouponsFilterContext;
@@ -73,9 +67,10 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 		// 代金券id
 		String couponsId = couponsInfo.getId();
 		// 可用的代金券Id列表
-		List<String> enabledCouponsIdList = filterContext.getEnabledCouponsIdList();
-		if(CollectionUtils.isNotEmpty(enabledCouponsIdList) && enabledCouponsIdList.contains(couponsId)){
+		Map<String,BigDecimal> enabledCouponsMap = filterContext.getEnabledCouponsMap();
+		if(enabledCouponsMap != null && enabledCouponsMap.containsKey(couponsId)){
 			// 如果代金券已经被被检查过，且判定代金券为可用，则直接返回，不用重新检查。
+			filterContext.setEnjoyFavourAmount(enabledCouponsMap.get(couponsId));
 			return true;
 		}
 		// 不可用的代金券id列表
@@ -87,6 +82,11 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 		// 不可用的代金券活动id列表
 		List<String> excludeCouponsActIdList = filterContext.getExcludeCouponsActIdList();
 		if(CollectionUtils.isNotEmpty(excludeCouponsActIdList) && excludeCouponsActIdList.contains(couponsInfo.getActivityId())){
+			return false;
+		}
+		// 检查是否到达订单金额限制
+		if(!isArriveOrderAmount(paramBo.getTotalAmount(), BigDecimal.valueOf(couponsInfo.getArriveLimit()))){
+			LOG.debug("用户{}使用代金券{}订单金额为{}未达到金额上限",paramBo.getUserId(),couponsId,paramBo.getTotalAmount());
 			return false;
 		}
 		// 检查是否超过订单类型限制
@@ -102,11 +102,6 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 		// 检查是否超出用户类型限制
 		if(isOutOfLimitUserType(paramBo.getUserId(), filterContext, couponsInfo.getUseUserType())){
 			LOG.debug("用户{}使用代金券{}超出用户类型限制",paramBo.getUserId(),couponsId);
-			return false;
-		}
-		// 检查是否到达订单金额限制
-		if(!isArriveOrderAmount(paramBo.getTotalAmount(), BigDecimal.valueOf(couponsInfo.getArriveLimit()))){
-			LOG.debug("用户{}使用代金券{}订单金额为{}未达到金额上限",paramBo.getUserId(),couponsId,paramBo.getTotalAmount());
 			return false;
 		}
 		// 检查是否超出代金券使用范围
@@ -206,7 +201,8 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 	 * @date 2017年11月9日
 	 */
 	public boolean isArriveOrderAmount(BigDecimal orderAmount,BigDecimal limitAmount){
-		return orderAmount.compareTo(limitAmount) >= 0;
+		// 如果订单金额为0，无需享受优惠
+		return orderAmount.compareTo(BigDecimal.ZERO) > 0 && orderAmount.compareTo(limitAmount) >= 0;
 	}
 	
 	/**
@@ -319,6 +315,7 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 						.subtract(goodsItem.getSkuPrice().multiply(BigDecimal.valueOf(goodsItem.getSkuActQuantity())));
 			}
 		}
+		filterContext.setEnjoyFavourAmount(enjoyFavourAmount);
 	}
 	
 	/**
@@ -331,7 +328,7 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 	 * @date 2017年11月9日
 	 */
 	public boolean isOutOfLimitUserDayUseInCoupons(Integer limitUseNum,FavourParamBO paramBo,String couponsId){
-		if(limitUseNum > 1){
+		if(limitUseNum > 0){
 			// 代金券每日限制账号使用次数
 			if(limitUseNum.compareTo(paramBo.findCountNum(RecordCountRuleEnum.COUPONS_BY_USER, couponsId)) < 1){
 				return true;
@@ -350,7 +347,7 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 	 * @date 2017年11月9日
 	 */
 	public boolean isOutOfLimitDeviceDayUseInCoupons(Integer limitUseNum,FavourParamBO paramBo,String couponsId){
-		if(limitUseNum > 1){
+		if(limitUseNum > 0){
 			// 代金券每日限制账号使用次数
 			if(limitUseNum.compareTo(paramBo.findCountNum(RecordCountRuleEnum.COUPONS_BY_DEVICE, couponsId)) < 1){
 				return true;
@@ -371,7 +368,7 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 	 */
 	public boolean isOutOfLimitUserDayUseInAct(Integer limitUseNum, FavourParamBO paramBo, String couponsActId,
 			UserCouponsFilterContext filterContext) {
-		if(limitUseNum > 1){
+		if(limitUseNum > 0){
 			// 代金券每日限制账号使用次数
 			if(limitUseNum.compareTo(paramBo.findCountNum(RecordCountRuleEnum.COUPONS_COLLECT_BY_USER, couponsActId)) < 1){
 				// 活动不可用，将活动缓存到不可用列表中
@@ -397,7 +394,7 @@ public abstract class GenericCouponsFilterStrategy implements CouponsFilterStrat
 	 */
 	public boolean isOutOfLimitDeviceDayUseInAct(Integer limitUseNum, FavourParamBO paramBo, String couponsActId,
 			UserCouponsFilterContext filterContext) {
-		if(limitUseNum > 1){
+		if(limitUseNum > 0){
 			// 代金券每日限制账号使用次数
 			if(limitUseNum.compareTo(paramBo.findCountNum(RecordCountRuleEnum.COUPONS_COLLECT_BY_DEVICE, couponsActId)) < 1){
 				// 活动不可用，将活动缓存到不可用列表中

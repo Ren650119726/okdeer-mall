@@ -1,6 +1,15 @@
 package com.okdeer.mall.order.handler.impl;
 
+import static org.junit.Assert.assertEquals;
+
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.util.Arrays;
+
 import org.junit.Test;
+
+import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
+
 
 /**
  * ClassName: CheckFavourServiceImplTest 
@@ -31,6 +40,20 @@ public class CheckFavourServiceImplTest {
 	@Test
 	public void testCheckCoupons() {
 		
+	}
+	
+	@Test
+	public void testCalucateDiscountAmount() throws Exception{
+		CheckFavourServiceImpl checkFavourService = new CheckFavourServiceImpl();
+		Method method = Arrays.asList(CheckFavourServiceImpl.class.getDeclaredMethods()).stream()
+				.filter(e -> "calucateDiscountAmount".equals(e.getName())).findFirst().get();
+		method.setAccessible(true);
+		ActivityCoupons couponsInfo = new ActivityCoupons();
+		couponsInfo.setType(8);
+		couponsInfo.setOrderDiscountMax(10);
+		couponsInfo.setFaceValue(90);
+		BigDecimal discount = (BigDecimal) method.invoke(checkFavourService, couponsInfo,BigDecimal.valueOf(10));
+		assertEquals(BigDecimal.valueOf(1), discount);
 	}
 
 }

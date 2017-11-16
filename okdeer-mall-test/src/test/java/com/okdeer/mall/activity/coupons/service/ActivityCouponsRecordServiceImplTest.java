@@ -1,6 +1,11 @@
 package com.okdeer.mall.activity.coupons.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyString;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -13,7 +18,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.mockito.BDDMockito;
 import org.mockito.Mock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.util.AopTestUtils;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -21,9 +29,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Lists;
+import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
+import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.base.redis.IRedisTemplateWrapper;
+import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
@@ -31,10 +43,18 @@ import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto;
+import com.okdeer.mall.activity.service.impl.BldCouponsFilterStrategy;
 import com.okdeer.mall.base.BaseServiceTest;
+import com.okdeer.mall.base.MockUtils;
+import com.okdeer.mall.common.enums.UseClientType;
 import com.okdeer.mall.common.enums.UseUserType;
+import com.okdeer.mall.mock.MockFilePath;
+import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.entity.TradeOrder;
+import com.okdeer.mall.order.enums.OrderResourceEnum;
+import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.service.TradeOrderServiceApi;
+import com.okdeer.mall.order.vo.Coupons;
 import com.okdeer.mall.system.service.SysBuyerUserServiceApi;
 
 /**
@@ -49,7 +69,9 @@ import com.okdeer.mall.system.service.SysBuyerUserServiceApi;
  *
  */
 @RunWith(Parameterized.class)
-public class ActivityCouponsRecordServiceImplTest extends BaseServiceTest {
+public class ActivityCouponsRecordServiceImplTest extends BaseServiceTest implements MockFilePath{
+	
+	private static final Logger LOG = LoggerFactory.getLogger(ActivityCouponsRecordServiceImplTest.class);
 	@Resource
 	private ActivityCouponsRecordService activityCouponsRecordService;
 	
@@ -65,6 +87,10 @@ public class ActivityCouponsRecordServiceImplTest extends BaseServiceTest {
 	private SysBuyerUserServiceApi buyserUserService;
 	@Mock
 	private TradeOrderServiceApi tradeOrderService;
+	@Mock
+	private StoreInfoServiceApi storeInfoServiceApi;
+	@Mock
+	private GoodsNavigateCategoryServiceApi goodsNavigateCategoryServiceApi;
 	
 	@Resource
 	private IRedisTemplateWrapper<String, Object> redisTemplateWrapper;
@@ -74,15 +100,30 @@ public class ActivityCouponsRecordServiceImplTest extends BaseServiceTest {
 	@Override
 	public void initMocks(){
 		// mock dubbo服务
-		initMockDubbo();
-		
+		try {
+			initMockDubbo();
+		} catch (Exception e) {
+			LOG.error("初始化数据异常：",e);
+		}
 	}
 	
-	private void initMockDubbo(){
+	private void initMockDubbo() throws Exception{
 		// mock dubbo服务
 		ActivityCouponsRecordService activityCouponsRecordServiceImpl = AopTestUtils.getTargetObject(this.applicationContext.getBean("activityCouponsRecordServiceImpl"));
 		ReflectionTestUtils.setField(activityCouponsRecordServiceImpl, "goodsStoreSkuServiceApi", goodsStoreSkuServiceApi);
 		ReflectionTestUtils.setField(activityCouponsRecordServiceImpl, "tradeOrderService", tradeOrderService);
+		
+		BldCouponsFilterStrategy bldCouponsFilterStrategy  = this.applicationContext.getBean(BldCouponsFilterStrategy.class);
+		ReflectionTestUtils.setField(bldCouponsFilterStrategy, "storeInfoServiceApi", storeInfoServiceApi);
+		ReflectionTestUtils.setField(bldCouponsFilterStrategy, "goodsNavigateCategoryServiceApi", goodsNavigateCategoryServiceApi);
+		List<StoreInfo> storeMock = MockUtils.getMockListData(MOCK_ORDER_STORE_INFO, StoreInfo.class);
+		BDDMockito.given(storeInfoServiceApi.findById(anyString())).willAnswer(invocation -> {
+			String arg = (String) invocation.getArguments()[0];
+			return storeMock.stream().filter(item -> arg.equals(item.getId())).findFirst().get();
+		});
+		BDDMockito.given(goodsNavigateCategoryServiceApi.findNavigateCategoryByCouponId(anyString())).willReturn(Arrays.asList(new String[]{
+				"52df6f8e276a11e6a672518bbc616d82"
+		}));
 	}
 	public ActivityCouponsRecordServiceImplTest(String  ids) {
 		this.ids = ids;
@@ -112,7 +153,7 @@ public class ActivityCouponsRecordServiceImplTest extends BaseServiceTest {
 		beforeMethod(this, "couponsRecordsTest");
 		
 		activityCouponsRecordService.findCouponsCountByUser(UseUserType.ALLOW_All, "141577260798e5eb9e1b8a0645b486c7");
-//		activityCouponsRecordService.findMyCouponsDetailByParams(ActivityCouponsRecordStatusEnum.USED, "141577260798e5eb9e1b8a0645b486c7", true);
+		//activityCouponsRecordService.findMyCouponsDetailByParams(ActivityCouponsRecordStatusEnum.USED, "141577260798e5eb9e1b8a0645b486c7", true);
 		ActivityCouponsRecordQueryParamDto param = new ActivityCouponsRecordQueryParamDto();
 		param.setStatus(0);
 		activityCouponsRecordService.selectCountByParams(param);
@@ -126,7 +167,7 @@ public class ActivityCouponsRecordServiceImplTest extends BaseServiceTest {
 		activityCouponsRecordService.selectCouponsItem(vo);
 		ActivityCouponsRecordVo vo2 = new ActivityCouponsRecordVo();
 		vo2.setStartTime(new Date());
-		vo2.setEndTime(new Date());;
+		vo2.setEndTime(new Date());
 		activityCouponsRecordService.getAllRecords(vo2, 1, 20);
 		Map<String,Object> paraMap = new HashMap<>();
 		paraMap.put("name", "活动");
@@ -190,5 +231,38 @@ public class ActivityCouponsRecordServiceImplTest extends BaseServiceTest {
 		afterTestMethod(this, "couponsRecordsTest");
 	}
 	
-	
+	/**
+	 * @Description: 测试查询用户有效的代金券信息
+	 * @throws Exception   
+	 * @author maojj
+	 * @date 2017年11月15日
+	 */
+	@Test
+	public void testFindValidCoupons() throws Exception {
+		FavourParamBO paramBo = new FavourParamBO();
+		paramBo.setUserId("14527626891242d4d00a207c4d69bd80");
+		paramBo.setStoreId("8a8080d15e4bffe6015e50ec13ce207a");
+		paramBo.setTotalAmount(BigDecimal.valueOf(70));
+		paramBo.setClientType(UseClientType.ONlY_APP_USE);
+		paramBo.setChannel(OrderResourceEnum.CVSAPP);
+		paramBo.setDeviceId("1AC43255-5E6C-4591-AF2D-FF675898229E");
+		paramBo.setOrderType(OrderTypeEnum.PHYSICAL_ORDER);
+		paramBo.setClientVersion("V2.6.2_A04");
+		PlaceOrderItemDto goodsItem = new PlaceOrderItemDto();
+		goodsItem.setStoreSkuId("8a8080db5e55e692015e5602babf000c");
+		goodsItem.setQuantity(1);
+		goodsItem.setSkuPrice(BigDecimal.valueOf(68));
+		goodsItem.setSpuCategoryId("52df6f8e276a11e6a672518bbc616d82");
+		PlaceOrderItemDto goodsItem1 = new PlaceOrderItemDto();
+		goodsItem1.setStoreSkuId("8a8080835e50ec28015e50f7b2780013");
+		goodsItem1.setQuantity(1);
+		goodsItem1.setSkuPrice(BigDecimal.valueOf(2));
+		goodsItem1.setSpuCategoryId("52ed0373276a11e6a672518bbc616d82");
+		paramBo.setGoodsList(Arrays.asList(new PlaceOrderItemDto[]{
+				goodsItem,goodsItem1
+		}));
+		
+		List<Coupons> couponsList = activityCouponsRecordService.findValidCoupons(paramBo);
+		assertEquals(12, couponsList.size());
+	}
 }

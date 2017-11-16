@@ -1395,6 +1395,9 @@
 	    <if test="positionId != null and positionId !=''">
 	   	   AND ca.position_id = #{positionId, jdbcType=VARCHAR}
 	    </if>   
+	    <if test="excludeId != null and excludeId !=''">
+	   	   AND ca.id != #{excludeId, jdbcType=VARCHAR}
+	    </if>  
 	</select>
 	
 	<select id="findList" parameterType="com.okdeer.mall.advert.dto.ColumnAdvertQueryParamDto" resultMap="columnAdvertRsMap" >

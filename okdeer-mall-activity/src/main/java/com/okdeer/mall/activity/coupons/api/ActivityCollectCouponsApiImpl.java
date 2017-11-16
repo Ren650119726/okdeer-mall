@@ -19,7 +19,6 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCollectArea;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectStore;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
-import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectAreaService;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsApi;
@@ -107,6 +106,18 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 		for (ActivityCollectCouponsDto activityCollectCouponsDto : dtoList) {
 			List<ActivityCoupons> couponseList = activityCouponsService
 					.getActivityCoupons(activityCollectCouponsDto.getId());
+
+			couponseList = filterByActivityType(activityCollectCouponsParamDto.getType(), couponseList);
+			couponseList.sort((obj1, obj2) -> {
+				if(obj1.getCreateTime().getTime() == obj2.getCreateTime().getTime()){
+					return 0;
+				}
+				if (obj1.getCreateTime().getTime() > obj2.getCreateTime().getTime()) {
+					return -1;
+				}
+				return 1;
+			});
+
 			List<ActivityCouponsDto> couponseDtoList = BeanMapper.mapList(couponseList, ActivityCouponsDto.class);
 
 			for (ActivityCouponsDto activityCoupons : couponseDtoList) {
@@ -123,6 +134,34 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 			}
 			activityCollectCouponsDto.setCouponsList(couponseDtoList);
 		}
+	}
+
+	/**
+	 * @Description: 根据活动类型过滤代金卷
+	 * @param type
+	 * @param couponseList
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年11月14日
+	 */
+	private List<ActivityCoupons> filterByActivityType(Integer type, List<ActivityCoupons> couponseList) {
+		if (CollectionUtils.isEmpty(couponseList)) {
+			return couponseList;
+		}
+		if (type == null) {
+			return couponseList;
+		} else if (type == 0) {
+			List<ActivityCoupons> resultList = Lists.newArrayList();
+			// 领卷活动
+			for (ActivityCoupons activityCoupons : couponseList) {
+				if (StringUtils.isNotEmpty(activityCoupons.getExchangeCode()) || activityCoupons.getIsRandCode() == 1) {
+					continue;
+				}
+				resultList.add(activityCoupons);
+			}
+			return resultList;
+		}
+		return couponseList;
 	}
 
 	private void queryUserIsReceiveCoupons(String userId, ActivityCouponsDto activityCoupons) {
@@ -145,10 +184,10 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 			} catch (ServiceException e) {
 				logger.error("查询代金卷信息出错", e);
 			}
+		} else {
+			activityCoupons.setIsReceive(2);
 		}
 	}
-
-	
 
 	private void filterByArea(ActivityCollectCouponsParamDto activityCollectCouponsParamDto,
 			List<ActivityCollectCoupons> list) {
@@ -188,7 +227,7 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 				removeList.add(activityCollectCoupons);
 			}
 		}
-		
+
 		list.removeAll(removeList);
 	}
 
