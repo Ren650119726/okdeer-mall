@@ -98,7 +98,7 @@ public class ScanOrderFavourServiceImpl implements ScanOrderFavourService{
 	private FavourParamBO createFavourParamBo(ScanOrderDto orderDetail, RequestParams requestParams){
 		FavourParamBO parambo =new FavourParamBO();
 		parambo.setUserId(orderDetail.getUserId());
-		parambo.setChannel(OrderResourceEnum.MEMCARD);
+		parambo.setChannel(OrderResourceEnum.SWEEP);
 		parambo.setClientType(UseClientType.ONlY_APP_USE);
 		//便利店通用代金券
 		parambo.setOrderType(OrderTypeEnum.PHYSICAL_ORDER);
