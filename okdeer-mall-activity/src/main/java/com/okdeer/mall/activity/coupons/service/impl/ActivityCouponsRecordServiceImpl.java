@@ -1622,24 +1622,19 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				return;
 			}
 			// 查询用户的手机邀请预领取记录
-			//for (ActivityCouponsRecordBefore record : list) {
-				/*
-				 * ColumnAdvert columnAdvert =
-				 * columnAdvertService.findAdvertById(record.getActivityId());
-				 * //判断活动是否结束 结束时间大于当前时间未结束
-				 * if(columnAdvert.getEndTime().getTime() <= new
-				 * Date().getTime()){ return; }
-					sysBuyerExtService.updateAddPrizeCount(record.getInviteUserId(), 1);
-//
-//				// 用户的邀请次数
+			for (ActivityCouponsRecordBefore record : list) {
+				// 执行 给邀请人送代金劵及抽奖次数 1
+				//sysBuyerExtService.updateAddPrizeCount(record.getInviteUserId(), 1);
+
+				// 用户的邀请次数
 //				int inviteCount = activityCouponsRecordBeforeMapper.findInviteUserCount(record.getInviteUserId(),
 //						record.getActivityId());
 //				log.info("已成功邀请到" + inviteCount + "个用户");
-//				// 修改预领取记录 为已完成邀请
-//				record.setIsComplete(WhetherEnum.whether);
-//				activityCouponsRecordBeforeMapper.updateByPrimaryKey(record);
-//
-//				// 超过4位不送代金劵 根据 邀请次数奖项给邀请人发放奖项代金劵
+				// 修改预领取记录 为已完成邀请
+				record.setIsComplete(WhetherEnum.whether);
+				activityCouponsRecordBeforeMapper.updateByPrimaryKey(record);
+
+				// 超过4位不送代金劵 根据 邀请次数奖项给邀请人发放奖项代金劵
 //				if (inviteCount < collectCouponsIds.length) {
 //					String collectCouponsId = collectCouponsIds[inviteCount];
 //
@@ -1653,10 +1648,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 //								record.getActivityId(), null, WhetherEnum.whether.ordinal());
 //					}
 //				}
-//
-//			}	 */
-				// 执行 给邀请人送代金劵及抽奖次数 1
-//		
+
+			}
 
 		}
 
