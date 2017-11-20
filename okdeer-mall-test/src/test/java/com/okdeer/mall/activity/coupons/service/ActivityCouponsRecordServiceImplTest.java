@@ -1,9 +1,13 @@
 package com.okdeer.mall.activity.coupons.service;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 
 import java.math.BigDecimal;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,14 +38,17 @@ import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.utils.UuidUtils;
+import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.base.redis.IRedisTemplateWrapper;
 import com.okdeer.mall.activity.bo.FavourParamBO;
+import com.okdeer.mall.activity.coupons.dto.ActivityCouponsRecordDto;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto;
 import com.okdeer.mall.activity.service.impl.BldCouponsFilterStrategy;
 import com.okdeer.mall.base.BaseServiceTest;
@@ -80,6 +87,12 @@ public class ActivityCouponsRecordServiceImplTest extends BaseServiceTest implem
 	
 	@Resource
 	private ActivityCouponsRecordServiceApi activityCouponsRecordServiceApi;
+	
+	@Mock
+	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
+	
+	@Resource
+	private ActivityCouponsRecordMapper activityRecordMapper;
 	
 	@Mock
 	private GoodsStoreSkuServiceApi goodsStoreSkuServiceApi;
@@ -129,6 +142,8 @@ public class ActivityCouponsRecordServiceImplTest extends BaseServiceTest implem
 		this.ids = ids;
 	}
 	
+	
+	
 	@Parameters
 	public static Collection<Object[]> initParam() throws Exception {
 		Collection<Object[]> initParams = new ArrayList<Object[]>();
@@ -139,7 +154,7 @@ public class ActivityCouponsRecordServiceImplTest extends BaseServiceTest implem
 
 	
 	/**
-	 * @Description: 获取会员卡信息接口
+	 * @Description: 优惠券查询
 	 * @param userId  用户id
 	 * @param deviceId 设备id
 	 * @author tuzhd
@@ -153,7 +168,7 @@ public class ActivityCouponsRecordServiceImplTest extends BaseServiceTest implem
 		beforeMethod(this, "couponsRecordsTest");
 		
 		activityCouponsRecordService.findCouponsCountByUser(UseUserType.ALLOW_All, "141577260798e5eb9e1b8a0645b486c7");
-		//activityCouponsRecordService.findMyCouponsDetailByParams(ActivityCouponsRecordStatusEnum.USED, "141577260798e5eb9e1b8a0645b486c7", true);
+		
 		ActivityCouponsRecordQueryParamDto param = new ActivityCouponsRecordQueryParamDto();
 		param.setStatus(0);
 		activityCouponsRecordService.selectCountByParams(param);
@@ -166,9 +181,12 @@ public class ActivityCouponsRecordServiceImplTest extends BaseServiceTest implem
 		vo.setActivityItemId("402809815dcb3b31015dcb3b326a0000");
 		activityCouponsRecordService.selectCouponsItem(vo);
 		ActivityCouponsRecordVo vo2 = new ActivityCouponsRecordVo();
-		vo2.setStartTime(new Date());
-		vo2.setEndTime(new Date());
+		activityCouponsRecordService.getAllRecords(vo2, 1, 10);
+		//添加时间区间
+		   vo2.setStartTime(new Date());
+		   vo2.setEndTime(new Date());
 		activityCouponsRecordService.getAllRecords(vo2, 1, 20);
+		
 		Map<String,Object> paraMap = new HashMap<>();
 		paraMap.put("name", "活动");
 		activityCouponsRecordService.getRecordExportData(paraMap);
@@ -184,6 +202,24 @@ public class ActivityCouponsRecordServiceImplTest extends BaseServiceTest implem
 		activityCouponsRecordServiceApi.selectActivityCouponsRecord(record);
 		activityCouponsRecordServiceApi.selectByParams(paraMap);
 		
+		afterTestMethod(this, "couponsRecordsTest");
+	}
+	
+	/**
+	 * @Description: 修改代金券信息
+	 * @param userId  用户id
+	 * @param deviceId 设备id
+	 * @author tuzhd
+	 * @throws Exception 
+	 * @date 2017年8月9日
+	 */
+	@Test
+	@Transactional(propagation=Propagation.REQUIRES_NEW)
+	@Rollback
+	public void couponsUpdateRecordsTest() throws Exception{
+		beforeMethod(this, "couponsUpdateRecordsTest");
+		
+		Map<String,Object> paraMap = new HashMap<>();
 		
 		TradeOrder order  = new TradeOrder();
 		order.setId("402801605d9795ab015da24d5af603b0");
@@ -195,15 +231,58 @@ public class ActivityCouponsRecordServiceImplTest extends BaseServiceTest implem
 		paraMap.put("id", "402801605d9795ab015d9d22e2c60259");
 		activityCouponsRecordService.updateActivityCouponsStatus(paraMap);
 		List<ActivityCouponsRecordVo> list = Lists.newArrayList();
+		ActivityCouponsRecordVo vo2 = new ActivityCouponsRecordVo();
 		vo2.setFaceValue(5);
 		vo2.setCreateUserId("141577260798e5eb9e1b8a0645b486c7");
 		list.add(vo2);
 		activityCouponsRecordService.updateRefundStatus(list, "141577260798e5eb9e1b8a0645b486c7");
-		activityCouponsRecordService.updateStatusByJob();
+		
 		activityCouponsRecordService.updateUseStatus("402801605d9795ab015da24d5af603b0");
 		
-		activityCouponsRecordServiceApi.addBeforeRecords("8a94e7465f5656b2015f5656b2ee0000", "13723770909", null, "testtest");
-		activityCouponsRecordService.addRecordsByCollectId("8a94e7465f5656b2015f5656b2ee0000", "141577260798e5eb9e1b8a0645b486c7");
+		//查询过期及生效的代金券
+		List<ActivityCouponsRecordStatusEnum> listStatus=Lists.newArrayList();
+		listStatus.add(ActivityCouponsRecordStatusEnum.USED);
+		listStatus.add(ActivityCouponsRecordStatusEnum.UNUSED);
+		List<ActivityCouponsRecordDto> lists = activityCouponsRecordServiceApi.findMyCouponsDetailByParams(listStatus, "141577260798e5eb9e1b8a0645b486c7");
+		List<ActivityCouponsRecord> listRecordsList = BeanMapper.mapList(lists, ActivityCouponsRecord.class);
+		List<ActivityCouponsRecord> listRecordsList2 = BeanMapper.mapList(lists, ActivityCouponsRecord.class);
+		listRecordsList2.forEach(e->{
+			e.setValidTime(e.getEffectTime());
+			listRecordsList.add(e);
+		});
+		ActivityCouponsRecordService activityCouponsRecordServiceImpl = AopTestUtils.getTargetObject(this.applicationContext.getBean("activityCouponsRecordServiceImpl"));
+		ReflectionTestUtils.setField(activityCouponsRecordServiceImpl, "activityCouponsRecordMapper", activityCouponsRecordMapper);
+		given(activityCouponsRecordMapper.findForJob(any())).willReturn(listRecordsList);
+		activityCouponsRecordService.updateStatusByJob();
+		
+		ReflectionTestUtils.setField(activityCouponsRecordServiceImpl, "activityCouponsRecordMapper", activityRecordMapper);
+		
+		
+		afterTestMethod(this, "couponsUpdateRecordsTest");
+	}
+	
+	/**
+	 * @Description: 测试领券功能	
+	 * @param userId  用户id
+	 * @param deviceId 设备id
+	 * @author tuzhd
+	 * @throws Exception 
+	 * @date 2017年11月18日
+	 */
+	@Test
+	@Transactional(propagation=Propagation.REQUIRES_NEW)
+	@Rollback
+	public void testFailVaild() throws Exception{
+		beforeMethod(this, "testFailVaild");
+		
+		activityCouponsRecordServiceApi.addBeforeRecords("8a94e7465f5656b2015f5656b2ee0000", "13723770909", "141577260798e5eb9e1b8a0645b486c7", "testtest");
+		//已经结束的活动
+		activityCouponsRecordService.addRecordsByCollectId("2c9380c25bad2406015bad65eeaa000a", "141577260798e5eb9e1b8a0645b486c7");
+		//限制新人领取 start
+		activityCouponsRecordService.addRecordsByCollectId("2c9380bd5aaa2176015ad1833e330022", "141577260798e5eb9e1b8a0645b486c7");
+		activityCouponsRecordServiceApi.addBeforeRecords("2c9380bd5aaa2176015ad1833e330022", "13723770909", "141577260798e5eb9e1b8a0645b486c7", "testtest");
+		activityCouponsRecordServiceApi.addBeforeRecords("2c9380bd5aaa2176015ad1833e330022", "13723770509", "141577260798e5eb9e1b8a0645b486c7", "testtest");
+		//限制新人领取end
 		activityCouponsRecordService.addRecordsByCollectId("8a94e7465f5656b2015f5656b2ee0000", "141577260798e5eb9e1b8a0645b486c7", "141577260798e5eb9e1b8a0645b486c7", true);
 		
 		
@@ -212,9 +291,14 @@ public class ActivityCouponsRecordServiceImplTest extends BaseServiceTest implem
 		Map<String,Object> params = new HashMap<>();
 		params.put("exchangeCode", "11111");
 		activityCouponsRecordService.addRecordForExchangeCode(params, "11111", "141577260798e5eb9e1b8a0645b486c7", ActivityCouponsType.advert_coupons);
+		//错误的优惠码
+		activityCouponsRecordService.addRecordForExchangeCode(params, "33332X", "141577260798e5eb9e1b8a0645b486c7", ActivityCouponsType.advert_coupons);
 		activityCouponsRecordService.addRecordForRecevie("8a8080e95f387883015f387cfa300004", "141577260798e5eb9e1b8a0645b486c7", ActivityCouponsType.advert_coupons);
 		params.put("randCode", "t6dcck4j");
 		activityCouponsRecordServiceApi.addRecordForRandCode(params, "t6dcck4j", "141577260798e5eb9e1b8a0645b486c7", ActivityCouponsType.coupons);
+		//错误的随机码
+		params.put("randCode", "xxxxxxtt");
+		activityCouponsRecordServiceApi.addRecordForRandCode(params, "xxxxxxtt", "141577260798e5eb9e1b8a0645b486c7", ActivityCouponsType.coupons);
 		
 		ActivityCouponsRecord activityCouponsRecord = activityCouponsRecordService.selectByPrimaryKey("8a8080fa5f76ab23015f779a6e95003e");
 		activityCouponsRecord.setId(UuidUtils.getUuid());
@@ -226,9 +310,9 @@ public class ActivityCouponsRecordServiceImplTest extends BaseServiceTest implem
 		List<ActivityCoupons> lstActivityCoupons = Lists.newArrayList();
 		lstActivityCoupons.add(activityCouponsService.selectByPrimaryKey("4028bb185e281bb1015e281bb1480000"));
 		activityCouponsRecordService.drawCouponsRecord(lstActivityCoupons,  ActivityCouponsType.coupons, "141577260798e5eb9e1b8a0645b486c7");
-		activityCouponsRecordServiceApi.insertCopyRecords("141577260798e5eb9e1b8a0645b486c7", "13723770909", "11111");
-		
-		afterTestMethod(this, "couponsRecordsTest");
+		activityCouponsRecordServiceApi.insertCopyRecords("141577260798e5eb9e1b8a0645b486c7", "13545052325", "11111");
+		//测试重复
+		afterTestMethod(this, "testFailVaild");
 	}
 	
 	/**
