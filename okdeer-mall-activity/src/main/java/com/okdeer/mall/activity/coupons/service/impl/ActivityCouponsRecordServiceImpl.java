@@ -56,7 +56,6 @@ import com.okdeer.mall.activity.coupons.dto.ActivityCouponsRecordDto;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
-import com.okdeer.mall.activity.coupons.entity.ActivityCouponsCategory;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRandCode;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore;
@@ -363,6 +362,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			ActivityCouponsDto activityCouponsDto = activityCouponsApi
 					.findDetailById(activityCouponsRecordDto.getCouponsId(), activityCouponsQueryParamDto);
 			activityCouponsRecordDto.setActivityCouponsDto(activityCouponsDto);
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(activityCouponsRecordDto.getValidTime());
+			cal.add(Calendar.DATE, -1);
+			activityCouponsRecordDto.setValidTime(cal.getTime());
 		}
 		return dtoList;
 	}
