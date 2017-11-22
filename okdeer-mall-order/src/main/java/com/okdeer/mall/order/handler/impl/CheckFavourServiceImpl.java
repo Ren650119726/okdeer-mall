@@ -15,7 +15,6 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
-import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.common.utils.EnumAdapter;
@@ -343,8 +342,7 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 			if (totalAmount.compareTo(BigDecimal.valueOf(0.00)) == 0 || totalAmount.compareTo(condition.getArrive()) < 0) {
 				return false;
 			}
-			parserBo.setEnjoyFavourSkuIdList(enjoyFavourSkuIdList);
-			parserBo.setTotalAmountHaveFavour(totalAmount);
+			
 		} else if (limitSkuType == LimitSkuType.LIMIT_SKU) {
 			// 限制商品Id列表
 			List<String> limitSkuIds = actInfoDto.getBusinessIds(ActivityBusinessType.SKU);
@@ -368,15 +366,24 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 			if (totalAmount.compareTo(BigDecimal.valueOf(0.00)) == 0 || totalAmount.compareTo(condition.getArrive()) < 0) {
 				return false;
 			}
-			parserBo.setEnjoyFavourSkuIdList(enjoyFavourSkuIdList);
-			parserBo.setTotalAmountHaveFavour(totalAmount);
 		} else {
-			// 商品没有任何限制，判定能够享受满减总金额是否达到满减条件的限制金额
-			if(parserBo.getTotalAmountHaveFavour().compareTo(condition.getArrive()) < 0){
+			// 商品没有任何限制,需要排除特价商品
+			for (CurrentStoreSkuBo storeSkuBo : parserBo.getCurrentSkuMap().values()) {
+				if (storeSkuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()
+						&& storeSkuBo.getQuantity() == storeSkuBo.getSkuActQuantity()) {
+					// 如果商品是低价商品，且商品购买数量=商品低价购买数量，则说明该商品不享受优惠活动
+					continue;
+				}
+				enjoyFavourSkuIdList.add(storeSkuBo.getId());
+				totalAmount = totalAmount.add(storeSkuBo.getOnlinePrice().multiply(
+						BigDecimal.valueOf(storeSkuBo.getQuantity() - storeSkuBo.getSkuActQuantity())));
+			}
+			if(totalAmount.compareTo(condition.getArrive()) < 0){
 				return false;
 			}
 		}
-		
+		parserBo.setEnjoyFavourSkuIdList(enjoyFavourSkuIdList);
+		parserBo.setTotalAmountHaveFavour(totalAmount);
 		// 满立减只能由平台发起，属于平台优惠。且目前暂时只有满减，没有满折。后续出现满折再在此处做修改
 		parserBo.setPlatformPreferential(condition.getDiscount());
 		return isValid;

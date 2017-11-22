@@ -6192,7 +6192,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                 // 赠送的代金券总面额 改为存总张数
                 totalValue = totalValue + r.getTotalValue();
             }
-            respDto.setVouContent("恭喜您获得" + totalValue + "张代金券");
+            if(totalValue > 0){
+            	respDto.setVouContent("恭喜您获得" + totalValue + "张代金券");
+            }
             respDto.setMessage((respDto.getMessage() == null ? "" : respDto.getMessage()) + ORDER_COUPONS_SUCCESS_TIPS);
             return;
         }

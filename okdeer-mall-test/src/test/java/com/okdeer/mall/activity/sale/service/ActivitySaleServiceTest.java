@@ -5,7 +5,9 @@ import static org.junit.Assert.assertNotNull;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,25 +15,15 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.okdeer.base.common.enums.Disabled;
-import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.UuidUtils;
 import com.okdeer.jxc.common.utils.DateUtils;
-import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
-import com.okdeer.mall.activity.coupons.entity.CouponsInfoParams;
-import com.okdeer.mall.activity.coupons.entity.CouponsInfoQuery;
-import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
-import com.okdeer.mall.activity.coupons.enums.CashDelivery;
-import com.okdeer.mall.activity.coupons.enums.CategoryLimit;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleELServiceApi;
 import com.okdeer.mall.activity.coupons.service.ActivitySaleServiceApi;
 import com.okdeer.mall.base.BaseServiceTest;
-import com.okdeer.mall.common.enums.AreaType;
-import com.okdeer.mall.common.enums.UseClientType;
-import com.okdeer.mall.common.enums.UseUserType;
 
 
 @Transactional
@@ -44,8 +36,8 @@ public class ActivitySaleServiceTest extends BaseServiceTest {
 	
 	//商家中心添加特惠
 	@Rollback(true)
-	@Test
-	public void testAdd() throws Exception{
+//	@Test
+	public void add() throws Exception{
 		ActivitySale as = new ActivitySale();
 		String id = UuidUtils.getUuid();
 		String storeId = "56583c03276511e6aaff00163e010eb1";
@@ -85,37 +77,142 @@ public class ActivitySaleServiceTest extends BaseServiceTest {
 		assertNotNull(insert);
 	}
 
-//	//运营后台修改 代金券
-//	@Test
-//	public void testUpdate() throws Exception{
-//		//运营后台编辑 代金券
-//		CouponsInfoQuery co = new CouponsInfoQuery();
-//		String id = "8a8080895e703ee2015e73df2145000d";
-//		co.setId(id);//主键id
-//		co.setName("我修改一下代金券名字");
-//		co.setIsRandCode(WhetherEnum.not.ordinal());
-//		co.setUpdateTime(new Date());
-//		service.updateCoupons(co);
-//		
-//		ActivityCoupons update = service.getById(id);
-//		assertNotNull(update);
-//	}
-//
-//	//通过id获取对象(同时获取其他关联信息,运营后台用)
-//	@Test
-//	public void getCouponsInfoById() throws Exception{
-//		String id = "8a8080895e703ee2015e73df2145000d";
-//		CouponsInfoQuery co = service.getCouponsInfoById(id);		
-//		assertNotNull(co);
-//	}
-//
-//	//通过查询条件获取分页list (运营后台用)
-//	@Test
-//	public void getCouponsInfo() throws Exception{
-//		CouponsInfoParams param = new CouponsInfoParams();
-//		param.setBelongType("0");
-//		param.setName("");
-//		PageUtils<CouponsInfoQuery> page = service.getCouponsInfo(param,1,10);
-//		System.out.println("list.size:" + page.getList().size());
-//	}
+//	@Rollback(true)
+	@Test
+	public void list() throws Exception{
+		String storeId = "56583c03276511e6aaff00163e010eb1";
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("createStartTime", "2016-01-01 00:00:00");
+		params.put("createEndTime", "2017-12-31 23:59:59");
+		
+		params.put("startStartTime", "2016-01-01 00:00:00");
+		params.put("startEndTime", "2017-12-31 23:59:59");
+		
+		params.put("endStartTime", "2016-01-01 00:00:00");
+		params.put("endEndTime", "2017-12-31 23:59:59");
+
+		params.put("storeId", storeId);
+		
+		params.put("type", ActivityTypeEnum.SALE_ACTIVITIES.ordinal());
+
+		// 当前页数
+		Integer pageNumber = 1;
+
+		// 每页显示条数
+		Integer pageSize = 20;
+		// 条件分页查询
+		PageUtils<ActivitySale> page = saleApi.pageList(params, pageNumber, pageSize);
+		
+		System.out.println("测试特惠活动列表：" + page.getRows().size());
+		
+	}
+	
+	@Test
+	public void get() throws Exception{
+		String id = "8a8080075fc38465015fc384659c0000";
+		ActivitySale obj = saleApi.get(id);
+		if(obj != null){
+			System.out.println("测试特惠活动get：" + obj.getName());
+		}
+	}
+	
+	@Test
+	public void findByPrimaryKey() throws Exception{
+		String id = "8a8080075fc38465015fc384659c0000";
+		ActivitySale obj = saleApi.findByPrimaryKey(id);
+		if(obj != null){
+			System.out.println("测试特惠活动findByPrimaryKey：" + obj.getName());
+		}
+	}
+	
+	@Test
+	public void getAcSaleStatus() throws Exception{
+		String id = "8a8080075fc38465015fc384659c0000";
+		ActivitySale obj = saleApi.getAcSaleStatus(id);
+		if(obj != null){
+			System.out.println("测试特惠活动getAcSaleStatus：" + obj.getName());
+		}
+	}
+	
+	@Test
+	public void selectActivitySale() throws Exception{
+		String id = "8a8080075fc38465015fc384659c0000";
+		int limit = saleApi.selectActivitySale(id);
+		System.out.println("测试特惠活动selectActivitySale：" + limit);
+	}
+	
+	@Test
+	public void ListActivitySaleGoods() throws Exception{
+		String id = "8a8080075fc38465015fc384659c0000";
+		List<ActivitySaleGoods> list = saleApi.listActivitySaleGoods(id);
+		System.out.println("测试特惠活动listActivitySaleGoods：" + list.size());
+	}
+	
+	@Test
+	public void listGoodsStoreSku() throws Exception{
+		String storeId = "56583c03276511e6aaff00163e010eb1";
+		Map<String, Object> params = new HashMap<String, Object>();
+
+		params.put("storeId", storeId);
+		List<Map<String, Object>> list = saleApi.listGoodsStoreSku(params) ;
+		System.out.println("测试特惠活动listGoodsStoreSku：" + list.size());
+	}
+	
+	@Test
+	public void pageListGoodsStoreSku() throws Exception{
+		String storeId = "56583c03276511e6aaff00163e010eb1";
+		Map<String, Object> params = new HashMap<String, Object>();
+		
+		params.put("storeId", storeId);
+		PageUtils<Map<String, Object>> page = saleApi.pageListGoodsStoreSku(params,1,10) ;
+		System.out.println("测试特惠活动pageListGoodsStoreSku：" + page.getRows().size());
+	}
+	@Test
+	public void pageListGoodsStoreSkuV220() throws Exception{
+		String storeId = "56583c03276511e6aaff00163e010eb1";
+		Map<String, Object> params = new HashMap<String, Object>();
+		
+		params.put("storeId", storeId);
+		PageUtils<Map<String, Object>> page = saleApi.pageListGoodsStoreSkuV220(params,1,10) ;
+		System.out.println("测试特惠活动pageListGoodsStoreSkuV220：" + page.getRows().size());
+	}
+	@Test
+	public void validateExist() throws Exception{
+		String storeId = "56583c03276511e6aaff00163e010eb1";
+		Map<String, Object> params = new HashMap<String, Object>();
+		
+		params.put("storeId", storeId);
+		int count = saleApi.validateExist(params) ;
+		System.out.println("测试特惠活动validateExist：" + count);
+	}
+	@Test
+	public void listByStoreId() throws Exception{
+		String storeId = "56583c03276511e6aaff00163e010eb1";
+		Map<String, Object> params = new HashMap<String, Object>();
+		
+		params.put("storeId", storeId);
+//		params.put("type", storeId);
+		List<ActivitySale> list = saleApi.listByStoreId(params) ;
+		System.out.println("测试特惠活动listByStoreId：" + list.size());
+	}
+	@Test
+	public void findActivitySaleByStoreId() throws Exception{
+		String storeId = "56583c03276511e6aaff00163e010eb1";
+		ActivitySale ac = saleApi.findActivitySaleByStoreId(storeId,5,1);
+		if(ac == null){
+			System.out.println("测试特惠活动findActivitySaleByStoreId：没有活动" );
+		} else {
+			System.out.println("测试特惠活动findActivitySaleByStoreId：" + ac.getName());
+		}
+	}
+	@Test
+	public void findLowPriceActivitySaleByStoreId() throws Exception{
+		String storeId = "56583c03276511e6aaff00163e010eb1";
+		ActivitySale ac = saleApi.findLowPriceActivitySaleByStoreId(storeId);
+		if(ac == null){
+			System.out.println("测试特惠活动findLowPriceActivitySaleByStoreId：没有活动" );
+		} else {
+			System.out.println("测试特惠活动findLowPriceActivitySaleByStoreId：" + ac.getName());
+		}
+	}
 }
