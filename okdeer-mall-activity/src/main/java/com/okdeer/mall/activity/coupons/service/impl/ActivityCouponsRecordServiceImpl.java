@@ -360,6 +360,10 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		activityCouponsQueryParamDto.setQueryArea(false);
 		activityCouponsQueryParamDto.setQueryCategory(true);
 		for (ActivityCouponsRecordDto activityCouponsRecordDto : dtoList) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(activityCouponsRecordDto.getValidTime());
+			cal.add(Calendar.DATE, -1);
+			activityCouponsRecordDto.setValidTime(cal.getTime());
 			ActivityCouponsDto activityCouponsDto = activityCouponsApi
 					.findDetailById(activityCouponsRecordDto.getCouponsId(), activityCouponsQueryParamDto);
 			activityCouponsRecordDto.setActivityCouponsDto(activityCouponsDto);
