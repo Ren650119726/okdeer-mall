@@ -5,6 +5,7 @@ import java.util.Date;
 
 import org.springframework.stereotype.Service;
 
+import com.okdeer.base.common.utils.DateUtils;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
@@ -48,8 +49,8 @@ public class ActivityCouponsReceiveStrategyImpl implements ActivityCouponsReceiv
 		if(coupons.getTermType() == ActivityCouponsTermType.BY_DAY){
 			// 获取当天凌晨的日历对象
 			Calendar calendar = getCurrentCalendar();
-			calendar.add(Calendar.DAY_OF_YEAR, coupons.getEffectDay() + coupons.getValidDay());
-			expireTime = calendar.getTime();
+			calendar.add(Calendar.DAY_OF_YEAR, coupons.getEffectDay() + (coupons.getValidDay()-1));
+			expireTime = DateUtils.getDateEnd(calendar.getTime());
 		}else{
 			// 设置代金券的有效时间范围
 			expireTime = coupons.getEndTime();

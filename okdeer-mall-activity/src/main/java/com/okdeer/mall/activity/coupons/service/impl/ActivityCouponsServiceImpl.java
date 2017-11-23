@@ -1230,12 +1230,8 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 		dto.setStartTime(activityCouponsReceiveStrategy.getEffectTime(activityCoupons));
 		// 代金券失效时间
 		Date expireTime = activityCouponsReceiveStrategy.getExpireTime(activityCoupons);
-		// 失效时间为0点0分0秒，给用户展示将时间往后推迟一天。
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(expireTime);
-		cal.add(Calendar.DATE, -1);
-		dto.setEndTime(cal.getTime());
-
+		dto.setEndTime(expireTime);
+		
 		if (activityCoupons.getIsCategory() == 1 && activityCouponsQueryParamDto.isQueryCategory()) {
 			List<ActivityCouponsCategory> categoryList = queryActivityCouponsCategory(activityCoupons);
 			dto.setActivityCouponsCategory(categoryList);

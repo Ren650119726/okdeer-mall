@@ -389,8 +389,11 @@
 	     AND collect_type = #{collectType,jdbcType=TINYINT}
 	  </if>
 	  <!-- 领取状态 -->
-	  <if test="status != null and status == 0">
-	     AND `status` in (0,3)
+	  <if test="statusList != null and statusList.size() > 0">
+	    	AND `status` IN 
+	    	<foreach collection="statusList" close=")" open="(" item="item" separator=",">
+				#{status,jdbcType=TINYINT}
+	    	</foreach>
 	  </if>
 	  <if test="status != null and status != 0">
 	     AND `status` = #{status,jdbcType=TINYINT}
@@ -412,20 +415,23 @@
 	<select id="selectCountByParams" resultType="java.lang.Integer" parameterType="com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto">
 	  select count(1)
 	  FROM activity_coupons_record 
-	  WHERE  1=1
-	  <include refid="ActivityCouponsRecordQueryParamSql"/>
+	  <where>
+	  	<include refid="ActivityCouponsRecordQueryParamSql"/>
+	  </where>
 	</select>
 	
 	<select id="selectActivityCountByParams" resultType="java.lang.Integer" parameterType="com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto">
 		 SELECT COUNT(DISTINCT coupons_collect_id) FROM activity_coupons_record 
-	  	 WHERE  1=1
-	  	<include refid="ActivityCouponsRecordQueryParamSql"/>
+	  	<where>
+	  		<include refid="ActivityCouponsRecordQueryParamSql"/>
+	  	</where>
 	</select>
 	
 	<select id="selectOrderCountByParams" resultType="java.lang.Integer" parameterType="com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto">
 		 SELECT COUNT(DISTINCT order_id) FROM activity_coupons_record 
-	  	 WHERE  1=1
-	  	<include refid="ActivityCouponsRecordQueryParamSql"/>
+	  	 <where>
+	  		<include refid="ActivityCouponsRecordQueryParamSql"/>
+	  	</where>
 	</select>
 	
 	  <!-- zhulq:根据随机码查询代金券领取记录信息 -->
