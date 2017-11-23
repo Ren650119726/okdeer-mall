@@ -4875,12 +4875,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
      * @author LIU.W
      */
     public List<TradeOrderStatisticsVo> findTradeOrderStatistics(String storeId) throws ServiceException {
-
-        try {
-            return tradeOrderMapper.selectTradeOrderStatistics(storeId);
-        } catch (Exception e) {
-            throw new ServiceException("成交统计", e);
-        }
+        return tradeOrderMapper.selectTradeOrderStatistics(storeId);
     }
 
     /**
