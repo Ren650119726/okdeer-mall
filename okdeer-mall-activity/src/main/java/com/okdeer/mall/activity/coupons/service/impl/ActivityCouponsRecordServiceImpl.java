@@ -1698,7 +1698,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 				coupons.setFirstUserLimit(couponsInfo.getUseUserType().ordinal());
 				coupons.setActivityType(ActivityTypeEnum.VONCHER.ordinal());
 				// 代金券到期日期（数据库中存储的到期日期为：yyyy-MM-dd 00：00：00 给用户展示时间时减一天）
-				coupons.setIndate(DateUtils.formatDate(DateUtils.addDays(collectRec.getValidTime(), -1), "yyyy-MM-dd"));
+				coupons.setIndate(DateUtils.formatDate(collectRec.getValidTime(), "yyyy-MM-dd"));
 				coupons.setMaxFavourStrategy(
 						genericMaxFavourStrategy.calMaxFavourRule(coupons, paramBo.getTotalAmount()));
 
