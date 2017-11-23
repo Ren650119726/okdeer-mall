@@ -1018,7 +1018,8 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	private void insertRecodeBefore(ActivityCouponsRecordBefore record, ActivityCoupons coupons) {
 		// 立即领取
 		record.setId(UuidUtils.getUuid());
-		record.setCollectTime(activityCouponsReceiveStrategy.getEffectTime(coupons));
+		record.setCollectTime(new Date());
+		record.setEffectTime(activityCouponsReceiveStrategy.getEffectTime(coupons));
 		record.setStatus(ActivityCouponsRecordStatusEnum.UNUSED);
 		record.setValidTime(activityCouponsReceiveStrategy.getExpireTime(coupons));
 
