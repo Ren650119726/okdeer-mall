@@ -166,12 +166,12 @@
     SELECT 
     	  r.id, r.collect_type, r.coupons_id, r.coupons_collect_id, 
     	  r.collect_time,r.valid_time, r.status, r.order_id,
-    	  r.room_id,is_complete,invite_user_id,activity_id,r.effect_time
+    	  r.room_id,r.is_complete,r.invite_user_id,r.activity_id,r.effect_time
     FROM 	          
  		activity_coupons_record_before r 
  	WHERE r.is_complete = 0 
- 		  AND invite_user_id is not null
- 		  AND activity_id is not null
+ 		  AND r.invite_user_id is not null
+ 		  AND r.activity_id is not null
  		  AND r.`collect_user` = #{phone,jdbcType=VARCHAR}
 	FOR UPDATE 
 		
