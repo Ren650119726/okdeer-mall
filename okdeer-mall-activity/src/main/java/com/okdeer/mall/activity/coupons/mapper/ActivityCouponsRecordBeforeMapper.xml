@@ -15,6 +15,10 @@
     <result column="status" property="status" javaType="com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum" jdbcType="TINYINT" />
     <result column="order_id" property="orderId" jdbcType="VARCHAR" />
     <result column="room_id" property="roomId" jdbcType="VARCHAR" />
+    <result column="thrid_code" property="thridCode" jdbcType="VARCHAR" />
+    <result column="device_id" property="deviceId" jdbcType="VARCHAR" />
+    <result column="rec_date" property="recDate" jdbcType="VARCHAR" />
+    <result column="effect_time" property="effectTime" jdbcType="TIMESTAMP" />
   </resultMap>
   
   <resultMap id="BaseBeforeMap" type="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore" extends="BaseResultMap">
@@ -28,7 +32,8 @@
     SELECT 
     	DISTINCT
     	  r.id, r.collect_type, r.coupons_id, r.coupons_collect_id, r.collect_time, 
-    	  #{userId,jdbcType=VARCHAR} as collect_user_id,r.valid_time, r.status, r.order_id,r.room_id,r.invite_user_id
+    	  #{userId,jdbcType=VARCHAR} as collect_user_id,r.valid_time, r.status, 
+    	  r.order_id,r.room_id,r.invite_user_id,r.effect_time
     FROM 	          
  		activity_coupons_record_before r 
  	WHERE 
@@ -41,7 +46,7 @@
       SELECT 
     	  r.id, r.collect_type, r.coupons_id, r.coupons_collect_id, r.collect_time, 
     	  r.valid_time, r.status, r.order_id,collect_user,
-    	  r.room_id,is_complete,invite_user_id,r.activity_id
+    	  r.room_id,is_complete,invite_user_id,r.activity_id,r.effect_time
 	  FROM
 		  activity_coupons_record_before r 
 	  WHERE invite_user_id = #{inviteUserId,jdbcType=VARCHAR}
@@ -50,13 +55,17 @@
  
   <!-- 插入代金劵预领取记录字段 tuzhiding  -->
   <insert id="insertSelective" parameterType="com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore" >
-    insert into activity_coupons_record_before (id, collect_type, coupons_id, 
+    insert into 
+    activity_coupons_record_before (id, collect_type, coupons_id, 
       coupons_collect_id, collect_time, collect_user, 
-      valid_time, status, order_id, room_id, invite_user_id,is_complete,activity_id)
+      valid_time, status, order_id, room_id, invite_user_id,
+      is_complete,activity_id,effect_time)
     values (#{id,jdbcType=VARCHAR}, #{collectType,jdbcType=TINYINT}, #{couponsId,jdbcType=VARCHAR}, 
       #{couponsCollectId,jdbcType=VARCHAR}, #{collectTime,jdbcType=TIMESTAMP}, #{collectUser,jdbcType=VARCHAR}, 
       #{validTime,jdbcType=TIMESTAMP}, #{status,jdbcType=TINYINT}, #{orderId,jdbcType=VARCHAR}, 
-      #{roomId,jdbcType=VARCHAR},#{inviteUserId,jdbcType=VARCHAR},#{isComplete,jdbcType=TINYINT},#{activityId,jdbcType=VARCHAR})
+      #{roomId,jdbcType=VARCHAR},#{inviteUserId,jdbcType=VARCHAR},#{isComplete,jdbcType=TINYINT},
+      #{activityId,jdbcType=VARCHAR},#{effectTime,jdbcType=TIMESTAMP}
+      )
   </insert>
   
   <!-- 根据代金劵活动id代金劵预领取统计  -->
@@ -155,9 +164,9 @@
  <!-- 根据用户id判断完成首单的用户是否 有效完成邀请 tuzhiding  -->
  <select id="findRecordVaildByUserId" resultMap="BaseBeforeMap" >
     SELECT 
-    	  r.id, r.collect_type, r.coupons_id, r.coupons_collect_id, r.collect_time, 
-    	  r.valid_time, r.status, r.order_id,
-    	  r.room_id,is_complete,invite_user_id,activity_id
+    	  r.id, r.collect_type, r.coupons_id, r.coupons_collect_id, 
+    	  r.collect_time,r.valid_time, r.status, r.order_id,
+    	  r.room_id,is_complete,invite_user_id,activity_id,r.effect_time
     FROM 	          
  		activity_coupons_record_before r 
  	WHERE r.is_complete = 0 

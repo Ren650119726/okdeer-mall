@@ -697,7 +697,7 @@
         #{item.status,jdbcType=TINYINT},
         #{item.orderId,jdbcType=VARCHAR},
         #{item.roomId,jdbcType=VARCHAR},
-        #{item.collectTime,jdbcType=TIMESTAMP}
+        #{item.effectTime,jdbcType=TIMESTAMP}
         )
      </foreach>
   </insert> 
