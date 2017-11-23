@@ -93,23 +93,9 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 			ColumnAdvertShowRecordParamBo columnAdvertShowRecordParamBo = new ColumnAdvertShowRecordParamBo();
 			columnAdvertShowRecordParamBo.setDeviceNo(advertQueryParamDto.getDeviceNo());
 			for (ColumnAdvert columnAdvert : list) {
-				columnAdvertShowRecordParamBo.setAdvertId(columnAdvert.getId());
-				if (columnAdvert.getUserLimitType() == 1) {
-					//判断是否超过设备总次数限制
-					int count = columnAdvertShowRecordService.findCountByParam(columnAdvertShowRecordParamBo);
-					if (count >= columnAdvert.getDeviceAllLimit()) {
-						continue;
-					}
-					Date currentTime = new Date();
-					columnAdvertShowRecordParamBo.setStartCreateTime(DateUtils.formatDate(currentTime, "yyyy-MM-dd 00:00:00"));
-					columnAdvertShowRecordParamBo.setEndCreateTime(DateUtils.formatDate(currentTime, "yyyy-MM-dd 23:59:59"));
-					count = columnAdvertShowRecordService.findCountByParam(columnAdvertShowRecordParamBo);
-					//判断是否超过了总次数限制
-					if(count >= columnAdvert.getDeviceDayLimit()){
-						continue;
-					}
+				if(isShow(columnAdvert, columnAdvertShowRecordParamBo)){
+					resultList.add(columnAdvert);
 				}
-				resultList.add(columnAdvert);
 			}
 			addShowRecord(advertQueryParamDto, resultList);
 			return resultList;
@@ -118,10 +104,61 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 		}
 
 	}
+	
+	/**
+	 * @Description: 是否显示广告
+	 * @param columnAdvert
+	 * @param columnAdvertShowRecordParamBo
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年11月23日
+	 */
+	private boolean isShow(ColumnAdvert columnAdvert, ColumnAdvertShowRecordParamBo columnAdvertShowRecordParamBo) {
+		columnAdvertShowRecordParamBo.setAdvertId(columnAdvert.getId());
+		if (columnAdvert.getUserLimitType() == 1) {
+			// 判断是否超过设备总次数限制
+			if (columnAdvert.getDeviceAllLimit() != null && columnAdvert.getDeviceAllLimit() > 0
+					&& queryColumnAdvertShowRecord(columnAdvertShowRecordParamBo) >= columnAdvert.getDeviceAllLimit()) {
+				return false;
+			}
+
+			// 判断是否超过了总次数限制
+			if (columnAdvert.getDeviceDayLimit() != null && columnAdvert.getDeviceDayLimit() > 0
+					&& todayColumnAdvertShowRecord(columnAdvertShowRecordParamBo) >= columnAdvert.getDeviceDayLimit()) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * @Description: 根据参数查询广告显示次数
+	 * @param columnAdvertShowRecordParamBo
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年11月23日
+	 */
+	private int queryColumnAdvertShowRecord(ColumnAdvertShowRecordParamBo columnAdvertShowRecordParamBo) {
+		return columnAdvertShowRecordService.findCountByParam(columnAdvertShowRecordParamBo);
+	}
+
+	/**
+	 * @Description: 今日广告显示次数
+	 * @param columnAdvertShowRecordParamBo
+	 * @return
+	 * @author zengjizu
+	 * @date 2017年11月23日
+	 */
+	private int todayColumnAdvertShowRecord(ColumnAdvertShowRecordParamBo columnAdvertShowRecordParamBo) {
+		Date currentTime = new Date();
+		columnAdvertShowRecordParamBo.setStartCreateTime(DateUtils.formatDate(currentTime, "yyyy-MM-dd 00:00:00"));
+		columnAdvertShowRecordParamBo.setEndCreateTime(DateUtils.formatDate(currentTime, "yyyy-MM-dd 23:59:59"));
+		return queryColumnAdvertShowRecord(columnAdvertShowRecordParamBo);
+	}
 
 	private void addShowRecord(ColumnAdvertQueryParamDto advertQueryParamDto, List<ColumnAdvert> list) {
-		if(CollectionUtils.isEmpty(list)){
-			return ;
+		if (CollectionUtils.isEmpty(list)) {
+			return;
 		}
 		List<ColumnAdvertShowRecord> saveList = Lists.newArrayList();
 		for (ColumnAdvert columnAdvert : list) {
@@ -178,12 +215,12 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 
 	private boolean isNeedFilterByVersion(AdvertTypeEnum advertType) {
 		switch (advertType) {
-		case WX_INDEX_BANNER:
-		case POS_MACHINE:
-		case APP_BOMB_SCREEN:
-			return false;
-		default:
-			break;
+			case WX_INDEX_BANNER:
+			case POS_MACHINE:
+			case APP_BOMB_SCREEN:
+				return false;
+			default:
+				break;
 		}
 		return true;
 	}
