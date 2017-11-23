@@ -108,15 +108,11 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 					.getActivityCoupons(activityCollectCouponsDto.getId());
 
 			couponseList = filterByActivityType(activityCollectCouponsParamDto.getType(), couponseList);
-			couponseList.sort((obj1, obj2) -> {
-				if(obj1.getCreateTime().getTime() == obj2.getCreateTime().getTime()){
-					return 0;
-				}
-				if (obj1.getCreateTime().getTime() > obj2.getCreateTime().getTime()) {
-					return -1;
-				}
-				return 1;
-			});
+			if (couponseList == null) {
+				continue;
+			}
+			//代金卷排序
+			sortCouponseList(couponseList);
 
 			List<ActivityCouponsDto> couponseDtoList = BeanMapper.mapList(couponseList, ActivityCouponsDto.class);
 
@@ -129,12 +125,15 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 					// 剩余数量小于0 显示已领完
 					activityCoupons.setIsReceive(0);
 				} else {
+					//查询用户是否领取过了
 					queryUserIsReceiveCoupons(activityCollectCouponsParamDto.getUserId(), activityCoupons);
 				}
 			}
 			activityCollectCouponsDto.setCouponsList(couponseDtoList);
 		}
 	}
+
+	
 
 	/**
 	 * @Description: 根据活动类型过滤代金卷
@@ -182,7 +181,7 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 					activityCoupons.setIsReceive(2);
 				}
 			} catch (ServiceException e) {
-				logger.error("查询代金卷信息出错", e);
+				logger.error("查询代金卷领取数量信息出错", e);
 			}
 		} else {
 			activityCoupons.setIsReceive(2);
@@ -266,5 +265,23 @@ public class ActivityCollectCouponsApiImpl implements ActivityCollectCouponsApi 
 			idList.add(activityCollectCoupons.getId());
 		}
 		return idList;
+	}
+	
+	/**
+	 * @Description: 代金卷按创建时间排序,时间越后的放在前面
+	 * @param couponseList
+	 * @author zengjizu
+	 * @date 2017年11月23日
+	 */
+	private void sortCouponseList(List<ActivityCoupons> couponseList) {
+		couponseList.sort((obj1, obj2) -> {
+			if (obj1.getCreateTime().getTime() == obj2.getCreateTime().getTime()) {
+				return 0;
+			}
+			if (obj1.getCreateTime().getTime() > obj2.getCreateTime().getTime()) {
+				return -1;
+			}
+			return 1;
+		});
 	}
 }

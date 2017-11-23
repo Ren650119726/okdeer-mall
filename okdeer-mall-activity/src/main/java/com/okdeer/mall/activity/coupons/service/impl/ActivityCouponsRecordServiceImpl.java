@@ -90,7 +90,6 @@ import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.enums.GetUserType;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.member.service.MemberService;
-import com.okdeer.mall.member.service.SysBuyerExtService;
 import com.okdeer.mall.order.constant.OrderMsgConstant;
 import com.okdeer.mall.order.dto.TradeOrderParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -105,24 +104,20 @@ import com.okdeer.mall.system.mapper.SysUserInvitationCodeMapper;
 import com.okdeer.mall.system.service.InvitationCodeService;
 import com.okdeer.mall.system.utils.ConvertUtil;
 import com.okdeer.mcm.constant.MsgConstant;
-import com.okdeer.mcm.entity.SmsVO;
 import com.okdeer.mcm.service.ISmsService;
 
 import net.sf.json.JSONObject;
 
 /**
- * @DESC: 活动代金券记录
- * @author YSCGD
- * @date 2016-04-08 19:39:19
- * @version 1.0.0
- * @copyright ©2005-2020 yschome.com Inc. All rights reserved
- *            ==================================================================
- *            =============================== Task ID Date Author Description
- *            ----------------+----------------+-------------------+------------
- *            ------------------------------- V4.1 2016-07-04 maojj 事务控制使用注解
- *            V1.1.0 2016-9-19 wushp 各种状态代金券数量统计 V1.2 2016-11-21 tuzhd 代金劵提醒定时任务
- *            V1.3 2016-12-19 zhulq 异业代金卷领取成功后操作 V2.1 2017-02-15 maojj
- *            增加查询用户有效的代金券记录
+ * ClassName: ActivityCouponsRecordServiceImpl 
+ * @Description: 代金卷记录
+ * @author zengjizu
+ * @date 2017年11月23日
+ *
+ * =================================================================================================
+ *     Task ID			  Date			     Author		      Description
+ * ----------------+----------------+-------------------+-------------------------------------------
+ *
  */
 @Service(version = "1.0.0", interfaceName = "com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi")
 class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceApi, ActivityCouponsRecordService {
@@ -197,9 +192,6 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 	 */
 	@Reference(version = "1.0.0")
 	private ISmsService smsService;
-
-	@Autowired
-	private SysBuyerExtService sysBuyerExtService;
 
 	@Autowired
 	private MemberService memberService;
@@ -305,14 +297,6 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 						);
 				}
 			}
-			/*
-			 * if (CollectionUtils.isNotEmpty(recordIds)) {
-			 * List<ActivityCouponsRecordVo> list =
-			 * activityCouponsRecordMapper.findOrderByRecordId(recordIds); for
-			 * (ActivityCouponsRecordVo recordVo : recordInfos) { for
-			 * (ActivityCouponsRecordVo record : list) {
-			 * recordVo.setOrderNo(record.getOrderNo()); } } }
-			 */
 		}
 		PageUtils<ActivityCouponsRecordVo> pageUtils = new PageUtils<ActivityCouponsRecordVo>(recordInfos);
 		return pageUtils;
@@ -362,10 +346,6 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			ActivityCouponsDto activityCouponsDto = activityCouponsApi
 					.findDetailById(activityCouponsRecordDto.getCouponsId(), activityCouponsQueryParamDto);
 			activityCouponsRecordDto.setActivityCouponsDto(activityCouponsDto);
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(activityCouponsRecordDto.getValidTime());
-			cal.add(Calendar.DATE, -1);
-			activityCouponsRecordDto.setValidTime(cal.getTime());
 		}
 		return dtoList;
 	}
