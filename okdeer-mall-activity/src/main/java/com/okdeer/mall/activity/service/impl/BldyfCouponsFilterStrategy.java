@@ -1,5 +1,7 @@
 package com.okdeer.mall.activity.service.impl;
 
+import java.math.BigDecimal;
+
 import org.springframework.stereotype.Service;
 
 import com.okdeer.mall.activity.bo.FavourParamBO;
@@ -18,4 +20,9 @@ public class BldyfCouponsFilterStrategy extends GenericCouponsFilterStrategy {
 				|| orderChannel == OrderResourceEnum.WECHAT_MIN;
 	}
 
+	@Override
+	public boolean isArriveOrderAmount(BigDecimal orderAmount,BigDecimal limitAmount){
+		// 运费券无金额限制
+		return true;
+	}
 }
