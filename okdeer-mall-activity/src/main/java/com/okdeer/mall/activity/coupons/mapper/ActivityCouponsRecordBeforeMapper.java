@@ -8,10 +8,8 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.base.common.exception.ServiceException;
 import com.okdeer.base.dal.IBaseCrudMapper;
-import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordBefore;
 import com.okdeer.mall.activity.dto.ActivityCouponsRecordBeforeParamDto;
-import com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto;
 import com.okdeer.mall.common.enums.GetUserType;
 
 /**
@@ -99,4 +97,12 @@ public interface ActivityCouponsRecordBeforeMapper extends IBaseCrudMapper {
 	 * @date 2017年8月26日
 	 */
 	int selectOrderCountByParams(ActivityCouponsRecordBeforeParamDto activityCouponsRecordBeforeParam);
+	
+	/**
+	 * @Description: 批量插入代金券
+	 * @param list
+	 * @author tuzhd
+	 * @date 2017年11月24日
+	 */
+	int insertSelectiveBatch(List<ActivityCouponsRecordBefore> list);
 }

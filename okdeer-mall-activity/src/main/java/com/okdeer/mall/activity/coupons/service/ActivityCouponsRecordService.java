@@ -8,13 +8,12 @@ import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.bo.FavourParamBO;
 import com.okdeer.mall.activity.coupons.bo.ActivityCouponsRecordParamBo;
 import com.okdeer.mall.activity.coupons.bo.UserCouponsBo;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordQueryVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
-import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
-import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
 import com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.order.entity.TradeOrder;
@@ -75,20 +74,18 @@ public interface ActivityCouponsRecordService {
 	 * @param currentOperatUserId
 	 * @throws ServiceException
 	 */
-	JSONObject addRecordForRecevie(String couponsId, String currentOperatUserId,
-			ActivityCouponsType activityCouponsType) throws ServiceException;
+	JSONObject addRecordForRecevie(String couponsId, String currentOperatUserId) throws ServiceException;
 
 	/**
 	 * DESC: 领取活动优惠券
 	 * 
 	 * @author LIU.W
-	 * @param lstActivityCoupons
+	 * @param coll
 	 * @param activityCouponsType
 	 * @param userId
 	 * @throws ServiceException
 	 */
-	void drawCouponsRecord(List<ActivityCoupons> lstActivityCoupons, ActivityCouponsType activityCouponsType,
-			String userId) throws ServiceException;
+	void drawCouponsRecord(ActivityCollectCoupons coll,String userId) throws ServiceException;
 
 	/**
 	 * 
@@ -100,8 +97,7 @@ public interface ActivityCouponsRecordService {
 	 * @return
 	 * @throws ServiceException
 	 */
-	JSONObject addRecordForExchangeCode(Map<String, Object> params, String exchangeCode, String currentOperatUserId,
-			ActivityCouponsType activityCouponsType) throws ServiceException;
+	JSONObject addRecordForExchangeCode(Map<String, Object> params, String exchangeCode, String currentOperatUserId) throws ServiceException;
 
 	/**
 	 * 根据领取人id、领取状态，店铺ID，查询领取的代金券详细信息

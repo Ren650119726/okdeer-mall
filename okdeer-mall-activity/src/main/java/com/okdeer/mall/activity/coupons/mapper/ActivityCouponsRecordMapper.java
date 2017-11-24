@@ -137,8 +137,7 @@ public interface ActivityCouponsRecordMapper extends IBaseCrudMapper {
 
 	/**
 	 * DESC: 批量插入代金券 
-	 * @author LIU.W
-	 * @param lstRecords
+	 * @author tuzhd
 	 * @return
 	 */
 	int insertSelectiveBatch(List<ActivityCouponsRecord> list);

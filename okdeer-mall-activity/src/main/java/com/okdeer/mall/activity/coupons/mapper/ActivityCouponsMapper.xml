@@ -531,6 +531,18 @@
 	       WHERE remain_num > 0 AND id = #{id,jdbcType=VARCHAR}
 	</update>
 	
+	<!-- 批量更新代金券领取张数 -->
+	<update id="updateAllRemainNum">
+	      UPDATE activity_coupons SET
+                remain_num = (remain_num -1),
+        		update_time = NOW()
+	       WHERE remain_num > 0 
+		     AND id in
+		     <foreach collection="ids" open="(" close=")" index="index" item="item"  separator=",">
+			  #{item}
+			 </foreach>
+	</update>
+	
 	<update id="updateReduceUseNum" parameterType="java.lang.String">
 	      UPDATE activity_coupons SET
                 used_num = (used_num - 1),

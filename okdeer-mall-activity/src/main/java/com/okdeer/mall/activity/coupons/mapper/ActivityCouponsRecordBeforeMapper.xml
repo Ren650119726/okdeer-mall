@@ -67,6 +67,33 @@
       #{activityId,jdbcType=VARCHAR},#{effectTime,jdbcType=TIMESTAMP}
       )
   </insert>
+  <!-- 批量插入 -->
+  <insert id="insertSelectiveBatch" parameterType="list" >
+    insert into activity_coupons_record
+        (id, collect_type, coupons_id, 
+      	 coupons_collect_id, collect_time, collect_user, 
+      	 valid_time, status, order_id, room_id, invite_user_id,
+      	 is_complete,activity_id,effect_time
+         ) values
+     <foreach collection="list" item="item" index="index" separator="," >
+      (
+       #{item.id,jdbcType=VARCHAR}, 
+       #{item.collectType,jdbcType=TINYINT}, 
+       #{item.couponsId,jdbcType=VARCHAR}, 
+       #{item.couponsCollectId,jdbcType=VARCHAR}, 
+       #{item.collectTime,jdbcType=TIMESTAMP}, 
+       #{item.collectUser,jdbcType=VARCHAR}, 
+       #{item.validTime,jdbcType=TIMESTAMP}, 
+       #{item.status,jdbcType=TINYINT}, 
+       #{item.orderId,jdbcType=VARCHAR}, 
+       #{item.roomId,jdbcType=VARCHAR},
+       #{item.inviteUserId,jdbcType=VARCHAR},
+       #{item.isComplete,jdbcType=TINYINT},
+       #{item.activityId,jdbcType=VARCHAR},
+       #{item.effectTime,jdbcType=TIMESTAMP}
+      )
+     </foreach>
+  </insert> 
   
   <!-- 根据代金劵活动id代金劵预领取统计  -->
   <select id="countCouponsAllId" resultType="int" >

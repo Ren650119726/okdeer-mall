@@ -229,6 +229,16 @@ public interface ActivityCouponsMapper extends IBaseCrudMapper{
 	int updateRemainNum(String activityCouponsId);
 	
 	/**
+	 * @Description: 批量更新 代金卷领取数量
+	 * @param ids
+	 * @author tuzhd
+	 * @date 2017年11月23日
+	 */
+	int updateAllRemainNum(@Param("ids")List<String> ids);
+	
+	
+	
+	/**
 	 * 更新代金卷使用数量
 	 */
 	int updateReduceUseNum(String activityCouponsId);

@@ -403,10 +403,10 @@
 	     AND collect_time = #{collectTime}
 	  </if>
 	  <if test="collectStartTime !=null and collectStartTime != ''">
-	  	 <![CDATA[AND collect_time >= #{collectStartTime,jdbcType=VARCHAR}]]>
+	  	 <![CDATA[AND collect_time >= #{collectStartTime,jdbcType=TIMESTAMP}]]>
 	  </if>
 	  <if test="collectEndTime !=null and collectEndTime != ''">
-	  	 <![CDATA[AND collect_time <= #{collectEndTime,jdbcType=VARCHAR}]]>
+	  	 <![CDATA[AND collect_time <= #{collectEndTime,jdbcType=TIMESTAMP}]]>
 	  </if>
 	  <if test="orderId != null and orderId !=''">
 	  	AND order_id = #{orderId,jdbcType=VARCHAR}
@@ -671,7 +671,9 @@
    <insert id="insertSelectiveBatch" parameterType="list" >
     insert into activity_coupons_record
         (id, collect_type, coupons_id, coupons_collect_id, collect_time, 
-         collect_user_id, valid_time, status, order_id, room_id,effect_time) values
+          collect_user_id, valid_time, status, order_id, room_id,effect_time,
+          device_id,rec_date
+         ) values
      <foreach collection="list" item="item" index="index" separator="," >
        (#{item.id,jdbcType=VARCHAR},
         #{item.collectType,jdbcType=TINYINT},
@@ -683,7 +685,9 @@
         #{item.status,jdbcType=TINYINT},
         #{item.orderId,jdbcType=VARCHAR},
         #{item.roomId,jdbcType=VARCHAR},
-        #{item.effectTime,jdbcType=TIMESTAMP}
+        #{item.effectTime,jdbcType=TIMESTAMP},
+        #{item.deviceId,jdbcType=VARCHAR},
+        #{item.recDate,jdbcType=VARCHAR}
         )
      </foreach>
   </insert> 

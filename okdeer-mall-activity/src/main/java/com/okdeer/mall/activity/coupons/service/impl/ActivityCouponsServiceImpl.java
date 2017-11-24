@@ -1165,13 +1165,9 @@ public class ActivityCouponsServiceImpl implements ActivityCouponsServiceApi, Ac
 			throw new Exception("您来晚了一步，代经卷已经被领取完了");
 		}
 		int drawCount = 0;
-		String dateFormat = "yyyy-MM-dd HH:mm:ss";
-		String startTime = DateUtils.formatDate(DateUtils.getDateStart(new Date()), dateFormat);
-		String endTime = DateUtils.formatDate(DateUtils.getDateEnd(new Date()), dateFormat);
-
 		ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParam = new ActivityCouponsRecordQueryParamDto();
-		activityCouponsRecordQueryParam.setCollectStartTime(startTime);
-		activityCouponsRecordQueryParam.setCollectEndTime(endTime);
+		activityCouponsRecordQueryParam.setCollectStartTime(DateUtils.getDateStart(new Date()));
+		activityCouponsRecordQueryParam.setCollectEndTime(DateUtils.getDateEnd(new Date()));
 		activityCouponsRecordQueryParam.setCouponsCollectId(activityCouponParamDto.getActivityId());
 		activityCouponsRecordQueryParam.setCouponsId(activityCoupons.getId());
 		if (StringUtils.isNotEmpty(activityCouponParamDto.getUserId())) {
