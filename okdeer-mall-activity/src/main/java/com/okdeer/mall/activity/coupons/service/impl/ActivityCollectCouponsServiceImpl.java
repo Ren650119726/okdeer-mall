@@ -916,11 +916,8 @@ public class ActivityCollectCouponsServiceImpl
 	private int getDaliyDrawAmount(ActivityCouponsRecord record) {
 		ActivityCouponsRecordQueryParamDto activityCouponsRecordQueryParamDto = new ActivityCouponsRecordQueryParamDto();
 		BeanMapper.copy(record, activityCouponsRecordQueryParamDto);
-		String dateFormat = "yyyy-MM-dd HH:mm:ss";
-		String startTime = DateUtils.formatDate(DateUtils.getDateStart(new Date()), dateFormat);
-		String endTime = DateUtils.formatDate(DateUtils.getDateEnd(new Date()), dateFormat);
-		activityCouponsRecordQueryParamDto.setCollectStartTime(startTime);
-		activityCouponsRecordQueryParamDto.setCollectEndTime(endTime);
+		activityCouponsRecordQueryParamDto.setCollectStartTime(DateUtils.getDateStart(new Date()));
+		activityCouponsRecordQueryParamDto.setCollectEndTime(DateUtils.getDateEnd(new Date()));
 		ActivityCouponsRecordBeforeParamDto activityCouponsRecordBeforeParamDto = new ActivityCouponsRecordBeforeParamDto();
 		BeanMapper.copy(activityCouponsRecordQueryParamDto, activityCouponsRecordBeforeParamDto);
 		// 当前日期已经领取的数量

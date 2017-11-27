@@ -28,12 +28,14 @@ import com.okdeer.ca.api.buyeruser.entity.SysBuyerUserDto;
 import com.okdeer.common.consts.LogConstants;
 import com.okdeer.common.consts.PointConstants;
 import com.okdeer.common.consts.StaticConstants;
+import com.okdeer.mall.activity.coupons.entity.ActivityCollectCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivityCollectCouponsRegisteRecordVo;
 import com.okdeer.mall.activity.coupons.entity.ActivityCoupons;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsRegistRecordMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
@@ -94,6 +96,9 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 	 */
 	@Autowired
 	private ActivityCouponsRecordService activityCouponsRecordService;
+	
+	@Autowired
+	private ActivityCollectCouponsMapper activityCollectCouponsMapper;
 	
 	/**
 	 * mq
@@ -338,29 +343,14 @@ public class ActivityCollectCouponsRegisteRecordServiceImpl
 	}
 	
 	private void getRegisterCoupons(String userId) throws ServiceException{
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("type", 1);// 注册活动
-		List<ActivityCoupons> lstActivityCoupons = null;
-		List<ActivityCoupons> lstActivityCouponFilter = null;
-		lstActivityCoupons = activityCouponsMapper.listCouponsByType(map);
-		if (CollectionUtils.isEmpty(lstActivityCoupons)) {
-			// 没有注册送代金券的活动
-			return;
+		Map<String, Object> map = new HashMap<>();
+		map.put("type", ActivityCouponsType.sign);// 注册活动
+		map.put("status", 1);//开始状态
+		List<ActivityCollectCoupons> lstActivityCoupons = activityCollectCouponsMapper.findCollectCouponsByType(map);
+		//注册送代金券
+		if(CollectionUtils.isNotEmpty(lstActivityCoupons)){
+			activityCouponsRecordService.drawCouponsRecord(lstActivityCoupons.get(0),userId);
 		}
-
-		lstActivityCouponFilter = new ArrayList<ActivityCoupons>();
-		for (ActivityCoupons activityCoupons : lstActivityCoupons) {
-			int remainNum = activityCoupons.getRemainNum();// 剩余总数量
-			if (remainNum > 0) {
-				lstActivityCouponFilter.add(activityCoupons);
-			}
-		}
-
-		if (CollectionUtils.isEmpty(lstActivityCouponFilter)) {
-			// 活动代金券已经全部被领完
-			return;
-		}
-		activityCouponsRecordService.drawCouponsRecord(lstActivityCouponFilter, ActivityCouponsType.sign, userId);
 	}
 	// End Bug:14408 added by maojj 2016-10-17
 }

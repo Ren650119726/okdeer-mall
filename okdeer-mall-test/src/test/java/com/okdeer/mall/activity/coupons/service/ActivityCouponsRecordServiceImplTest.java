@@ -26,6 +26,7 @@ import org.mockito.BDDMockito;
 import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.util.AopTestUtils;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -48,6 +49,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecordVo;
 import com.okdeer.mall.activity.coupons.entity.CouponsFindVo;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsRecordStatusEnum;
 import com.okdeer.mall.activity.coupons.enums.ActivityCouponsType;
+import com.okdeer.mall.activity.coupons.mapper.ActivityCollectCouponsMapper;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.dto.ActivityCouponsRecordQueryParamDto;
 import com.okdeer.mall.activity.service.impl.BldCouponsFilterStrategy;
@@ -107,6 +109,12 @@ public class ActivityCouponsRecordServiceImplTest extends BaseServiceTest implem
 	
 	@Resource
 	private IRedisTemplateWrapper<String, Object> redisTemplateWrapper;
+	
+	/**
+	 * 代金券领取活动
+	 */
+	@Autowired
+	private ActivityCollectCouponsMapper activityCollectCouponsMapper;
 	
 	private String ids;
 	
@@ -290,15 +298,15 @@ public class ActivityCouponsRecordServiceImplTest extends BaseServiceTest implem
 		activityCouponsRecordService.addInviteUserHandler("141577260798e5eb9e1b8a0645b486c7", new String[]{"8a94e7465f5656b2015f5656b2ee0000"});
 		Map<String,Object> params = new HashMap<>();
 		params.put("exchangeCode", "11111");
-		activityCouponsRecordService.addRecordForExchangeCode(params, "11111", "141577260798e5eb9e1b8a0645b486c7", ActivityCouponsType.advert_coupons);
+		activityCouponsRecordService.addRecordForExchangeCode(params, "11111", "141577260798e5eb9e1b8a0645b486c7");
 		//错误的优惠码
-		activityCouponsRecordService.addRecordForExchangeCode(params, "33332X", "141577260798e5eb9e1b8a0645b486c7", ActivityCouponsType.advert_coupons);
-		activityCouponsRecordService.addRecordForRecevie("8a8080e95f387883015f387cfa300004", "141577260798e5eb9e1b8a0645b486c7", ActivityCouponsType.advert_coupons);
+		activityCouponsRecordService.addRecordForExchangeCode(params, "33332X", "141577260798e5eb9e1b8a0645b486c7");
+		activityCouponsRecordService.addRecordForRecevie("8a8080e95f387883015f387cfa300004", "141577260798e5eb9e1b8a0645b486c7");
 		params.put("randCode", "t6dcck4j");
-		activityCouponsRecordServiceApi.addRecordForRandCode(params, "t6dcck4j", "141577260798e5eb9e1b8a0645b486c7", ActivityCouponsType.coupons);
+		activityCouponsRecordServiceApi.addRecordForRandCode(params, "t6dcck4j", "141577260798e5eb9e1b8a0645b486c7");
 		//错误的随机码
 		params.put("randCode", "xxxxxxtt");
-		activityCouponsRecordServiceApi.addRecordForRandCode(params, "xxxxxxtt", "141577260798e5eb9e1b8a0645b486c7", ActivityCouponsType.coupons);
+		activityCouponsRecordServiceApi.addRecordForRandCode(params, "xxxxxxtt", "141577260798e5eb9e1b8a0645b486c7");
 		
 		ActivityCouponsRecord activityCouponsRecord = activityCouponsRecordService.selectByPrimaryKey("8a8080fa5f76ab23015f779a6e95003e");
 		activityCouponsRecord.setId(UuidUtils.getUuid());
@@ -307,9 +315,7 @@ public class ActivityCouponsRecordServiceImplTest extends BaseServiceTest implem
 		activityCouponsRecord.setId(UuidUtils.getUuid());
 		activityCouponsRecordServiceApi.insertSelective(activityCouponsRecord);
 		
-		List<ActivityCoupons> lstActivityCoupons = Lists.newArrayList();
-		lstActivityCoupons.add(activityCouponsService.selectByPrimaryKey("4028bb185e281bb1015e281bb1480000"));
-		activityCouponsRecordService.drawCouponsRecord(lstActivityCoupons,  ActivityCouponsType.coupons, "141577260798e5eb9e1b8a0645b486c7");
+		activityCouponsRecordService.drawCouponsRecord(activityCollectCouponsMapper.get("4028bb185e281bb1015e281cb91e0001"), "141577260798e5eb9e1b8a0645b486c7");
 		activityCouponsRecordServiceApi.insertCopyRecords("141577260798e5eb9e1b8a0645b486c7", "13545052325", "11111");
 		//测试重复
 		afterTestMethod(this, "testFailVaild");
