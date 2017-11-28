@@ -402,10 +402,10 @@
 	  <if test="collectTime != null">
 	     AND collect_time = #{collectTime}
 	  </if>
-	  <if test="collectStartTime !=null and collectStartTime != ''">
+	  <if test="collectStartTime !=null">
 	  	 <![CDATA[AND collect_time >= #{collectStartTime,jdbcType=TIMESTAMP}]]>
 	  </if>
-	  <if test="collectEndTime !=null and collectEndTime != ''">
+	  <if test="collectEndTime !=null">
 	  	 <![CDATA[AND collect_time <= #{collectEndTime,jdbcType=TIMESTAMP}]]>
 	  </if>
 	  <if test="orderId != null and orderId !=''">
