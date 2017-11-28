@@ -69,7 +69,7 @@
   </insert>
   <!-- 批量插入 -->
   <insert id="insertSelectiveBatch" parameterType="list" >
-    insert into activity_coupons_record
+    insert into activity_coupons_record_before
         (id, collect_type, coupons_id, 
       	 coupons_collect_id, collect_time, collect_user, 
       	 valid_time, status, order_id, room_id, invite_user_id,

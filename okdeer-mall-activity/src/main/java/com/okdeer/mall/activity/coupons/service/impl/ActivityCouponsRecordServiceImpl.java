@@ -84,7 +84,6 @@ import com.okdeer.mall.activity.service.MaxFavourStrategy;
 import com.okdeer.mall.activity.service.impl.CouponsFilterStrategyFactory;
 import com.okdeer.mall.common.consts.Constant;
 import com.okdeer.mall.common.entity.ResultMsg;
-import com.okdeer.mall.common.enums.GetUserType;
 import com.okdeer.mall.common.enums.UseUserType;
 import com.okdeer.mall.member.service.MemberService;
 import com.okdeer.mall.order.constant.OrderMsgConstant;
@@ -404,6 +403,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			AbstractCouponsReceive receive=conponsReceiveFactory.produce(coll.getType());
 			CouponsReceiveBo bo = setCouponsReceiveBo(coll, null, invitaUserId, limitOne);
 			bo.setActivityId(advertId);
+			bo.setPhone(phone);
 			//执行领券操作
 			msg = receive.excute(bo);
 			
@@ -428,29 +428,6 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			throws ServiceException {
 		return addBeforeRecords(collectId, phone, null, advertId, false);
 
-	}
-
-	/**
-	 * @DESC 校验预领取记录 1、存在未使用的新人代金券则 不能领取返回false 2、持续的活动领取过不能再领取
-	 * @param phone
-	 *            手机号
-	 * @param collectId
-	 *            代金券活动id
-	 * @return
-	 */
-	private boolean checkBeforeCoupons(String phone, ActivityCollectCoupons coll) {
-		// 如果领取为限新人使用 则校验是否领取过新人代金券
-		if (coll.getGetUserType() == GetUserType.ONlY_NEW_USER) {
-			// 查询该用户已领取， 新人限制， 未使用，的代金劵活动的代金劵数量
-			int hadNewCount = activityCouponsRecordBeforeMapper.countCouponsByType(GetUserType.ONlY_NEW_USER, phone,
-					new Date());
-			// 存在未使用的新人代金券则 返回true
-			if (hadNewCount > 0) {
-				return true;
-			}
-		}
-		// 根据代金劵活动id代金劵预领取统计 持续的活动领取过不能再领取
-		return activityCouponsRecordBeforeMapper.countCouponsAllId(phone, coll.getId()) > 0;
 	}
 
 	/**
