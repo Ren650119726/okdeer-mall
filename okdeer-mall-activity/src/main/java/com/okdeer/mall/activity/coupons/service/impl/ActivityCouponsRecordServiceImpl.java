@@ -72,7 +72,7 @@ import com.okdeer.mall.activity.coupons.service.ActivityCouponsReceiveStrategy;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordServiceApi;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsServiceApi;
-import com.okdeer.mall.activity.coupons.service.receive.AbstractCouponsReceive;
+import com.okdeer.mall.activity.coupons.service.receive.CouponsReceiveHandler;
 import com.okdeer.mall.activity.coupons.service.receive.ConponsReceiveFactory;
 import com.okdeer.mall.activity.coupons.service.receive.bo.CouponsReceiveBo;
 import com.okdeer.mall.activity.dto.ActivityCouponsDto;
@@ -400,7 +400,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		try {
 			ActivityCollectCoupons coll = activityCollectCouponsMapper.get(collectId);
 			//获得领取实际操作 对象
-			AbstractCouponsReceive receive=conponsReceiveFactory.produce(coll.getType());
+			CouponsReceiveHandler receive=conponsReceiveFactory.produce(coll.getType());
 			CouponsReceiveBo bo = setCouponsReceiveBo(coll, null, invitaUserId, limitOne);
 			bo.setActivityId(advertId);
 			bo.setPhone(phone);
@@ -541,7 +541,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 			// 设置代金券领取记录的代金券id、代金券领取活动id、活动类型，以便后面代码中的数量判断查询
 			ActivityCollectCoupons coll = activityCollectCouponsMapper.get(activityCoupons.getActivityId());
 			//获得领取实际操作 对象
-			AbstractCouponsReceive receive=conponsReceiveFactory.produce(coll.getType());
+			CouponsReceiveHandler receive=conponsReceiveFactory.produce(coll.getType());
 			CouponsReceiveBo  bo = setCouponsReceiveBo(coll, userId, null, false);
 			//随机码领取加入随机码检验
 			if(isRandCode){
@@ -1224,7 +1224,7 @@ class ActivityCouponsRecordServiceImpl implements ActivityCouponsRecordServiceAp
 		try {
 			ActivityCollectCoupons coll = activityCollectCouponsMapper.get(collectId);
 			//获得领取实际操作 对象
-			AbstractCouponsReceive receive=conponsReceiveFactory.produce(coll.getType());
+			CouponsReceiveHandler receive=conponsReceiveFactory.produce(coll.getType());
 			//执行领券操作
 			msg = receive.excute(setCouponsReceiveBo(coll, userId, invitaUserId, limitOne));
 			
