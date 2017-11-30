@@ -276,6 +276,7 @@
 			    and sku.spu_category_id = #{spuCategoryId,jdbcType=VARCHAR}
 		     </if>
 		GROUP BY g.store_sku_id
+		ORDER BY g.sort DESC,ad.create_time DESC,g.create_time DESC
 	</select>
 	
 	
