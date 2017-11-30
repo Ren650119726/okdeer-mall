@@ -286,7 +286,7 @@
 		left join activity_sale_goods g on gs.id=g.store_sku_id and g.sale_id = gs.activity_id 
 		left join activity_sale s on g.sale_id = s.id
 		left join goods_store_spu gss on gss.id=gs.store_spu_id
-		left join goods_spu_category gsc on gss.spu_category_id=gsc.id
+		STRAIGHT_JOIN goods_spu_category gsc on gss.spu_category_id=gsc.id
 		left join goods_store_sku_picture p on p.store_sku_id=gs.id and p.type = 1 
 		left join store_info si on gs.store_id = si.id
 		left join store_branches sb on si.id=sb.id
