@@ -108,7 +108,6 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 	@Resource
 	private TradeOrderRefundsItemMapper tradeOrderRefundsItemMapper;
 
-
 	@Reference(version = "1.0.0", check = false)
 	private IPayServiceApi payServiceApi;
 
@@ -749,7 +748,6 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		return payTradeVo;
 	}
 
-
 	// bigein add by zengjz 2016-11-18 增加服务订单确认调用云钱包方法
 	@Override
 	public void confirmStoreServiceOrderPay(TradeOrder tradeOrder) throws Exception {
@@ -796,10 +794,10 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		if (order.getPlatformPreferential() != null && order.getPlatformPreferential().compareTo(BigDecimal.ZERO) > 0) {
 			pice = pice.add(order.getPlatformPreferential());
 		}
-		if(order.getPinMoney()!=null && order.getPinMoney().compareTo(BigDecimal.ZERO) > 0){
+		if (order.getPinMoney() != null && order.getPinMoney().compareTo(BigDecimal.ZERO) > 0) {
 			pice = pice.add(order.getPinMoney());
 		}
-		if(pice.compareTo(BigDecimal.ZERO) > 0){
+		if (pice.compareTo(BigDecimal.ZERO) > 0) {
 			payTradeVo.setPrefeAmount(pice);
 			payTradeVo.setActivitier(yscWalletAccount);
 		}
@@ -841,12 +839,12 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		} else {
 			payReqest.setApplicationEnum(ApplicationEnum.CONVENIENCE_STORE);
 		}
-		//平台补贴
+		// 平台补贴
 		BigDecimal subsidies = BigDecimal.ZERO;
 		if (order.getPlatformPreferential() != null && order.getPlatformPreferential().compareTo(BigDecimal.ZERO) > 0) {
 			subsidies.add(order.getPlatformPreferential());
 		}
-		if(order.getPinMoney()!=null && order.getPinMoney().compareTo(BigDecimal.ZERO)>0){
+		if (order.getPinMoney() != null && order.getPinMoney().compareTo(BigDecimal.ZERO) > 0) {
 			subsidies.add(order.getPinMoney());
 		}
 		if (subsidies.compareTo(BigDecimal.ZERO) > 0) {
@@ -880,15 +878,17 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		payReqest.setServiceId(order.getId());
 
 		int paymentType = payInfoParamDto.getPaymentType();
-		// 支付类型 0:云钱包,1:支付宝app支付,2:微信app支付, 6：微信公众号 7 微信h5
+		// 支付类型 0:云钱包,1:支付宝app支付,2:微信app支付, 6：微信公众号 7 微信h5 8:翼支付
 		if (1 == paymentType) {
 			payReqest.setTradeType(PayTradeTypeEnum.APP_ALIPAY);
 		} else if (2 == paymentType) {
 			payReqest.setTradeType(PayTradeTypeEnum.APP_WXPAY);
 		} else if (6 == paymentType) {
 			payReqest.setTradeType(PayTradeTypeEnum.WX_WXPAY);
-		}else if (7 == paymentType) {
+		} else if (7 == paymentType) {
 			payReqest.setTradeType(PayTradeTypeEnum.WAP_WXPAY);
+		} else if (8 == paymentType) {
+			payReqest.setTradeType(PayTradeTypeEnum.APP_BESTPAY);
 		}
 		return payReqest;
 	}
