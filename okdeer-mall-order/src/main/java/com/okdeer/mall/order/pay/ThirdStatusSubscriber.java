@@ -111,7 +111,7 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
         String lockKey = null;
         try {
             String msg = new String(msgs.get(0).getBody(), Charsets.UTF_8);
-            logger.info("订单支付状态消息:" + msg);
+            logger.info("订单支付状态消息:{}",msg);
             PayResponseDto respDto = JsonMapper.nonEmptyMapper().fromJson(msg, PayResponseDto.class);
             tradeNum = respDto.getTradeNum();
             if (StringUtils.isEmpty(tradeNum)) {
