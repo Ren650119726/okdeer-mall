@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.okdeer.base.framework.mq.annotation.RocketMQListener;
 import com.okdeer.base.framework.mq.message.MQMessage;
+import com.okdeer.mall.order.dto.CancelOrderDto;
 import com.okdeer.mall.order.dto.CancelOrderParamDto;
 import com.okdeer.mall.order.enums.OrderCancelType;
 import com.okdeer.mall.order.pay.constant.GroupOrderTopicConst;
@@ -41,8 +42,12 @@ public class GroupOrderCancelSubscriber {
 			cancelParamDto.setOrderId(orderId);
 			cancelParamDto.setReason("成团失败");
 			cancelParamDto.setCancelType(OrderCancelType.CANCEL_BY_SYSTEM);
-			cancelOrderApi.cancelOrder(cancelParamDto);
-			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+			CancelOrderDto cancelResult = cancelOrderApi.cancelOrder(cancelParamDto);
+			if(cancelResult.getStatus() == 0){
+				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+			}else{
+				return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+			}
 		} catch (Exception e) {
 			LOG.error("团购订单取消发生异常：",e);
 			return ConsumeConcurrentlyStatus.RECONSUME_LATER;
