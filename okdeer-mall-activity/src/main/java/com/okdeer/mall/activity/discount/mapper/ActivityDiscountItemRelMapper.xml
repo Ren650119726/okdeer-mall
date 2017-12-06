@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.okdeer.mall.activity.discount.mapper.ActivityDiscountItemRelMapper" >
+    <resultMap id="BaseResultMap" type="com.okdeer.mall.activity.discount.entity.ActivityDiscountItemRel" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+        <result column="activity_item_id" property="activityItemId" jdbcType="VARCHAR" />
+        <result column="type" property="type" jdbcType="TINYINT" />
+        <result column="business_id" property="businessId" jdbcType="VARCHAR" />
+        <result column="sort" property="sort" jdbcType="TINYINT" />
+        <result column="price" property="price" jdbcType="DECIMAL" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, activity_id, activity_item_id, type, business_id, sort, price
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select 
+        <include refid="Base_Column_List" />
+        from activity_discount_item_rel
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="add" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountItemRel" >
+        insert into activity_discount_item_rel
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="activityId != null" >
+                activity_id,
+            </if>
+            <if test="activityItemId != null" >
+                activity_item_id,
+            </if>
+            <if test="type != null" >
+                type,
+            </if>
+            <if test="businessId != null" >
+                business_id,
+            </if>
+            <if test="sort != null" >
+                sort,
+            </if>
+            <if test="price != null" >
+                price,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="activityId != null" >
+                #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="activityItemId != null" >
+                #{activityItemId,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null" >
+                #{type,jdbcType=TINYINT},
+            </if>
+            <if test="businessId != null" >
+                #{businessId,jdbcType=VARCHAR},
+            </if>
+            <if test="sort != null" >
+                #{sort,jdbcType=TINYINT},
+            </if>
+            <if test="price != null" >
+                #{price,jdbcType=DECIMAL},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.okdeer.mall.activity.discount.entity.ActivityDiscountItemRel" >
+        update activity_discount_item_rel
+        <set >
+            <if test="activityId != null" >
+                activity_id = #{activityId,jdbcType=VARCHAR},
+            </if>
+            <if test="activityItemId != null" >
+                activity_item_id = #{activityItemId,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null" >
+                type = #{type,jdbcType=TINYINT},
+            </if>
+            <if test="businessId != null" >
+                business_id = #{businessId,jdbcType=VARCHAR},
+            </if>
+            <if test="sort != null" >
+                sort = #{sort,jdbcType=TINYINT},
+            </if>
+            <if test="price != null" >
+                price = #{price,jdbcType=DECIMAL},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String" >
+        delete from activity_discount_item_rel
+        where id = #{id,jdbcType=VARCHAR}
+    </delete>
+    
+     <delete id="deleteByActivityId" parameterType="java.lang.String" >
+        delete from activity_discount_item
+        where activity_id = #{value}
+    </delete>
+    
+    <insert id="addBatch" parameterType="list">
+    	insert into activity_discount_item_rel(
+			<include refid="Base_Column_List"/>
+		)values
+		<foreach collection="list" item="item" index="index" separator="," >
+        (
+            #{item.id},
+            #{item.activityId},
+            #{item.activityItemId},
+            #{item.type},
+            #{item.businessId},
+            #{item.sort},
+            #{item.price}
+        )
+		</foreach>
+    </insert>
+    
+    <select id="findByActivityId" resultMap="BaseResultMap">
+        select 
+        <include refid="Base_Column_List" />
+        from activity_discount_item_rel
+        where 1=1 
+        <if test="activityId != null and activityId != ''">
+        	and activity_id = #{activityId}
+        </if>
+        <if test="activityItemId != null and activityItemId != ''">
+        	and activity_item_id = #{activityItemId}
+        </if>
+    </select>
+
+</mapper>
