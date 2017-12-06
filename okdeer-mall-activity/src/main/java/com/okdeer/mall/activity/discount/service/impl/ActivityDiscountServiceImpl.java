@@ -39,6 +39,7 @@ import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.entity.ReturnInfo;
 import com.okdeer.common.utils.EnumAdapter;
+import com.okdeer.common.utils.ListUtil;
 import com.okdeer.mall.activity.bo.ActLimitRelBuilder;
 import com.okdeer.mall.activity.bo.ActivityParamBo;
 import com.okdeer.mall.activity.bo.FavourParamBO;
@@ -48,13 +49,22 @@ import com.okdeer.mall.activity.discount.entity.ActivityBusinessRel;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountCondition;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountGroup;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscountItem;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscountItemDto;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscountItemRel;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscountItemRelDto;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscountMultiItem;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscountMultiItemDto;
 import com.okdeer.mall.activity.discount.enums.ActivityBusinessType;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
 import com.okdeer.mall.activity.discount.mapper.ActivityBusinessRelMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountConditionMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountGroupMapper;
+import com.okdeer.mall.activity.discount.mapper.ActivityDiscountItemMapper;
+import com.okdeer.mall.activity.discount.mapper.ActivityDiscountItemRelMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
+import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMultiItemMapper;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
 import com.okdeer.mall.activity.dto.ActivityBusinessRelDto;
 import com.okdeer.mall.activity.dto.ActivityInfoDto;
@@ -126,6 +136,12 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	private MaxFavourStrategy genericMaxFavourStrategy;
 	@Resource
 	private ActivityDiscountGroupMapper activityDiscountGroupMapper;
+	@Resource
+	private ActivityDiscountItemMapper activityDiscountItemMapper;
+	@Resource
+	private ActivityDiscountItemRelMapper activityDiscountItemRelMapper;
+	@Resource
+	private ActivityDiscountMultiItemMapper activityDiscountMultiItemMapper;
 	
 	@Reference(version = "1.0.0",check=false)
 	private TradeOrderGroupApi tradeOrderGroupApi; 
@@ -201,6 +217,8 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 			// 保存团购活动商品关系信息 + 锁定团购活动库存信息
 			addSkuAndStockRelation(actInfo, groupGoodsList);
 		}
+		//v2.7保存新加的三种类型的活动
+		saveMultiItem(actInfoDto);
 		return retInfo;
 	}
 	
@@ -257,7 +275,39 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 			addSkuAndStockRelation(actInfo, groupGoodsList);
 		}
 		
+		//v2.7保存新加的三种类型的活动
+		saveMultiItem(actInfoDto);
 		return retInfo;
+	}
+	
+	/**
+	 * @Description: v2.7新加的三种类型活动 独立出来
+	 * @param actInfoDto
+	 * @author zhangkn
+	 * @date 2017年12月6日
+	 */
+	private void saveMultiItem(ActivityInfoDto actInfoDto){
+		ActivityDiscount actInfo = actInfoDto.getActivityInfo();
+		if(actInfo.getType() == ActivityDiscountType.JJG ||
+			actInfo.getType() == ActivityDiscountType.NJXY ||	
+			actInfo.getType() == ActivityDiscountType.MMS){
+			
+			//先删除老数据
+			activityDiscountItemMapper.deleteByActivityId(actInfo.getId());
+			activityDiscountItemRelMapper.deleteByActivityId(actInfo.getId());
+			activityDiscountMultiItemMapper.deleteByActivityId(actInfo.getId());
+			//二级表批量添加
+			activityDiscountItemMapper.addBatch(BeanMapper.mapList(actInfoDto.getDiscountItemList(),
+				ActivityDiscountItem.class));
+			for(ActivityDiscountItemDto itemDto : actInfoDto.getDiscountItemList()){
+				//二级业务关联表
+				activityDiscountItemRelMapper.addBatch(BeanMapper.mapList(itemDto.getRelList(), ActivityDiscountItemRel.class));
+				//n件x元 有三级数据
+				if(actInfo.getType() == ActivityDiscountType.NJXY){
+					activityDiscountMultiItemMapper.addBatch(BeanMapper.mapList(itemDto.getMultiItemList(), ActivityDiscountMultiItem.class));
+				}
+			}
+		}
 	}
 	
 	/**
@@ -524,6 +574,29 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 		if(limitBuilder != null){
 			actInfoDto.setRelDtoList(limitBuilder.retrieveResult());
 			actInfoDto.setLimitRangeIds(limitBuilder.getLimitRangeIds());
+		}
+		//v2.7.0加 
+		if(activityInfo.getType() == ActivityDiscountType.JJG ||
+		   activityInfo.getType() == ActivityDiscountType.NJXY ||	
+		   activityInfo.getType() == ActivityDiscountType.MMS){
+			//4，5，6三种类型有自己的二级表
+			actInfoDto.setDiscountItemList(BeanMapper.mapList(activityDiscountItemMapper.findByActivityId(activityInfo.getId()),
+				ActivityDiscountItemDto.class)) ;
+			if(ListUtil.isNotEmpty(actInfoDto.getDiscountItemList())){
+				for(ActivityDiscountItemDto itemDto : actInfoDto.getDiscountItemList()){
+					//二级业务关联list
+					itemDto.setRelList(BeanMapper.mapList(activityDiscountItemRelMapper.findByActivityId(activityInfo.getId(),itemDto.getId()),
+							ActivityDiscountItemRelDto.class)) ;
+				}
+				//n件x元 有三级数据
+				if(activityInfo.getType() == ActivityDiscountType.NJXY){
+					for(ActivityDiscountItemDto itemDto : actInfoDto.getDiscountItemList()){
+						//二级业务关联list
+						itemDto.setMultiItemList(BeanMapper.mapList(activityDiscountMultiItemMapper.findByActivityId(activityInfo.getId(),itemDto.getId()),
+								ActivityDiscountMultiItemDto.class)) ;
+					}
+				}
+			}
 		}
 		return actInfoDto;
 	}

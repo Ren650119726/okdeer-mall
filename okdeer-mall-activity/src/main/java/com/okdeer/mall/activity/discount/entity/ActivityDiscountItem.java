@@ -2,7 +2,6 @@
  * Copyright(C) 2016-2021 okdeer.com Inc. All rights reserved
  * ActivityDiscountItem.java
  * @Date 2017-12-06 Created
- * ע�⣺�����ݽ���������¹��˾�ڲ����ģ���ֹ��й�Լ�������������ҵĿ��
  */
 package com.okdeer.mall.activity.discount.entity;
 
