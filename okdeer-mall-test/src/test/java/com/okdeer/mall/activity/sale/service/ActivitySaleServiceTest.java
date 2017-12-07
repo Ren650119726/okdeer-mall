@@ -212,7 +212,7 @@ public class ActivitySaleServiceTest extends BaseServiceTest {
 		if(ac == null){
 			System.out.println("测试特惠活动findLowPriceActivitySaleByStoreId：没有活动" );
 		} else {
-			System.out.println("测试特惠活动findLowPriceActivitySaleByStoreId：" + ac.getName());
+			System.out.println("测试特惠活动findLowPriceActivitySaleByStoreId：" + ac.getName()); 
 		}
 	}
 }
