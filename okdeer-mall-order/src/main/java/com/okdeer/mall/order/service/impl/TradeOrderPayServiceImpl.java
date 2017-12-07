@@ -745,6 +745,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		payTradeVo.setServiceFkId(order.getId());// 服务单id
 		payTradeVo.setServiceNo(order.getOrderNo());// 服务单号，例如订单号、退单号
 		payTradeVo.setBatchNo(TradeNumUtil.getTradeNum());
+		payTradeVo.setStoreId(order.getStoreId());
 		return payTradeVo;
 	}
 
@@ -876,7 +877,7 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		payReqest.setSystemEnum(SystemEnum.MALL);
 		// 业务ID，如订单ID，服务ID
 		payReqest.setServiceId(order.getId());
-
+		payReqest.setStoreId(order.getStoreId());
 		int paymentType = payInfoParamDto.getPaymentType();
 		// 支付类型 0:云钱包,1:支付宝app支付,2:微信app支付, 6：微信公众号 7 微信h5 8:翼支付
 		if (1 == paymentType) {
