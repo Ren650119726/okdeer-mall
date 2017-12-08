@@ -28,6 +28,15 @@ public interface ActivityDiscountMapper extends IBaseMapper {
 	 * @date 2017年4月19日
 	 */
 	List<ActivityDiscount> findListByParam(ActivityParamDto paramDto);
+	
+	/**
+	 * @Description: 提交根据店铺id 城市 省查询  进行中的活动
+	 * @param paramDto
+	 * @return List<ActivityDiscount>  
+	 * @author tuzhd
+	 * @date 2017年12月7日
+	 */
+	List<ActivityDiscount> findByStoreAndArea(ActivityParamDto paramDto);
  	
 	/**
 	 * @Description: 查询需要更新状态的活动列表。
