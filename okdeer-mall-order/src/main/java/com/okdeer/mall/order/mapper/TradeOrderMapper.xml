@@ -683,6 +683,7 @@
 		<result column="pick_up_time" property="pickUpTime" jdbcType="VARCHAR" />
 		<result column="store_preferential" property="storePreferential" jdbcType="DECIMAL" />
 		<result column="accept_time" property="acceptTime" jdbcType="TIMESTAMP" />
+		<result column="order_resource" property="orderResource" jdbcType="INTEGER" />
 	</resultMap>
 	<!--end xuzq 20170321 2.2.0 订单查询map -->
 	<sql id="Base_Column_List">
@@ -767,6 +768,7 @@
 			<if test="tabs == 'wait_shipments'">
 				ORDER BY tr.create_time ASC
 			</if>
+			<!-- 待收货按照收货时间 -->
 			<if
 				test="tabs == 'wait_receiving'">
 				ORDER BY tr.delivery_time ASC
@@ -3318,12 +3320,13 @@
 	<select id="getOrderDetail" parameterType="java.lang.String"
 		resultMap="TradeOrderVo">
 		SELECT
-		tr.id,tr.store_id,tr.order_no,tr.actual_amount,tr.total_amount,tr.preferential_price,tr.fare,tr.payment_status,tr.status,tr.update_time,tr.payment_time,tr.pay_way,
-		tr.activity_type,tr.activity_id,tr.pick_up_type,tr.remark,tr.delivery_time,tr.received_time,tr.income,tr.order_resource,
-		tp.id as pay_id,tp.pay_type,tp.pay_time,tr.invoice,tr.pick_up_time,tr.create_time,tr.type,tr.is_complete,
+		tr.id,tr.store_id,tr.order_no,tr.actual_amount,tr.total_amount,tr.preferential_price,tr.fare,
+		tr.payment_status,tr.status,tr.update_time,tr.payment_time,tr.pay_way,tr.order_resource,
+		tr.activity_type,tr.activity_id,tr.pick_up_type,tr.remark,tr.delivery_time,tr.received_time,tr.income,
+		tr.reason,tr.pin_money,tr.user_id,tr.invoice,tr.pick_up_time,tr.create_time,tr.type,tr.is_complete,
 		tr.consumer_code_status,tr.user_phone,tr.is_breach,tr.breach_percent,tr.breach_money,tr.accept_time,
 		tr.fare_preferential,tr.real_fare_preferential,tr.platform_preferential,tr.store_preferential,tr.fare_activity_id,
-		tr.reason,tr.pin_money,
+		tp.id as pay_id,tp.pay_type,tp.pay_time,
 		ti.id as invoice_id,ti.head,ti.context,
 		it.service_assurance,it.id as item_id,it.store_sku_id,it.sku_name,it.main_pic_prl,it.unit_price,it.quantity,
 		it.properties_indb,it.unit,it.total_amount as item_total_amount,
@@ -6401,7 +6404,7 @@
 		tr.id,tr.order_no,tr.actual_amount,tr.total_amount,tr.pick_up_type,
 		tr.preferential_price,tr.fare,tr.status,tr.delivery_time,tr.type,
 		tr.create_time,tr.activity_type,tr.activity_id,tr.update_time,
-		tr.store_preferential,
+		tr.store_preferential,tr.order_resource,
 		(select sum(ti.quantity) from trade_order_item as ti where ti.order_id
 		= tr.id) as goods_count,
 		(select count(id) from trade_order_item as ti where ti.order_id = tr.id) as
