@@ -693,6 +693,8 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 			        || advert.getAdvertType().equals(AdvertTypeEnum.USER_APP_INDEX.getIndex())
 					|| advert.getAdvertType().equals(AdvertTypeEnum.ALIPAY_SUCCESS.getIndex())
 					|| advert.getAdvertType().equals(AdvertTypeEnum.APP_BOMB_SCREEN.getIndex())
+					|| advert.getAdvertType().equals(AdvertTypeEnum.CARD_AREA.getIndex())
+					|| advert.getAdvertType().equals(AdvertTypeEnum.XCX_BANNER.getIndex())
 					)){
 			logger.info("APP首页分割广告/APP闪屏广告/APP首页广告(便利店)");
 			//循环便利店APP版本集合
@@ -714,7 +716,9 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 				&& (advert.getAdvertType().equals(AdvertTypeEnum.MOBILE_PHONE_DOOR.getIndex())
         		|| advert.getAdvertType().equals(AdvertTypeEnum.USER_APP_SPLASH_SCREEN.getIndex()) 
                 || advert.getAdvertType().equals(AdvertTypeEnum.USER_APP_INDEX.getIndex()))
-				|| advert.getAdvertType().equals(AdvertTypeEnum.ALIPAY_SUCCESS.getIndex())){
+				|| advert.getAdvertType().equals(AdvertTypeEnum.ALIPAY_SUCCESS.getIndex())
+				|| advert.getAdvertType().equals(AdvertTypeEnum.CARD_AREA.getIndex())
+				|| advert.getAdvertType().equals(AdvertTypeEnum.XCX_BANNER.getIndex())){
         	logger.info("手机开门页广告/APP闪屏广告/APP首页广告 (管家)");
         	//循环管家版本集合
         	if(CollectionUtils.isNotEmpty(advert.getStewardVersion())){
@@ -837,6 +841,12 @@ public class ColumnAdvertServiceImpl implements ColumnAdvertService, IColumnAdve
 				return msg.replace("#", version);
 			} else if (advertType.equals(AdvertTypeEnum.APP_BOMB_SCREEN.getIndex()) && arcossTimeAdvertQty >= 1) {
 				// 同一个区域（城市）、同一个时间段、同一个版本下,最多运营商能上传1首页弹屏广告，且时间不能产生交叉；
+				return msg.replace("#", "");
+			} else if (advertType.equals(AdvertTypeEnum.CARD_AREA.getIndex()) && arcossTimeAdvertQty >= 1) {
+				// 同一个区域（城市）、同一个时间段、同一个版本下,最多运营商能上传1个，且时间不能产生交叉；
+				return msg.replace("#", "");
+			} else if (advertType.equals(AdvertTypeEnum.XCX_BANNER.getIndex()) && arcossTimeAdvertQty >= 5) {
+				// 同一个区域（城市）、同一个时间段、同一个版本下,最多运营商能上传5个，且时间不能产生交叉；
 				return msg.replace("#", "");
 			}
 			

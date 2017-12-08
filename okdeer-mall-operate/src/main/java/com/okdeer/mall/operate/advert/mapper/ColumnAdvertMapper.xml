@@ -228,6 +228,9 @@
 		<if test="advertStatus !=null ">
 			AND ca.status  = #{advertStatus,jdbcType = TINYINT}
 		</if>	
+		<if test="positionId != null and positionId != ''">
+			AND ca.position_id = #{positionId}
+		</if>
 		ORDER BY aap.approval_time DESC			
 	</select>
 	
