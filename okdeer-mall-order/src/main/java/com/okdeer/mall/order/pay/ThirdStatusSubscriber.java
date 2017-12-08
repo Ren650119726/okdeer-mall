@@ -6,6 +6,7 @@
  * @date 2016年3月30日 下午7:39:54
  * @version V1.0
  */
+
 package com.okdeer.mall.order.pay;
 
 import java.util.HashMap;
@@ -17,14 +18,18 @@ import javax.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
+import com.alibaba.rocketmq.client.producer.SendResult;
+import com.alibaba.rocketmq.client.producer.SendStatus;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.base.Charsets;
 import com.okdeer.api.pay.luzgorder.dto.PayLuzgOrderDto;
+import com.okdeer.api.pay.pay.dto.PayRefundDto;
 import com.okdeer.api.pay.pay.dto.PayResponseDto;
 import com.okdeer.api.pay.service.PayLuzgOrderApi;
 import com.okdeer.archive.store.entity.StoreMemberRelation;
@@ -32,10 +37,14 @@ import com.okdeer.archive.store.service.IStoreMemberRelationServiceApi;
 import com.okdeer.base.common.utils.StringUtils;
 import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.base.framework.mq.AbstractRocketMQSubscriber;
+import com.okdeer.base.framework.mq.RocketMQProducer;
+import com.okdeer.base.framework.mq.message.MQMessage;
+import com.okdeer.mall.order.builder.TradeOrderPayBuilder;
 import com.okdeer.mall.order.constant.mq.OrderMessageConstant;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderGroupRelation;
+import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayTypeEnum;
 import com.okdeer.mall.order.enums.SendMsgType;
@@ -67,123 +76,164 @@ import com.okdeer.mall.util.RedisLock;
  */
 @Service
 public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
-        implements PayMessageConstant, OrderMessageConstant {
+		implements PayMessageConstant, OrderMessageConstant {
 
-    private static final Logger logger = LoggerFactory.getLogger(ThirdStatusSubscriber.class);
+	private static final Logger logger = LoggerFactory.getLogger(ThirdStatusSubscriber.class);
 
-    @Resource
-    private PayResultHandlerFactory payResultHandlerFactory;
+	@Resource
+	private PayResultHandlerFactory payResultHandlerFactory;
 
-    @Resource
-    private TradeOrderMapper tradeOrderMapper;
+	@Resource
+	private TradeOrderMapper tradeOrderMapper;
 
-    @Resource
-    private TradeOrderSubScriberHandler tradeOrderSubScriberHandler;
-    
-    @Reference(version = "1.0.0", check = false)
-    private PayLuzgOrderApi payLuzgOrderApi;
-    @Reference(version = "1.0.0", check = false)
-    private TradeMessageServiceApi tradeMessageServiceApi;
-    @Reference(version = "1.0.0", check = false)
+	@Resource
+	private TradeOrderSubScriberHandler tradeOrderSubScriberHandler;
+
+	@Reference(version = "1.0.0", check = false)
+	private PayLuzgOrderApi payLuzgOrderApi;
+
+	@Reference(version = "1.0.0", check = false)
+	private TradeMessageServiceApi tradeMessageServiceApi;
+
+	@Reference(version = "1.0.0", check = false)
 	private IStoreMemberRelationServiceApi storeMemberRelationApi;
 
-    @Resource
+	@Resource
 	private TradeOrderGroupRelationMapper tradeOrderGroupRelationMapper;
-	
+
 	@Resource
 	private RedisLock redisLock;
 
-    @Override
-    public String getTopic() {
-        return TOPIC_PAY;
-    }
+	@Resource
+	private TradeOrderPayBuilder tradeOrderPayBuilder;
 
-    @Override
-    public String getTags() {
-        return TAG_ORDER + JOINT + TAG_POST_ORDER + JOINT + TAG_LUZG_ORDER;
-    }
+	@Autowired
+	private RocketMQProducer rocketMQProducer;
 
-    @Override
-    public ConsumeConcurrentlyStatus subscribeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
-        String tradeNum = null;
-        TradeOrder tradeOrder = null;
-        AbstractPayResultHandler handler = null;
-        String lockKey = null;
-        try {
-            String msg = new String(msgs.get(0).getBody(), Charsets.UTF_8);
-            logger.info("订单支付状态消息:{}",msg);
-            PayResponseDto respDto = JsonMapper.nonEmptyMapper().fromJson(msg, PayResponseDto.class);
-            tradeNum = respDto.getTradeNum();
-            if (StringUtils.isEmpty(tradeNum)) {
-                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-            }
-            
-            //如果是鹿掌柜的tag
-        	if(msgs.get(0).getTags().indexOf(TAG_LUZG_ORDER) >= 0){
-        		handlerLzg(respDto);
-        	} else {
-        		tradeOrder = tradeOrderMapper.selectByParamsTrade(tradeNum);
-        		// Begin V2.6.3 added by maojj 2017-10-27
-        		if(tradeOrder.getType() == OrderTypeEnum.GROUP_ORDER){
-    				// 如果是团购订单，查询订单团单关联关系
-    				TradeOrderGroupRelation orderGroupRel = tradeOrderGroupRelationMapper.findByOrderId(tradeOrder.getId());
-    				if(orderGroupRel != null){
-    					// 如果是拼团，处理团单时，要加锁
-    					lockKey = String.format("GROUP:%s", orderGroupRel.getGroupOrderId());
-    				}
-    			}
-        		// End V2.6.3 added by maojj 2017-10-27
-                handler = payResultHandlerFactory.getByOrder(tradeOrder);
-                if(StringUtils.isEmpty(lockKey) || redisLock.tryLock(lockKey, 10)){
-                	 handler.handler(tradeOrder, respDto);
-    			}else{
-    				// 如果要获取锁，但是没有成功取得锁，则延时消费
-    				return ConsumeConcurrentlyStatus.RECONSUME_LATER;
-    			}
-        	}
-        } catch (Exception e) {
-            logger.error("订单支付状态消息处理失败", e);
-            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
-        } finally {
-			if(StringUtils.isNotEmpty(lockKey)){
+	@Override
+	public String getTopic() {
+		return TOPIC_PAY;
+	}
+
+	@Override
+	public String getTags() {
+		return TAG_ORDER + JOINT + TAG_POST_ORDER + JOINT + TAG_LUZG_ORDER;
+	}
+
+	@Override
+	public ConsumeConcurrentlyStatus subscribeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
+		String tradeNum = null;
+		TradeOrder tradeOrder = null;
+		AbstractPayResultHandler handler = null;
+		String lockKey = null;
+		try {
+			String msg = new String(msgs.get(0).getBody(), Charsets.UTF_8);
+			logger.info("订单支付状态消息:{}", msg);
+			PayResponseDto respDto = JsonMapper.nonEmptyMapper().fromJson(msg, PayResponseDto.class);
+			tradeNum = respDto.getTradeNum();
+			if (StringUtils.isEmpty(tradeNum)) {
+				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+			}
+
+			// 如果是鹿掌柜的tag
+			if (msgs.get(0).getTags().indexOf(TAG_LUZG_ORDER) >= 0) {
+				handlerLzg(respDto);
+			} else {
+				tradeOrder = tradeOrderMapper.selectByParamsTrade(tradeNum);
+				// 判断订单是否已经取消
+				boolean result = checkOrderIsCanceled(tradeOrder);
+				if (!result) {
+					return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+				}
+				// Begin V2.6.3 added by maojj 2017-10-27
+				if (tradeOrder.getType() == OrderTypeEnum.GROUP_ORDER) {
+					// 如果是团购订单，查询订单团单关联关系
+					TradeOrderGroupRelation orderGroupRel = tradeOrderGroupRelationMapper
+							.findByOrderId(tradeOrder.getId());
+					if (orderGroupRel != null) {
+						// 如果是拼团，处理团单时，要加锁
+						lockKey = String.format("GROUP:%s", orderGroupRel.getGroupOrderId());
+					}
+				}
+				// End V2.6.3 added by maojj 2017-10-27
+				handler = payResultHandlerFactory.getByOrder(tradeOrder);
+				if (StringUtils.isEmpty(lockKey) || redisLock.tryLock(lockKey, 10)) {
+					handler.handler(tradeOrder, respDto);
+				} else {
+					// 如果要获取锁，但是没有成功取得锁，则延时消费
+					return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+				}
+			}
+		} catch (Exception e) {
+			logger.error("订单支付状态消息处理失败", e);
+			return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+		} finally {
+			if (StringUtils.isNotEmpty(lockKey)) {
 				redisLock.unLock(lockKey);
 			}
 		}
-       
-        // end add by wushp 20161015
-        return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-    }
-    
-    /**
-     * @Description: 处理鹿掌柜的逻辑
-     * @param respDto
-     * @throws Exception
-     * @author zhangkn
-     * @date 2017年8月16日
-     */
-    private void handlerLzg(PayResponseDto respDto) throws Exception{
-    	logger.info("鹿掌柜支付:" + respDto);
-    	PayLuzgOrderDto lzgOrderDto = payLuzgOrderApi.findByTradeNum(respDto.getTradeNum());
-		if(lzgOrderDto != null){
+
+		// end add by wushp 20161015
+		return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+	}
+
+	/**
+	 * @Description: 校验订单是否取消
+	 * @param tradeOrder
+	 * @author zengjizu
+	 * @throws Exception 
+	 * @date 2017年12月8日
+	 */
+	private boolean checkOrderIsCanceled(TradeOrder tradeOrder) throws Exception {
+		if (tradeOrder.getStatus() == OrderStatusEnum.CANCELED) {
+			PayRefundDto payRefundDto = tradeOrderPayBuilder.buildPayRefundDto(tradeOrder);
+			MQMessage<PayRefundDto> msg = new MQMessage<>(PayMessageConstant.TOPIC_REFUND, payRefundDto);
+			msg.setKey(tradeOrder.getId());
+			// 发送消息
+			SendResult sendResult;
+			try {
+				sendResult = rocketMQProducer.sendMessage(msg);
+				if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
+					throw new Exception("取消订单第三方支付发送消息失败");
+				}
+			} catch (Exception e) {
+				throw e;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * @Description: 处理鹿掌柜的逻辑
+	 * @param respDto
+	 * @throws Exception
+	 * @author zhangkn
+	 * @date 2017年8月16日
+	 */
+	private void handlerLzg(PayResponseDto respDto) throws Exception {
+		logger.info("鹿掌柜支付:{}", respDto);
+		PayLuzgOrderDto lzgOrderDto = payLuzgOrderApi.findByTradeNum(respDto.getTradeNum());
+		if (lzgOrderDto != null) {
 			SendMsgParamVo sendMsgParamVo = new SendMsgParamVo();
-			//鹿掌柜的金额
+			// 鹿掌柜的金额
 			sendMsgParamVo.setLzgAmount(respDto.getTradeAmount());
-			//店老板用户id
+			// 店老板用户id
 			sendMsgParamVo.setUserId(lzgOrderDto.getPayeeUserId());
-			//订单id
+			// 订单id
 			sendMsgParamVo.setOrderId(lzgOrderDto.getId());
 			sendMsgParamVo.setSendMsgType(SendMsgType.lzgGathering.ordinal());
 			sendMsgParamVo.setPayType(PayTypeEnum.enumValueOf(lzgOrderDto.getPayType().ordinal()));
-			
-			//通过userId得到店铺id
-			Map<String,Object> map = new HashMap<String, Object>();
-			map.put("sysUserId",sendMsgParamVo.getUserId());
-			map.put("memberType",0);
+
+			// 通过userId得到店铺id
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("sysUserId", sendMsgParamVo.getUserId());
+			map.put("memberType", 0);
 			List<StoreMemberRelation> smrList = storeMemberRelationApi.findByParams(map);
-			if(CollectionUtils.isNotEmpty(smrList)){
+			if (CollectionUtils.isNotEmpty(smrList)) {
 				sendMsgParamVo.setStoreId(smrList.get(0).getStoreId());
 				tradeMessageServiceApi.sendSellerAppMessage(sendMsgParamVo, SendMsgType.lzgGathering);
 			}
 		}
-    }
+	}
 }
