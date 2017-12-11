@@ -43,7 +43,7 @@ public class ActivityDiscountMultiItem implements java.io.Serializable{
     /**
      * 排序值
      */
-    private Integer tinyint;
+    private Integer sort;
 
 
     public String getId() {
@@ -94,11 +94,15 @@ public class ActivityDiscountMultiItem implements java.io.Serializable{
         this.name = name;
     }
 
-    public Integer getTinyint() {
-        return tinyint;
-    }
+	
+	public Integer getSort() {
+		return sort;
+	}
 
-    public void setTinyint(Integer tinyint) {
-        this.tinyint = tinyint;
-    }
+	
+	public void setSort(Integer sort) {
+		this.sort = sort;
+	}
+
+    
 }

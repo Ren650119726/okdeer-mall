@@ -135,6 +135,7 @@
         <if test="activityItemId != null and activityItemId != ''">
         	and activity_item_id = #{activityItemId}
         </if>
+         order by sort
     </select>
 
 </mapper>
