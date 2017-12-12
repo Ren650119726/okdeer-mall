@@ -587,6 +587,9 @@
 	  	 		#{item}
 	  	 	</foreach>	
 	  	 </if>
+	  	 <if test="activityId != null and activityId != '' ">
+       	    AND t.id =  #{activityId,jdbcType=VARCHAR}
+	  	 </if>
 	  	 
   </select>
   
