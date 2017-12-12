@@ -14,6 +14,7 @@ import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
+import com.okdeer.common.utils.JsonDateUtil;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudItemReultDto;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudStoreParamDto;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudStoreResultDto;
@@ -26,7 +27,7 @@ import com.okdeer.mall.activity.discount.mapper.ActivityDiscountItemMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountItemRelMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMultiItemMapper;
-import com.okdeer.mall.activity.discount.service.ActivityCloudStoreServiceApi;
+import com.okdeer.mall.activity.discount.service.ActivityCloudStoreService;
 import com.okdeer.mall.activity.dto.ActivityParamDto;
 
 
@@ -42,7 +43,7 @@ import com.okdeer.mall.activity.dto.ActivityParamDto;
  *     2.7				2017-12-07         tuzhd			 便利店活动服务实现类
  */
 @Service
-public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreServiceApi {
+public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService {
 	
 	/**
 	 * 店铺活动梯度表
@@ -96,7 +97,7 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreServiceA
 			return null;
 		}
 		//1、查询符合要求的活动
-		List<ActivityDiscount> actList = activityDiscountMapper.findByStoreAndArea(createActivityParam(store));
+		List<ActivityDiscount> actList = activityDiscountMapper.findByStoreAndArea(createActivityParam(paramDto));
 		if(CollectionUtils.isEmpty(actList)){
 			return null;
 		}
@@ -139,6 +140,7 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreServiceA
 			for(ActivityDiscountItem item : itemList){
 				//获取梯度信息
 				ActivityCloudItemReultDto itemResult = BeanMapper.map(item, ActivityCloudItemReultDto.class);
+				
 				//组合符合梯度的购物车商品
 				itemResult.setSkuIdList(combStoreSku(item, relList, skuList, skuMap));
 				
@@ -180,7 +182,7 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreServiceA
 					BeanMapper.copy(itemResult, item);
 					item.setActivityMultiItemId(e.getId());
 					item.setPiece(e.getPiece());
-					item.setPrice(item.getPrice());
+					item.setPrice(JsonDateUtil.priceConvertToString(e.getPrice()));
 					item.setName(e.getName());
 					items.add(item);
 				}
@@ -245,11 +247,13 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreServiceA
 	 * @author tuzhd
 	 * @date 2017年12月7日
 	 */
-	private ActivityParamDto createActivityParam(StoreInfo store){
+	private ActivityParamDto createActivityParam(ActivityCloudStoreParamDto paramDto){
+		StoreInfo store = paramDto.getStoreInfo();
 		ActivityParamDto actDto = new ActivityParamDto();
 		actDto.setCityId(store.getCityId());
 		actDto.setProvinceId(store.getProvinceId());
 		actDto.setStoreId(store.getId());
+		actDto.setActivityId(paramDto.getActivityId());
 		List<ActivityDiscountType> typeList = Lists.newArrayList();
 		typeList.add(ActivityDiscountType.JJG);
 		typeList.add(ActivityDiscountType.NJXY);
