@@ -7,7 +7,9 @@
 package com.okdeer.mall.activity.discount.mapper;
 
 import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountItemRel;
 
@@ -37,4 +39,12 @@ public interface ActivityDiscountItemRelMapper extends IBaseMapper {
 	 */
 	List<ActivityDiscountItemRel> findByActivityId(@Param("activityId")String activityId,
 			@Param("activityItemId")String activityItemId);
+	
+	/**
+	 * @Description: 根据id集合查询
+	 * @param idList
+	 * @author tuzhd
+	 * @date 2017年7月27日
+	 */
+	List<ActivityDiscountItemRel> findByActivityIdList(@Param("idList")List<String> idList);
 }

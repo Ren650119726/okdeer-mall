@@ -137,5 +137,16 @@
         </if>
          order by sort
     </select>
+    
+    <!-- 根据ids集合查询活动 -->
+    <select id="findByActivityIdList" resultMap="BaseResultMap" >
+        select 
+        	<include refid="Base_Column_List" />
+        from activity_discount_item_rel
+        where activity_id in
+        	<foreach collection="idList" open="(" close=")" separator="," item="item">
+	  	 		#{item}
+	  	 	</foreach>
+    </select>
 
 </mapper>

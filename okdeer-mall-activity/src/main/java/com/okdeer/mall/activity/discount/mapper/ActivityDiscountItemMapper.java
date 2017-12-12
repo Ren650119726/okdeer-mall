@@ -8,6 +8,8 @@ package com.okdeer.mall.activity.discount.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.okdeer.base.dal.IBaseMapper;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountItem;
 
@@ -36,4 +38,13 @@ public interface ActivityDiscountItemMapper extends IBaseMapper {
 	 * @date 2017年12月6日
 	 */
 	List<ActivityDiscountItem> findByActivityId(String activityId);
+	
+	/**
+	 * @Description: 根据id集合查询 按满多少元升序
+	 * @param idList
+	 * @author tuzhd
+	 * @date 2017年7月27日
+	 */
+	List<ActivityDiscountItem> findByActivityIdList(@Param("idList")List<String> idList);
+	
 }
