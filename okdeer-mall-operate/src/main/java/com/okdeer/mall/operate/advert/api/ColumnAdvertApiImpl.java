@@ -219,6 +219,8 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 			case WX_INDEX_BANNER:
 			case POS_MACHINE:
 			case APP_BOMB_SCREEN:
+			case CARD_AREA:
+			case XCX_BANNER:
 				return false;
 			default:
 				break;
