@@ -135,6 +135,7 @@
         <if test="activityItemId != null and activityItemId != ''">
         	and activity_item_id = #{activityItemId}
         </if>
+         order by sort
     </select>
     
     <!-- 根据ids集合查询活动 -->

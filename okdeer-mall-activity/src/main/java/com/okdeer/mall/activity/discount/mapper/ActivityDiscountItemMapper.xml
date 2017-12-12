@@ -162,7 +162,7 @@
         select 
         <include refid="Base_Column_List" />
         from activity_discount_item
-        where activity_id = #{value}
+        where activity_id = #{value} order by sort
     </select>
     <!-- 根据ids集合查询活动 -->
     <select id="findByActivityIdList" resultMap="BaseResultMap" >

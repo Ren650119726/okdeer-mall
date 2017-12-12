@@ -18,9 +18,15 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Lists;
+import com.okdeer.archive.goods.base.dto.GoodsNavigateCategoryDto;
+import com.okdeer.archive.goods.base.dto.GoodsNavigateCategoryParamDto;
 import com.okdeer.archive.goods.base.entity.GoodsSpuCategory;
+import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.archive.goods.base.service.GoodsSpuCategoryServiceApi;
 import com.okdeer.archive.goods.dto.StoreSkuParamDto;
+import com.okdeer.archive.goods.service.GoodsSkuApi;
+import com.okdeer.archive.goods.spu.entity.GoodsSku;
+import com.okdeer.archive.goods.spu.service.GoodsSkuServiceApi;
 import com.okdeer.archive.goods.store.dto.StoreSkuDto;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.stock.service.GoodsStoreSkuStockApi;
@@ -119,6 +125,10 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	
 	@Reference(version = "1.0.0",check=false)
 	private GoodsSpuCategoryServiceApi goodsSpuCategoryServiceApi;
+	@Reference(version = "1.0.0",check=false)
+	private GoodsSkuServiceApi goodsSkuServiceApi;
+	@Reference(version = "1.0.0",check=false)
+	private GoodsNavigateCategoryServiceApi goodsNavigateCategoryApi;
 	
 	/**
 	* 注入库存API接口
@@ -587,6 +597,48 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 					//二级业务关联list
 					itemDto.setRelList(BeanMapper.mapList(activityDiscountItemRelMapper.findByActivityId(activityInfo.getId(),itemDto.getId()),
 							ActivityDiscountItemRelDto.class)) ;
+					//business_id匹配对应的Name
+					if(ListUtil.isNotEmpty(itemDto.getRelList())){
+						//limitSku '商品限制：0:不限，1：指定分类(导航分类)，2：指定商品',
+						List<String> navCategoryIdList = new ArrayList<String>();
+						List<String> skuIdList = new ArrayList<String>();
+						for(ActivityDiscountItemRelDto relDto : itemDto.getRelList()){
+							if(itemDto.getLimitSku() == 1){
+								if(relDto.getType() == 0){
+									navCategoryIdList.add(relDto.getBusinessId());
+								} else {
+									skuIdList.add(relDto.getBusinessId());
+								}
+							} else if (itemDto.getLimitSku() == 2){
+								skuIdList.add(relDto.getBusinessId());
+							}
+						}
+						//商品
+						if(ListUtil.isNotEmpty(skuIdList)){
+							List<GoodsSku> skuList = goodsSkuServiceApi.findBySkuIdList(skuIdList);
+							Map<String,GoodsSku> skuMap = (Map)ListUtil.listToMap(skuList, "id");
+							//skuName
+							for(ActivityDiscountItemRelDto relDto : itemDto.getRelList()){
+								if(itemDto.getLimitSku() == 2 || (itemDto.getLimitSku() == 1 && relDto.getType() != 0)){
+									relDto.setBusinessName(skuMap.get(relDto.getBusinessId()).getName());
+								}
+							}
+						}
+						//导航分类
+						if(ListUtil.isNotEmpty(navCategoryIdList)){
+							GoodsNavigateCategoryParamDto paramDto = new GoodsNavigateCategoryParamDto();
+							paramDto.setIdList(navCategoryIdList);
+							List<GoodsNavigateCategoryDto> categoryList = goodsNavigateCategoryApi.findList(paramDto);
+							Map<String,GoodsNavigateCategoryDto> categoryMap = (Map)ListUtil.listToMap(categoryList, "id");
+							//分类名字
+							for(ActivityDiscountItemRelDto relDto : itemDto.getRelList()){
+								if(relDto.getType() == 0){
+									relDto.setBusinessName(categoryMap.get(relDto.getBusinessId()).getName());
+								}
+							}
+						}
+						
+					}
 				}
 				//n件x元 有三级数据
 				if(activityInfo.getType() == ActivityDiscountType.NJXY){
