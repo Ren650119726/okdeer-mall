@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.Lists;
@@ -93,7 +94,7 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 			ColumnAdvertShowRecordParamBo columnAdvertShowRecordParamBo = new ColumnAdvertShowRecordParamBo();
 			columnAdvertShowRecordParamBo.setDeviceNo(advertQueryParamDto.getDeviceNo());
 			for (ColumnAdvert columnAdvert : list) {
-				if(isShow(columnAdvert, columnAdvertShowRecordParamBo)){
+				if (isShow(columnAdvert, columnAdvertShowRecordParamBo)) {
 					resultList.add(columnAdvert);
 				}
 			}
@@ -104,7 +105,7 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 		}
 
 	}
-	
+
 	/**
 	 * @Description: 是否显示广告
 	 * @param columnAdvert
@@ -218,6 +219,8 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 			case WX_INDEX_BANNER:
 			case POS_MACHINE:
 			case APP_BOMB_SCREEN:
+			case CARD_AREA:
+			case XCX_BANNER:
 				return false;
 			default:
 				break;
@@ -227,6 +230,10 @@ public class ColumnAdvertApiImpl implements ColumnAdvertApi {
 
 	private List<ColumnAdvert> filterByArea(ColumnAdvertQueryParamDto advertQueryParamDto, List<ColumnAdvert> list) {
 		if (CollectionUtils.isEmpty(list)) {
+			return list;
+		}
+		if (StringUtils.isEmpty(advertQueryParamDto.getProvinceId())
+				&& StringUtils.isEmpty(advertQueryParamDto.getCityId())) {
 			return list;
 		}
 		List<String> advertIdList = Lists.newArrayList();

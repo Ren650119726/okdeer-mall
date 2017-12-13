@@ -235,6 +235,11 @@ public class FmsTradeOrderBo {
 	 * 配送方案 0 鹿掌柜 1 第三方配送 2 商家自己配送
 	 */
 	private Integer deliveryType;
+	
+	/**
+	 * 回款时间
+	 */
+	private Date paymentTme;
 
 	private BigDecimal actualReturnAmount;
 
@@ -580,6 +585,20 @@ public class FmsTradeOrderBo {
 
 	public void setActualReturnAmount(BigDecimal actualReturnAmount) {
 		this.actualReturnAmount = actualReturnAmount;
+	}
+
+	/**
+	 * @return the paymentTme
+	 */
+	public Date getPaymentTme() {
+		return paymentTme;
+	}
+
+	/**
+	 * @param paymentTme the paymentTme to set
+	 */
+	public void setPaymentTme(Date paymentTme) {
+		this.paymentTme = paymentTme;
 	}
 
 }

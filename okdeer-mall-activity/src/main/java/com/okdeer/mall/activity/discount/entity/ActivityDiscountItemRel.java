@@ -31,7 +31,7 @@ public class ActivityDiscountItemRel implements java.io.Serializable{
     /**
      * 0商品 ，1 赠品，2换购
      */
-    private Byte type;
+    private Integer type;
     /**
      * 业务id
      */
@@ -39,7 +39,7 @@ public class ActivityDiscountItemRel implements java.io.Serializable{
     /**
      * 排序值
      */
-    private Byte sort;
+    private Integer sort;
     /**
      * 换购价格
      */
@@ -70,11 +70,11 @@ public class ActivityDiscountItemRel implements java.io.Serializable{
         this.activityItemId = activityItemId;
     }
 
-    public Byte getType() {
+    public Integer getType() {
         return type;
     }
 
-    public void setType(Byte type) {
+    public void setType(Integer type) {
         this.type = type;
     }
 
@@ -86,11 +86,11 @@ public class ActivityDiscountItemRel implements java.io.Serializable{
         this.businessId = businessId;
     }
 
-    public Byte getSort() {
+    public Integer getSort() {
         return sort;
     }
 
-    public void setSort(Byte sort) {
+    public void setSort(Integer sort) {
         this.sort = sort;
     }
 
