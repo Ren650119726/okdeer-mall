@@ -113,4 +113,9 @@ public class ActivityPrizeRecordApiImpl implements ActivityPrizeRecordApi{
 		activityPrizeRecordService.updateBathOffer(map);
 	}
 
+	@Override
+	public void addPrizeRecord(ActivityPrizeRecord record) throws Exception {
+		activityPrizeRecordService.add(record);
+	}
+
 }

@@ -6,6 +6,8 @@
  */    
 package com.okdeer.mall.activity.prize.service;
 
+import java.util.List;
+
 import com.okdeer.base.service.IBaseService;
 import com.okdeer.mall.activity.prize.entity.ActivityAdvertDraw;
 
@@ -39,5 +41,14 @@ public interface ActivityAdvertDrawService extends IBaseService {
 	 * @date 2017年4月19日
 	 */
 	int deleteByActivityAdvertId(String activityAdvertId);
+
+	/**
+	 * @Description: 条件查询广告活动与优惠关联条
+	 * @param activityAdvertDraw
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年12月13日
+	 */
+	List<ActivityAdvertDraw> findList(ActivityAdvertDraw activityAdvertDraw);
     
 }
