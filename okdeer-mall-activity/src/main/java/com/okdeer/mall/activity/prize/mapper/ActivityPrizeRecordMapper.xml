@@ -69,7 +69,7 @@
     <select id="findCountByPrizeId" resultType="java.lang.Integer" parameterType="java.lang.String" >
         select  count(1)
         from activity_draw_record
-        where disabled=0 and prize_id = #{prize_id,jdbcType=VARCHAR} 
+        where disabled=0 and prize_id = #{prizeId,jdbcType=VARCHAR} 
     </select>
     
     <select id="findById" resultMap="BaseResultMap" parameterType="java.lang.String" >

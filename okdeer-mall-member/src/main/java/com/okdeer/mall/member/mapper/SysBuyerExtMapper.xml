@@ -35,6 +35,9 @@
       <if test="pointVal != null" >
         point_val = #{pointVal,jdbcType=INTEGER},
       </if>
+      <if test="prizeCount != null" >
+        prize_count = #{prizeCount,jdbcType=INTEGER},
+      </if>
       <if test="growthVal != null" >
         growth_val = #{growthVal,jdbcType=INTEGER},
       </if>
@@ -57,6 +60,9 @@
       </if>
       <if test="pointVal != null" >
         point_val = #{pointVal,jdbcType=INTEGER},
+      </if>
+      <if test="prizeCount != null" >
+        prize_count = #{prizeCount,jdbcType=INTEGER},
       </if>
       <if test="growthVal != null" >
         growth_val = #{growthVal,jdbcType=INTEGER},
@@ -87,6 +93,9 @@
       <if test="pointVal != null" >
         point_val,
       </if>
+      <if test="prizeCount != null" >
+        prize_count,
+      </if>
       <if test="growthVal != null" >
         growth_val,
       </if>
@@ -109,6 +118,9 @@
       </if>
       <if test="pointVal != null" >
         #{pointVal,jdbcType=INTEGER},
+      </if>
+      <if test="prizeCount != null" >
+        #{prizeCount,jdbcType=INTEGER},
       </if>
       <if test="growthVal != null" >
         #{growthVal,jdbcType=INTEGER},
