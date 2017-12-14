@@ -684,4 +684,9 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 		return tradeOrderRefundsDto;
 	}
 
+	@Override
+	public int findRefundCount(OrderRefundQueryParamDto dto) {
+		return tradeOrderRefundsService.findRefundCount(dto);
+	}
+
 }

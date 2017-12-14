@@ -391,4 +391,13 @@ public interface TradeOrderRefundsService {
 	 * @date 2017年10月23日
 	 */
 	PageUtils<TradeOrderRefunds> findList(TradeOrderRefundsParamDto tradeOrderRefundsParam,int pageNum,int pageSize);
+
+	/**
+	 * @Description: 条件查询退款单数量
+	 * @param dto
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年12月14日
+	 */
+	int findRefundCount(OrderRefundQueryParamDto dto);
 }
