@@ -1130,8 +1130,8 @@ public class TradeOrderRefundsServiceImpl extends AbstractTradeOrderRefundsServi
 	}
 
 	@Override
-	public int findRefundCount(OrderRefundQueryParamDto dto) {
-		return tradeOrderRefundsMapper.findRefundCount(dto);
+	public List<TradeOrderRefunds> findRefundList(OrderRefundQueryParamDto dto) {
+		return tradeOrderRefundsMapper.findRefundList(dto);
 	}
 
 }
