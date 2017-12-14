@@ -1996,7 +1996,7 @@
 		resultMap="BaseResultMap">
 		SELECT <include refid="Refunds_Column_List" />
 		from trade_order_refunds refunds
-		WHERE tr.disabled = 0
+		WHERE refunds.disabled = 0
 		<if test="null != buyerUserId and '' != buyerUserId">
 			AND refunds.user_id = #{buyerUserId, jdbcType=VARCHAR}
 		</if>
