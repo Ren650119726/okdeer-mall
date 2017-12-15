@@ -10,7 +10,6 @@ import org.apache.ibatis.annotations.Param;
 
 import com.okdeer.archive.system.pos.entity.PosShiftExchange;
 import com.okdeer.base.common.exception.ServiceException;
-import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.order.bo.FmsOrderStatisBo;
 import com.okdeer.mall.order.bo.FmsStatisOrderCannelRefundBo;
 import com.okdeer.mall.order.bo.FmsTradeOrderBo;
@@ -730,7 +729,7 @@ public interface TradeOrderMapper {
 	 * @param type 类型 1= 订单 2=售后单3=纠纷单
 	 * @return
 	 */
-	public Map<String, Object> selectWindowTipOrderCounts(@Param("storeId") String storeId, @Param("type") String type);
+	public Map<String, Object> selectWindowTipOrderCounts(@Param("storeIds") List<String> storeId, @Param("type") String type);
 
 	/**
 	 * 查询用户对应的订单信息 </p>

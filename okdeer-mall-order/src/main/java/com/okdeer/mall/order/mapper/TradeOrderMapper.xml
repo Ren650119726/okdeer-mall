@@ -1085,9 +1085,21 @@
 				in(0,11))
 			</if>
 		</if>
-		<if test="null != storeId and '' != storeId">
-			AND tr.store_id = #{storeId}
-		</if>
+		
+		<!-- V2.7.0 modify by mengsj begin -->
+		<choose>
+			<when test="null != storeId and '' != storeId">
+				AND tr.store_id = #{storeId}
+			</when>
+			<when test="storeIds != null and storeIds.size() > 0">
+				AND tr.store_id IN 
+				<foreach item="item" index="index" collection="storeIds" open="(" separator="," close=")">  
+				  	#{item}  
+				</foreach>
+			</when>
+		</choose>
+		<!-- V2.7.0 modify by mengsj end -->
+		
 		<if test="null!=orderResource">
 			AND tr.order_resource = #{orderResource,jdbcType=TINYINT}
 		</if>
@@ -1863,8 +1875,16 @@
 
 	<select id="selectOrderNum" resultType="java.lang.Integer"
 		parameterType="map">
-		SELECT count(1) FROM trade_order WHERE store_id =
-		#{storeId,jdbcType=VARCHAR} AND status = #{status,jdbcType=BIT}
+		SELECT count(1) FROM trade_order WHERE 1=1 AND status = #{status,jdbcType=BIT}
+		<if test="storeIds != null and storeIds.size() > 0">
+			AND store_id IN 
+			<foreach item="item" index="index" collection="storeIds" open="(" separator="," close=")">  
+			  	#{item}  
+			</foreach>
+		</if>
+		<if test="orderType != null and orderType != ''">
+			AND type = #{orderType,jdbcType=TINYINT}
+		</if>
 	</select>
 
 	<select id="selectOrderCountByParam" resultType="String" parameterType="com.okdeer.mall.order.dto.TradeOrderCountParamDto">
@@ -1884,8 +1904,11 @@
 			</otherwise>
 		</choose>
 		FROM trade_order WHERE 1=1
-		<if test="storeId != null and storeId != ''">
-			AND store_id=#{storeId}
+		<if test="storeIds != null and storeIds.size() > 0">
+			AND store_id IN 
+			<foreach item="item" index="index" collection="storeIds" open="(" separator="," close=")">  
+			  	#{item}  
+			</foreach>
 		</if>
 		<if test="orderStatus != null">
 			AND status in (
@@ -2598,6 +2621,13 @@
 		<!-- 店铺id -->
 		<if test="storeId != null and storeId != ''">
 			AND A.store_id = #{storeId,jdbcType=VARCHAR}
+		</if>
+		<!-- 店铺ids -->
+		<if test="storeIds != null and storeIds.size() > 0">
+			AND A.store_id IN 
+			<foreach item="item" index="index" collection="storeIds" open="(" separator="," close=")">  
+			  	#{item}  
+			</foreach>
 		</if>
 		<!-- 订单状态 -->
 		AND A.`status` in (3,4,5,6)
@@ -4530,19 +4560,34 @@
 		WHERE DATE_FORMAT(tord.create_time,'%Y-%m-%d') >=
 		DATE_ADD(CURDATE(),INTERVAL -3 DAY)
 		AND tord.status = 1
-		AND tord.store_id = #{storeId, jdbcType=VARCHAR}) orderCounts,
+		<if test="storeIds != null and storeIds.size() > 0">
+			AND tord.store_id IN
+			<foreach item="item" index="index" collection="storeIds" separator="," open="(" close=")">  
+			  	#{item}  
+			</foreach>
+		</if>) orderCounts,
 		(SELECT COUNT(*)
 		FROM trade_order_refunds tord
 		WHERE DATE_FORMAT(tord.create_time,'%Y-%m-%d') >=
 		DATE_ADD(CURDATE(),INTERVAL -3 DAY)
 		AND tord.refunds_status = 0
-		AND tord.store_id = #{storeId, jdbcType=VARCHAR}) orderRefundsCounts,
+		<if test="storeIds != null and storeIds.size() > 0">
+			AND tord.store_id IN
+			<foreach item="item" index="index" collection="storeIds" separator="," open="(" close=")">  
+			  	#{item}  
+			</foreach>
+		</if>) orderRefundsCounts,
 		(SELECT COUNT(*) order_counts
 		FROM trade_order_dispute tord
 		WHERE DATE_FORMAT(tord.create_time,'%Y-%m-%d') >=
 		DATE_ADD(CURDATE(),INTERVAL -3 DAY)
 		AND tord.status = 0
-		AND tord.store_id = #{storeId, jdbcType=VARCHAR}) orderDisputeCounts
+		<if test="storeIds != null and storeIds.size() > 0">
+			AND tord.store_id IN
+			<foreach item="item" index="index" collection="storeIds" separator="," open="(" close=")">  
+			  	#{item}  
+			</foreach>
+		</if>) orderDisputeCounts
 		FROM
 		DUAL
 	</select>
@@ -5358,9 +5403,20 @@
 				AND op.pay_type = #{payType}
 			</if>
 		</if>
-		<if test="null != storeId and '' != storeId">
-			AND tr.store_id = #{storeId}
-		</if>
+		<!-- V2.7.0 modify by mengsj begin -->
+		<choose>
+			<when test="null != storeId and '' != storeId">
+				AND tr.store_id = #{storeId}
+			</when>
+			<when test="storeIds != null and storeIds.size() > 0">
+				AND tr.store_id IN 
+				<foreach item="item" index="index" collection="storeIds" open="(" separator="," close=")">  
+				  	#{item}  
+				</foreach>
+			</when>
+		</choose>
+		<!-- V2.7.0 modify by mengsj end -->
+		
 		<if test="null != orderNo and '' != orderNo">
 			AND tr.order_no like CONCAT('%',#{orderNo},'%')
 		</if>

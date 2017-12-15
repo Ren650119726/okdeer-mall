@@ -112,10 +112,10 @@ public interface TradeOrderService {
 	 * 查询店铺指定状态订单数量
 	 * 
 	 * @param orderStatus
-	 * @param storeId
+	 * @param storeIds
 	 * @return
 	 */
-	Integer selectOrderNum(OrderStatusEnum orderStatus, String storeId);
+	Integer selectOrderNum(OrderStatusEnum orderStatus,Integer orderType, List<String> storeIds);
 	
 	/**
 	 * 查询指定店铺下各种状态的订单数  目前为提供给ERP接口调用
@@ -763,7 +763,7 @@ public interface TradeOrderService {
 	 *            类型 1= 订单 2=售后单3=纠纷单
 	 * @return
 	 */
-	public Map<String, Object> findWindowTipOrderCounts(String storeId, String type) throws ServiceException;
+	public Map<String, Object> findWindowTipOrderCounts(List<String> storeIds, String type) throws ServiceException;
 
 	public TradeOrder selectOrderByInfo(Map<String, Object> map) throws Exception;
 

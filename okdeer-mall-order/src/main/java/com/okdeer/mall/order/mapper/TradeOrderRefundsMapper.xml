@@ -1674,10 +1674,16 @@
 	</select>
 
 	<!-- 商家中心首页 根据状态统计退款单数量(张克能加) -->
-	<select id="selectRefundsCountForIndex" parameterType="java.lang.String"
+	<select id="selectRefundsCountForIndex" parameterType="java.lang.Object"
 		resultType="java.lang.Integer">
 		SELECT count(1) FROM trade_order_refunds 
-		WHERE store_id =#{storeId,jdbcType=VARCHAR} 
+		WHERE 1=1
+		<if test="storeIds != null and storeIds.size() > 0">
+			AND store_id IN 
+			<foreach item="item" index="index" collection="storeIds" open="(" separator="," close=")">  
+			  	#{item}  
+			</foreach>
+		</if>
 		and type = 0
 		and disabled = 0 
 		and order_resource

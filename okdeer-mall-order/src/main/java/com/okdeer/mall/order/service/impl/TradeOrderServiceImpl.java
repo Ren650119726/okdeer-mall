@@ -803,10 +803,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
     }
 
     @Override
-    public Integer selectOrderNum(OrderStatusEnum orderStatus, String storeId) {
+    public Integer selectOrderNum(OrderStatusEnum orderStatus,Integer orderType, List<String> storeIds) {
         Map<String, Object> map = Maps.newHashMap();
         map.put("status", orderStatus);
-        map.put("storeId", storeId);
+        map.put("orderType", orderType);
+        map.put("storeIds", storeIds);
         return tradeOrderMapper.selectOrderNum(map);
     }
 
@@ -817,11 +818,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
     //Begin V2.3.0 added by luosm 20170413
     @Override
-    public Integer selectConsumeOrderNum(ConsumeStatusEnum consumStatus, String storeId) {
+    public Integer selectConsumeOrderNum(ConsumeStatusEnum consumStatus, List<String> storeIds) {
         int num = 0;
         Map<String, Object> map = Maps.newHashMap();
         map.put("consumStatus", consumStatus);
-        map.put("storeId", storeId);
+        map.put("storeIds", storeIds);
         map.put("tabs", "all");
         int[] orderResources = new int[]{0, 1, 3};
         map.put("orderResources", orderResources);
@@ -4886,10 +4887,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
      * @return
      * @author LIU.W
      */
-    public Map<String, Object> findWindowTipOrderCounts(String storeId, String type) throws ServiceException {
+    public Map<String, Object> findWindowTipOrderCounts(List<String> storeIds, String type) throws ServiceException {
 
         try {
-            return tradeOrderMapper.selectWindowTipOrderCounts(storeId, type);
+            return tradeOrderMapper.selectWindowTipOrderCounts(storeIds, type);
         } catch (Exception e) {
             throw new ServiceException("成交统计", e);
         }
