@@ -142,7 +142,7 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 				tradeOrder = tradeOrderMapper.selectByParamsTrade(tradeNum);
 				// 判断订单是否已经取消
 				boolean result = checkOrderIsCanceled(tradeOrder);
-				if (!result) {
+				if (result) {
 					return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 				}
 				// Begin V2.6.3 added by maojj 2017-10-27
