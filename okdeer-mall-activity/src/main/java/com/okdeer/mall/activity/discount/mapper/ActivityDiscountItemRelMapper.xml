@@ -138,6 +138,19 @@
          order by sort
     </select>
     
+    <!-- 查询梯度下非正常价格购买商品 如满赠或加价购 -->
+    <select id="findNotNormalById" resultMap="BaseResultMap">
+        select 
+        <include refid="Base_Column_List" />
+        from activity_discount_item_rel
+        where type != 0
+        <if test="activityId != null and activityId != ''">
+        	and activity_id = #{activityId}
+        </if>
+        <if test="activityItemId != null and activityItemId != ''">
+        	and activity_item_id = #{activityItemId}
+        </if>
+    </select>
     <!-- 根据ids集合查询活动 -->
     <select id="findByActivityIdList" resultMap="BaseResultMap" >
         select 

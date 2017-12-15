@@ -41,6 +41,16 @@ public interface ActivityDiscountItemRelMapper extends IBaseMapper {
 			@Param("activityItemId")String activityItemId);
 	
 	/**
+	 * @Description: 查询梯度下非正常价格购买商品 如满赠或加价购
+	 * @param activityId
+	 * @param activityItemId
+	 * @author tuzhd
+	 * @date 2017年12月12日
+	 */
+	List<ActivityDiscountItemRel> findNotNormalById(@Param("activityId")String activityId,
+			@Param("activityItemId")String activityItemId);
+	
+	/**
 	 * @Description: 根据id集合查询
 	 * @param idList
 	 * @author tuzhd

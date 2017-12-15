@@ -147,7 +147,7 @@
         	<foreach collection="idList" open="(" close=")" separator="," item="item">
 	  	 		#{item}
 	  	 	</foreach>
-	  	ORDER BY piece
+	  	ORDER BY piece,price
     </select>
 
 </mapper>
