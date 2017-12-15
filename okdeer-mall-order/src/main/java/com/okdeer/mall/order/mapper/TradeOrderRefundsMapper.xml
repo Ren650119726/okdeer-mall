@@ -2001,7 +2001,7 @@
 			AND refunds.user_id = #{buyerUserId, jdbcType=VARCHAR}
 		</if>
 		<if test="null != totalAmount and '' != totalAmount">
-			AND refunds.total_amount = #{totalAmount, jdbcType=DECIMAL}
+			AND refunds.total_amount <![CDATA[>=]]>  #{totalAmount, jdbcType=DECIMAL}
 		</if>
 		<if test="null != startTime and startTime != ''">
 			<![CDATA[AND refunds.create_time >= #{startTime, jdbcType=VARCHAR}]]>
