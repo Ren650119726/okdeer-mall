@@ -88,7 +88,8 @@ public class TradeOrderSubScriberHandler {
 			//查询剩余的抽奖次数
 			if((count+user.getPrizeCount()) < 15){
 				//执行充值人送代金劵及抽奖次数 1
-				sysBuyerExtService.updateAddPrizeCount(tradeOrder.getUserId(), 1);
+				// 20171215 xuzq 套鹿活动大于10块增加抽奖次数 暂时屏蔽其他增加次数操作
+				//sysBuyerExtService.updateAddPrizeCount(tradeOrder.getUserId(), 1);
 			}
 		}
 			
