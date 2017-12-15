@@ -108,7 +108,7 @@ class TradeOrderComplainServiceImpl implements TradeOrderComplainService, TradeO
 	public PageUtils<TradeOrderComplainQueryVo> updateComplainByStoreId(Map<String,Object> params,int pageNumber,int pageSize) throws ServiceException {
 		//更新未读的投诉记录为已读状态
 		Map<String,Object> map = new HashMap<String, Object>();
-		map.put("storeId", params.get("storeId"));
+		map.put("storeIds", params.get("storeIds"));
 		map.put("isRead", IsRead.UNREAD);
 		map.put("read", IsRead.READ);
 		tradeOrderComplainMapper.updateReadByStoreId(map);

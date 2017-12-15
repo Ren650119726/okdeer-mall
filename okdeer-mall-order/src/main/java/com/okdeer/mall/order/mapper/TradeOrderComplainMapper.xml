@@ -161,7 +161,20 @@
 		   trade.user_phone
     FROM trade_order_complain complain
 	LEFT JOIN trade_order trade ON trade.id = complain.order_id
-	WHERE complain.store_id = #{storeId,jdbcType=VARCHAR}
+	WHERE 1=1
+	<!-- V2.7.0 modify by mengsj begin -->
+	<choose>
+		<when test="null != storeId and '' != storeId">
+			AND complain.store_id = #{storeId,jdbcType=VARCHAR}
+		</when>
+		<when test="storeIds != null and storeIds.size() > 0">
+			AND complain.store_id IN 
+			<foreach item="item" index="index" collection="storeIds" open="(" separator="," close=")">  
+			  	#{item}  
+			</foreach>
+		</when>
+	</choose>
+	<!-- V2.7.0 modify by mengsj end --> 
 	<if test="orderNo != null and orderNo != ''">
 	  AND trade.order_no like CONCAT('%',#{orderNo},'%') 
 	</if>
@@ -201,6 +214,18 @@
     UPDATE trade_order_complain
     SET is_read = #{read,jdbcType=TINYINT}
     WHERE is_read = #{isRead,jdbcType=TINYINT}
-    AND store_id = #{storeId,jdbcType=VARCHAR}
+   	<!-- V2.7.0 modify by mengsj begin -->
+	<choose>
+		<when test="null != storeId and '' != storeId">
+		    AND store_id = #{storeId,jdbcType=VARCHAR}
+		</when>
+		<when test="storeIds != null and storeIds.size() > 0">
+			AND store_id IN 
+			<foreach item="item" index="index" collection="storeIds" open="(" separator="," close=")">  
+			  	#{item}  
+			</foreach>
+		</when>
+	</choose>
+	<!-- V2.7.0 modify by mengsj end -->
   </update>
 </mapper>

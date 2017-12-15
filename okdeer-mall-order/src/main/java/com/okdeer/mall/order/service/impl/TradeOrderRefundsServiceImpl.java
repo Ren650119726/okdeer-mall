@@ -959,8 +959,8 @@ public class TradeOrderRefundsServiceImpl extends AbstractTradeOrderRefundsServi
 	 * 商家中心首页 根据状态统计退款单数量(张克能加)
 	 */
 	@Override
-	public Integer selectRefundsCountForIndex(String storeId, List<Integer> refundsStatusList) {
-		return tradeOrderRefundsMapper.selectRefundsCountForIndex(storeId, refundsStatusList);
+	public Integer selectRefundsCountForIndex(List<String> storeIds, List<Integer> refundsStatusList) {
+		return tradeOrderRefundsMapper.selectRefundsCountForIndex(storeIds, refundsStatusList);
 	}
 
 	/**
