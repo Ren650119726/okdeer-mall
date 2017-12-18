@@ -94,7 +94,7 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 		//根据店铺ID获取店铺信息
 		StoreInfo store = paramDto.getStoreInfo();
 		if(store == null || CollectionUtils.isEmpty(paramDto.getStoreSkuIdList())){
-			return null;
+			paramDto.setStoreSkuIdList(Lists.newArrayList());
 		}
 		//1、查询符合要求的活动
 		List<ActivityDiscount> actList = activityDiscountMapper.findByStoreAndArea(createActivityParam(paramDto));

@@ -558,11 +558,12 @@
   <select id="findByStoreAndArea" parameterType="com.okdeer.mall.activity.dto.ActivityParamDto" resultType="string">
        SELECT DISTINCT <include refid="Base_Column_List" />
        FROM activity_discount t
-       WHERE t.status = 1 
+       WHERE t.status = 1 AND
        	   (
-       	   	 AND t.limit_range = 0
-       	   	 OR ( EXISTS
-       	     	  (SELECT 1 FROM activity_business_rel rel WHERE t.id = rel.activity_id AND t.limit_range_type = 0 AND
+       	   	 t.limit_range = 0
+       	   	 OR ( t.limit_range_type = 0 AND
+       	   	      EXISTS
+       	     	  (SELECT 1 FROM activity_business_rel rel WHERE t.id = rel.activity_id AND 
        	     	    ( 
        	     	  	    (rel.business_type = 2 AND rel.business_id =#{storeId,jdbcType=VARCHAR})
        	     	     OR (rel.business_type = 1 AND rel.business_id =#{provinceId,jdbcType=VARCHAR})
@@ -570,8 +571,9 @@
        	     	    )
        	     	  )
        	     	)
-       	     OR (NOT EXISTS
-       	     	  (SELECT 1 FROM activity_business_rel rel WHERE t.id = rel.activity_id AND t.limit_range_type = 1 AND
+       	     OR ( t.limit_range_type = 1 AND
+       	          NOT EXISTS
+       	     	  (SELECT 1 FROM activity_business_rel rel WHERE t.id = rel.activity_id AND 
        	     	    ( 
        	     	  	    (rel.business_type = 2 AND rel.business_id =#{storeId,jdbcType=VARCHAR})
        	     	     OR (rel.business_type = 1 AND rel.business_id =#{provinceId,jdbcType=VARCHAR})
