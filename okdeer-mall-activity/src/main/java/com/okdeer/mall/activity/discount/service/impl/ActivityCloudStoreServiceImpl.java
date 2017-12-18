@@ -140,7 +140,8 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 			for(ActivityDiscountItem item : itemList){
 				//获取梯度信息
 				ActivityCloudItemReultDto itemResult = BeanMapper.map(item, ActivityCloudItemReultDto.class);
-				
+				//设置活动类型
+				itemResult.setType(discount.getType());
 				//组合符合梯度的购物车商品
 				itemResult.setSkuIdList(combStoreSku(item, relList, skuList, skuMap));
 				
