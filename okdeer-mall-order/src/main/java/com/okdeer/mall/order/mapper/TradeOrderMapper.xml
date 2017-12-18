@@ -4990,7 +4990,21 @@
 		LEFT JOIN trade_order_refunds tor ON tori.refunds_id = tor.id
 		LEFT JOIN sys_user u ON o.seller_id = u.id
 		LEFT JOIN trade_order_pay op ON op.order_id = o.id
-		WHERE o.store_id = #{storeId,jdbcType=VARCHAR} AND o.disabled = 0
+		WHERE 1=1 AND o.disabled = 0
+		<!-- V2.7.0 add by mengsj begin  -->
+		<choose>
+			<when test="null != storeId and '' != storeId">
+				AND o.store_id = #{storeId}
+			</when>
+			<when test="storeIds != null and storeIds.size() > 0">
+				AND o.store_id IN 
+				<foreach item="item" index="index" collection="storeIds" open="(" separator="," close=")">  
+				  	#{item}  
+				</foreach>
+			</when>
+		</choose>
+		<!-- V2.7.0 add by mengsj end -->
+			
 		<if test="orderNo != null and orderNo != ''">
 			AND o.order_no LIKE CONCAT('%', #{orderNo,jdbcType=VARCHAR}, '%')
 		</if>
@@ -5060,6 +5074,7 @@
 		<if test="maxSize != null and maxSize > 0">
 			LIMIT #{maxSize,jdbcType=INTEGER}
 		</if>
+		
 	</select>
 
 
