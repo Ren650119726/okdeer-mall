@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +24,7 @@ import com.google.common.collect.Lists;
 import com.okdeer.archive.goods.assemble.GoodsStoreSkuAssembleApi;
 import com.okdeer.archive.goods.assemble.dto.GoodsStoreAssembleDto;
 import com.okdeer.archive.goods.assemble.dto.GoodsStoreSkuAssembleDto;
+import com.okdeer.archive.goods.spu.enums.SkuBindType;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.store.entity.StoreBranches;
 import com.okdeer.archive.store.entity.StoreInfo;
@@ -38,6 +40,7 @@ import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.bdp.address.entity.Address;
 import com.okdeer.bdp.address.service.IAddressService;
 import com.okdeer.common.consts.LogConstants;
+import com.okdeer.mall.activity.coupons.enums.ActivityDiscountItemRelType;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
@@ -48,6 +51,7 @@ import com.okdeer.mall.member.mapper.MemberConsigneeAddressMapper;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
 import com.okdeer.mall.order.bo.CurrentStoreSkuBo;
 import com.okdeer.mall.order.bo.StoreSkuParserBo;
+import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderComboSnapshot;
@@ -150,6 +154,7 @@ public class TradeOrderBuilder {
 	public TradeOrder build(PlaceOrderParamDto paramDto) throws Exception{
 		// 构建交易订单
 		TradeOrder tradeOrder = buildTradeOrder(paramDto);
+		// 拆分商品项
 		// 构建交易订单项
 		List<TradeOrderItem> orderItemList = buildOrderItemList(tradeOrder, paramDto);
 		// 构建订单物流信息
@@ -173,7 +178,8 @@ public class TradeOrderBuilder {
 		tradeOrder.setComboDetailList(comboDetailList);
 		tradeOrder.setTradeOrderExt(tradeOrderExt);
 		return tradeOrder;
-	}
+	} 
+	
 	
 	/**
 	 * @Description: 构建TradeOrder
@@ -496,6 +502,49 @@ public class TradeOrderBuilder {
 	}
 	
 	/**
+	 * @Description: 拆分商品项便于生产订单，及设置商品项的价格及活动类型
+	 * @param paramDto   
+	 * @author tuzhd
+	 * @date 2017年12月14日
+	 */
+	private List<CurrentStoreSkuBo> splitSkuMap(PlaceOrderParamDto paramDto,Collection<CurrentStoreSkuBo> goodsItemList){
+		List<CurrentStoreSkuBo> newList = Lists.newArrayList();
+		for(CurrentStoreSkuBo goods :goodsItemList){
+			paramDto.getSkuList().forEach(e -> {
+				if(e.getStoreSkuId().equals(goods.getId())){
+					CurrentStoreSkuBo skuBo = BeanMapper.map(goods, CurrentStoreSkuBo.class);
+					skuBo.setQuantity(e.getQuantity());
+					//如果为加价购商品或N件X元 减掉优惠金额 start tuzhd 2017-12-14
+					if(e.getSkuActType() == ActivityTypeEnum.NJXY.ordinal()){
+						//设置商品活动类型   其优惠金额不能分摊到活动价格上
+						skuBo.setActivityType(e.getSkuActType());
+						skuBo.setPreferentialPrice(e.getPreferentialPrice());
+					//属于非正常购买商品，因为验证过合法,判断null兼容
+					}else if((e.getSkuActType() == ActivityTypeEnum.JJG.ordinal() || 
+							e.getSkuActType() == ActivityTypeEnum.MMS.ordinal())){
+						//设置商品活动类型 
+						skuBo.setActivityType(e.getSkuActType());
+						if(e.getActivityPriceType() !=null && 
+								e.getActivityPriceType() != ActivityDiscountItemRelType.NORMAL_GOODS.ordinal()){
+							//满赠或换购商品记录器活动价格
+							skuBo.setAppActPrice(e.getSkuActPrice());
+							skuBo.setActPrice(e.getSkuActPrice());
+							skuBo.setBindType(e.getActivityPriceType() == ActivityDiscountItemRelType.MMS_GOODS.ordinal() 
+									? SkuBindType.MMS:SkuBindType.JJG);
+						}
+					}else{
+						//n件X元等活动不包含低价
+						skuBo.setQuantity(skuBo.getQuantity() + e.getSkuActQuantity());
+					}
+					newList.add(skuBo);
+				}
+			});
+		}
+		return newList;
+			
+	}
+	
+	/**
 	 * @Description: 构建交易订单项
 	 * @param tradeOrder
 	 * @param reqDto
@@ -507,7 +556,7 @@ public class TradeOrderBuilder {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private List<TradeOrderItem> buildOrderItemList(TradeOrder tradeOrder, PlaceOrderParamDto paramDto)
 			throws ServiceException {
-		List<TradeOrderItem> orderItemList = new ArrayList<TradeOrderItem>();
+		List<TradeOrderItem> orderItemList = new ArrayList<>();
 		StoreSkuParserBo parserBo = (StoreSkuParserBo)paramDto.get("parserBo");
 		
 		String orderId = tradeOrder.getId();
@@ -522,8 +571,10 @@ public class TradeOrderBuilder {
 		TradeOrderItem tradeOrderItem = null;
 
 		Collection<CurrentStoreSkuBo> skuBoSet = parserBo.getCurrentSkuMap().values();
-		List<CurrentStoreSkuBo> goodsItemList = new ArrayList<CurrentStoreSkuBo>();
-		goodsItemList.addAll(skuBoSet);
+		List<CurrentStoreSkuBo> goodsItemList = new ArrayList<>();
+		//拆分订单项
+		goodsItemList.addAll(splitSkuMap(paramDto, skuBoSet));
+		
 		ComparatorChain chain = new ComparatorChain();
 		chain.addComparator(new BeanComparator("onlinePrice"), false);
 		Collections.sort(goodsItemList, chain);
@@ -579,9 +630,16 @@ public class TradeOrderBuilder {
 						.multiply(BigDecimal.valueOf(skuBo.getSkuActQuantity()));
 			}else if(skuBo.getActivityType() == ActivityTypeEnum.SECKILL_ACTIVITY.ordinal()){
 				storeFavourItem = tradeOrder.getStorePreferential();
+				
+			//加价购计算店铺优惠
+			}else if(skuBo.getBindType() == SkuBindType.JJG){
+				storeFavourItem = skuBo.getOnlinePrice().subtract(skuBo.getActPrice())
+						.multiply(BigDecimal.valueOf(skuBo.getQuantity()));
 			}
 			if (platformFavour.compareTo(referenceValue) > 0) {
-				if(!parserBo.getEnjoyFavourSkuIdList().contains(skuBo.getId())){
+				// 如果有优惠的商品项不包含改商品，意味着该商品不享有平台优惠  2017-12-14 添加换购商品及赠送商品不享受平台优惠
+				if(!parserBo.getEnjoyFavourSkuIdList().contains(skuBo.getId()) || skuBo.getBindType() == SkuBindType.JJG 
+						|| skuBo.getBindType() == SkuBindType.MMS){
 					// 如果有优惠的商品项不包含改商品，意味着该商品不享有平台优惠
 					favourItem = BigDecimal.valueOf(0.0);
 				} else if (index++ < haveFavourItemSize - 1) {

@@ -30,6 +30,7 @@ import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.entity.ActivitySale;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.entity.ActivitySaleRecord;
+import com.okdeer.mall.activity.coupons.enums.ActivityDiscountItemRelType;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.order.dto.PlaceOrderItemDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
@@ -148,7 +149,7 @@ public class StoreSkuParserBo {
 	private BigDecimal totalLowFavour = BigDecimal.valueOf(0.0);
 	
 	/**
-	 * 参与低价的总金额
+	 * 参与低价的总金额  及 参与加价购的总金额、 tuzhd update 2017-12-13
 	 */
 	private BigDecimal totalAmountInLowPrice = BigDecimal.valueOf(0.0);
 	
@@ -397,9 +398,29 @@ public class StoreSkuParserBo {
 				item.setSkuPrice(skuBo.getOnlinePrice());
 			}
 			item.setSpuCategoryId(skuBo.getSpuCategoryId());
+			//订单项线上总价格
+			BigDecimal itemPrice = skuBo.getOnlinePrice().multiply(BigDecimal.valueOf(skuBo.getQuantity()));
+			//如果为加价购商品或N件X元 减掉优惠金额 start tuzhd 2017-12-14
+			if(item.getSkuActType() == ActivityTypeEnum.NJXY.ordinal()){
+				//设置商品活动类型   其优惠金额不能分摊到活动价格上
+				this.totalItemAmount = totalItemAmount.add(itemPrice).subtract(item.getPreferentialPrice());
+			//属于非正常购买商品，因为验证过合法,判断null兼容
+			}else if((item.getSkuActType() == ActivityTypeEnum.JJG.ordinal() || 
+					item.getSkuActType() == ActivityTypeEnum.MMS.ordinal())){
+				//设置商品活动类型 
+				if(item.getActivityPriceType() !=null && 
+						item.getActivityPriceType() != ActivityDiscountItemRelType.NORMAL_GOODS.ordinal()){
+					//满赠或换购商品记录器活动价格
+					itemPrice = item.getSkuActPrice().multiply(BigDecimal.valueOf(skuBo.getQuantity()));
+					this.totalItemAmount =totalItemAmount.add(itemPrice);
+					//需要排除参与享受优惠的金额
+					this.totalAmountInLowPrice = this.totalAmountInLowPrice.add(itemPrice);
+				}
+			}else{
+				this.totalItemAmount = totalItemAmount.add(itemPrice);
+			}
+			// end tuzhd 2017-12-14
 
-			this.totalItemAmount = totalItemAmount
-					.add(skuBo.getOnlinePrice().multiply(BigDecimal.valueOf(skuBo.getQuantity())));
 			this.totalQuantity += skuBo.getQuantity();
 			
 			this.skuActNumMap.put(item.getStoreSkuId(), Integer.valueOf(item.getSkuActQuantity()));
@@ -863,4 +884,5 @@ public class StoreSkuParserBo {
 	public Map<String, GoodsStoreSkuStock> getBindStockMap() {
 		return bindStockMap;
 	}
+	
 }

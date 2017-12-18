@@ -41,6 +41,7 @@ import com.okdeer.mall.activity.discount.entity.ActivityDiscountRecord;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountRecordMapper;
+import com.okdeer.mall.activity.discount.mapper.ActivityJoinRecordMapper;
 import com.okdeer.mall.activity.mq.constants.ActivityCouponsTopic;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
@@ -53,6 +54,7 @@ import com.okdeer.mall.order.builder.MallStockUpdateBuilder;
 import com.okdeer.mall.order.builder.TradeOrderBuilder;
 import com.okdeer.mall.order.dto.PlaceOrderDto;
 import com.okdeer.mall.order.dto.PlaceOrderParamDto;
+import com.okdeer.mall.order.entity.ActivityJoinRecord;
 import com.okdeer.mall.order.entity.TradeOrder;
 import com.okdeer.mall.order.entity.TradeOrderLog;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
@@ -169,6 +171,9 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	
 	@Autowired
 	private TradeOrderChangeListeners tradeOrderChangeListeners;
+	
+	@Resource
+	private ActivityJoinRecordMapper activityJoinRecordMapper;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -191,8 +196,11 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		updateLastUseAddr(userUseAddr);
 		// 更新红包记录
 		savePinMoneyRecord(tradeOrder, paramDto);
+		
 		// 插入订单
 		tradeOrderSerive.insertTradeOrder(tradeOrder);
+		// 保存活动如N件X元 或满赠 或加价购  参与记录
+		saveActivityJoinRec(paramDto, tradeOrder.getId());
 		// 发送消息
 		sendTimerMessage(tradeOrder, paramDto);
 
@@ -421,6 +429,28 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 		}
 	}
 
+	/**
+	 * @Description: 保存活动及与订单信息
+	 * @param paramDto
+	 * @param orderId   
+	 * @author tuzhd
+	 * @date 2017年12月14日
+	 */
+	private void saveActivityJoinRec(PlaceOrderParamDto paramDto,String orderId){
+		ActivityJoinRecord activityJoinRec = new ActivityJoinRecord();
+		activityJoinRec.setId(UuidUtils.getUuid());
+		activityJoinRec.setActivityType(paramDto.getActivityType());
+		activityJoinRec.setActivityId(paramDto.getStoreActivityId());
+		activityJoinRec.setActivityItemId(paramDto.getStoreActivityItemId());
+		activityJoinRec.setActivityNum(1);
+		activityJoinRec.setUserId(paramDto.getUserId());
+		activityJoinRec.setOrderId(orderId);
+		activityJoinRec.setDeviceId(paramDto.getDeviceId());
+		activityJoinRec.setCreateDate(new Date());
+		activityJoinRec.setDisabled(Disabled.valid);
+		activityJoinRecordMapper.add(activityJoinRec);
+	}
+	
 	/**
 	 * @Description: 更新商品库存
 	 * @param tradeOrder

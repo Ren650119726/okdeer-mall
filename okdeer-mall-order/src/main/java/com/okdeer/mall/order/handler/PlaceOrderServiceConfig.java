@@ -22,6 +22,14 @@ public class PlaceOrderServiceConfig {
 	 */
 	@Resource
 	private RequestHandler<PlaceOrderParamDto, PlaceOrderDto>  checkSkuService;
+	
+	/**
+	 * 校验便利店商品活动的Service
+	 */
+	@Resource
+	private RequestHandler<PlaceOrderParamDto, PlaceOrderDto>  checkStoreActivityService;
+	
+	
 
 	/**
 	 * 库存校验的Service
@@ -114,15 +122,17 @@ public class PlaceOrderServiceConfig {
 		RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> chain = new RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto>();
 		// 第一步 ：校验店铺
 		chain.addHandlerChain(checkStoreService);
-		// 第二步：校验商品
+		// 第二步校验活动
+		chain.addHandlerChain(checkStoreActivityService);
+		// 第三步：校验商品
 		chain.addHandlerChain(checkSkuService);
-		// 第三步：校验商品库存
+		// 第四步：校验商品库存
 		chain.addHandlerChain(checkStockService);
-		// 第四步：查询最优用户地址
+		// 第五步：查询最优用户地址
 		chain.addHandlerChain(findUserAddrService);
-		// 查询零花钱信息
+		// 第六步：查询零花钱信息
 		chain.addHandlerChain(findPinMoneyService);
-		// 第五步：查询用户有效的优惠信息
+		// 第七步：查询用户有效的优惠信息
 		chain.addHandlerChain(findFavourService);
 		return chain;
 	}
@@ -130,17 +140,19 @@ public class PlaceOrderServiceConfig {
 	@Bean(name="submitOrderService")
 	public RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> submitOrderService() {
 		RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto> chain = new RequestHandlerChain<PlaceOrderParamDto, PlaceOrderDto>();
-		// 第一步 ：校验店铺
+		// 第一步：校验店铺
 		chain.addHandlerChain(checkStoreService);
-		// 第二步：校验商品
+		// 第二步：校验活动
+		chain.addHandlerChain(checkStoreActivityService);
+		// 第三步：校验商品
 		chain.addHandlerChain(checkSkuService);
-		// 第三步：校验商品库存
+		// 第四步：校验商品库存
 		chain.addHandlerChain(checkStockService);
-		// 第四步：校验用户优惠信息
+		// 第五步：校验用户优惠信息
 	    chain.addHandlerChain(checkFavourService);
-		// 校验零花钱信息
+		// 第六步：校验零花钱信息
 		chain.addHandlerChain(checkPinMoneyService);
-		// 第五步：生成订单
+		// 第七步：生成订单
 		chain.addHandlerChain(placeOrderService);
 		return chain;
 	}

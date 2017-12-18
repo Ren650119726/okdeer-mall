@@ -558,28 +558,27 @@
   <select id="findByStoreAndArea" parameterType="com.okdeer.mall.activity.dto.ActivityParamDto" resultType="string">
        SELECT DISTINCT <include refid="Base_Column_List" />
        FROM activity_discount t
-       LEFT JOIN activity_business_rel rel ON t.id = rel.activity_id
        WHERE t.status = 1 
        	   (
        	   	 AND t.limit_range = 0
-       	     <if test="storeId != null and storeId != '' ">
-       	     	 or (rel.business_type = 2 
-       	     	     and t.limit_range_type = 0
-       	     	 	 and rel.business_id = #{storeId,jdbcType=VARCHAR}
-       	     	 	 )
-       	     </if>
-       	     <if test="provinceId != null and provinceId != '' ">
-       	     	 or (rel.business_type = 1
-       	     	 	 and t.limit_range_type = 0
-       	     	 	 and rel.business_id = #{provinceId,jdbcType=VARCHAR}
-       	     	 	 )
-       	     </if>
-       	     <if test="cityId != null and cityId != '' ">
-       	     	 or (rel.business_type = 0  
-       	     	 	 and t.limit_range_type = 0
-       	     	 	 and rel.business_id = #{cityId,jdbcType=VARCHAR}
-       	     	 	 )
-       	     </if>
+       	   	 OR ( EXISTS
+       	     	  (SELECT 1 FROM activity_business_rel rel WHERE t.id = rel.activity_id AND t.limit_range_type = 0 AND
+       	     	    ( 
+       	     	  	    (rel.business_type = 2 AND rel.business_id =#{storeId,jdbcType=VARCHAR})
+       	     	     OR (rel.business_type = 1 AND rel.business_id =#{provinceId,jdbcType=VARCHAR})
+       	     	     OR (rel.business_type = 0 AND rel.business_id =#{cityId,jdbcType=VARCHAR})
+       	     	    )
+       	     	  )
+       	     	)
+       	     OR (NOT EXISTS
+       	     	  (SELECT 1 FROM activity_business_rel rel WHERE t.id = rel.activity_id AND t.limit_range_type = 1 AND
+       	     	    ( 
+       	     	  	    (rel.business_type = 2 AND rel.business_id =#{storeId,jdbcType=VARCHAR})
+       	     	     OR (rel.business_type = 1 AND rel.business_id =#{provinceId,jdbcType=VARCHAR})
+       	     	     OR (rel.business_type = 0 AND rel.business_id =#{cityId,jdbcType=VARCHAR})
+       	     	    )
+       	     	  )
+       	     	)
        	   )
          <if test="typeList != null and typeList.size() > 0 ">
        	    AND t.type IN 
