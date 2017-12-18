@@ -6147,12 +6147,12 @@
 					#{endTime,jdbcType=TIMESTAMP}
 			</if>
 			<!-- 起始更新时间-->
-			<if test="startTime != null">
+			<if test="startUpdateTime != null">
 				AND trade.update_time <![CDATA[ >= ]]>
 					#{startUpdateTime,jdbcType=TIMESTAMP}
 			</if>
 			<!-- 结束更新时间 -->
-			<if test="endTime != null">
+			<if test="endUpdateTime != null">
 				AND trade.update_time <![CDATA[ <= ]]>
 					#{endUpdateTime,jdbcType=TIMESTAMP}
 			</if>
