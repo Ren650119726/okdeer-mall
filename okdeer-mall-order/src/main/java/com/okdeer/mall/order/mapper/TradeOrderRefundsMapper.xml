@@ -1083,9 +1083,21 @@
 				AND o.status in(0,11)
 			</if>
 		</if>
-		<if test="null != storeId and '' != storeId">
-			AND tr.store_id = #{storeId}
-		</if>
+		
+		<!-- V2.7.0 add by mengsj begin  -->
+		<choose>
+			<when test="null != storeId and '' != storeId">
+				AND tr.store_id = #{storeId}
+			</when>
+			<when test="storeIds != null and storeIds.size() > 0">
+				AND tr.store_id IN 
+				<foreach item="item" index="index" collection="storeIds" open="(" separator="," close=")">  
+				  	#{item}  
+				</foreach>
+			</when>
+		</choose>
+		<!-- V2.7.0 add by mengsj end -->
+		
 		<if test="null != refundNo and '' != refundNo">
 			AND tr.refund_no = #{refundNo}
 		</if>
@@ -1140,6 +1152,8 @@
 	</sql>
 
 	<!-- zengj:查询退款单信息  update by wusw 20170215 修改排序规则和增加订单活动类型参数-->
+<!-- 	<select id="searchOrderRefundByParams" parameterType="map" -->
+<!-- 		resultMap="TradeOrderRefundsVo2"> -->
 	<select id="searchOrderRefundByParams" parameterType="map"
 		resultMap="TradeOrderRefundsVo2">
 		SELECT o.id AS order_id,o.order_no,o.create_time as
