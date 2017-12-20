@@ -179,6 +179,12 @@ public class CurrentStoreSkuBo {
 	private String updateTime;
 	
 	/**
+	 * 活动价格类型0 满赠商品、1加价购商品
+	 * v2.7 tuzhd 添加字段
+	 */   
+	private Integer activityPriceType;
+	
+	/**
 	 * N件X元优惠价格，不能分摊到单价上去
 	 */
 	private BigDecimal preferentialPrice;
@@ -488,6 +494,16 @@ public class CurrentStoreSkuBo {
 
 	public void setPreferentialPrice(BigDecimal preferentialPrice) {
 		this.preferentialPrice = preferentialPrice;
+	}
+
+	
+	public Integer getActivityPriceType() {
+		return activityPriceType;
+	}
+
+	
+	public void setActivityPriceType(Integer activityPriceType) {
+		this.activityPriceType = activityPriceType;
 	}
 
 }

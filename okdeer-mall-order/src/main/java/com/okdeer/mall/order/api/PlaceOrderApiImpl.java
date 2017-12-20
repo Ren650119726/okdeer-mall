@@ -3,6 +3,7 @@ package com.okdeer.mall.order.api;
 import static com.okdeer.common.consts.ELTopicTagConstants.TAG_GOODS_EL_UPDATE;
 import static com.okdeer.common.consts.ELTopicTagConstants.TOPIC_GOODS_SYNC_EL;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +34,8 @@ import com.okdeer.mall.activity.discount.dto.ActivityCloudItemReultDto;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudStoreParamDto;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudStoreResultDto;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscountItemRel;
+import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
 import com.okdeer.mall.activity.discount.service.ActivityCloudStoreService;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.common.dto.Request;
@@ -181,9 +184,6 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		ActivitySeckill seckillInfo = (ActivitySeckill) paramDto.get("seckillInfo");
 		// 解析请求之后的店铺商品信息
 		StoreSkuParserBo parserBo = (StoreSkuParserBo) paramDto.get("parserBo");
-		//获得缓存中的活动 及梯度信息
-		ActivityCloudItemReultDto item = (ActivityCloudItemReultDto) paramDto.get("activityItemInfo");
-		ActivityDiscount discount = (ActivityDiscount) paramDto.get("storeActivity");
 		
 		// 返回App店铺信息
 		AppStoreDto appStoreDto = AppAdapter.convert(storeInfo);
@@ -242,6 +242,17 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 			resp.getData().setAbsentNum(resp.getData().getAbsentNum() - joinUserList.size());
 		}
 		// End V2.6.3 added by maojj 2017-10-13
+		
+		//获得中的活动 及梯度信息 start 2.7 tuzd
+		resp.getData().setStoreActivityId(paramDto.getStoreActivityId());
+		resp.getData().setStoreActivityItemId(paramDto.getStoreActivityItemId());
+		resp.getData().setStoreActivityMultiItemId(paramDto.getStoreActivityMultiItemId());
+		String multiPreferePrice = (String) paramDto.get("multiPreferePrice");
+		//查询梯度下加价购或满赠商品
+		if(StringUtils.isNotBlank(multiPreferePrice) ){
+			resp.getData().setMultiPreferePrice(multiPreferePrice);
+		}
+		//获得中的活动 及梯度信息 end 2.7 tuzd
 		
 		resp.getData().setCurrentTime(System.currentTimeMillis());
 	}
