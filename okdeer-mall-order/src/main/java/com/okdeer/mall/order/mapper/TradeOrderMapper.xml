@@ -978,6 +978,10 @@
 			AND update_time <![CDATA[ <= ]]>
 				#{endUpdateTime,jdbcType=TIMESTAMP}
 		</if>
+		<if test="actualAmount != null">
+			AND actual_amount <![CDATA[ >= ]]>
+				#{actualAmount,jdbcType=DECIMAL}
+		</if>
 		<if test="orderBy != null and orderBy !='' ">
 		  	ORDER BY received_time
 		</if>

@@ -47,10 +47,7 @@ public class TradeOrderSubScriber {
 		logger.debug("订单完成后处理开始：{}", JsonMapper.nonEmptyMapper().toJson(tradeOrder));
 		try {
 			//九月活动需求 改为已完成订单（原来为消费即可获取抽奖次数）
-			// xuzq 12月套鹿活动 完成订单大于等于10元可活动抽奖次数
-			if(tradeOrder.getActualAmount().compareTo(new BigDecimal(10)) >= 0){
-				tradeOrderSubScriberHandler.activityAddPrizeCcount(tradeOrder);
-			}
+			tradeOrderSubScriberHandler.activityAddPrizeCcount(tradeOrder);
 			return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 		} catch (Exception e) {
 			logger.error("订单完成后处理业务异常：{}",JsonMapper.nonEmptyMapper().toJson(tradeOrder), e);
