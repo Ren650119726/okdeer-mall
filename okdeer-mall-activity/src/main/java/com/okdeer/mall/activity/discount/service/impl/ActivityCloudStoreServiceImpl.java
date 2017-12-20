@@ -94,7 +94,7 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 		//根据店铺ID获取店铺信息
 		StoreInfo store = paramDto.getStoreInfo();
 		if(store == null || CollectionUtils.isEmpty(paramDto.getStoreSkuIdList())){
-			return null;
+			paramDto.setStoreSkuIdList(Lists.newArrayList());
 		}
 		//1、查询符合要求的活动
 		List<ActivityDiscount> actList = activityDiscountMapper.findByStoreAndArea(createActivityParam(paramDto));
@@ -140,7 +140,8 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 			for(ActivityDiscountItem item : itemList){
 				//获取梯度信息
 				ActivityCloudItemReultDto itemResult = BeanMapper.map(item, ActivityCloudItemReultDto.class);
-				
+				//设置活动类型
+				itemResult.setType(discount.getType());
 				//组合符合梯度的购物车商品
 				itemResult.setSkuIdList(combStoreSku(item, relList, skuList, skuMap));
 				

@@ -29,6 +29,11 @@ import com.okdeer.base.framework.mq.RocketMQProducer;
 import com.okdeer.mall.activity.coupons.entity.ActivityCouponsRecord;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
+import com.okdeer.mall.activity.discount.dto.ActivityCloudItemReultDto;
+import com.okdeer.mall.activity.discount.dto.ActivityCloudStoreParamDto;
+import com.okdeer.mall.activity.discount.dto.ActivityCloudStoreResultDto;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
+import com.okdeer.mall.activity.discount.service.ActivityCloudStoreService;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.common.dto.Request;
 import com.okdeer.mall.common.dto.Response;
@@ -108,6 +113,9 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 	@Resource
 	private ActivityCouponsRecordMapper activityCouponsRecordMapper;
 	
+	@Resource
+	private ActivityCloudStoreService activityCloudStoreService;
+	
 	/**
 	 * mq注入
 	 */
@@ -173,6 +181,10 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		ActivitySeckill seckillInfo = (ActivitySeckill) paramDto.get("seckillInfo");
 		// 解析请求之后的店铺商品信息
 		StoreSkuParserBo parserBo = (StoreSkuParserBo) paramDto.get("parserBo");
+		//获得缓存中的活动 及梯度信息
+		ActivityCloudItemReultDto item = (ActivityCloudItemReultDto) paramDto.get("activityItemInfo");
+		ActivityDiscount discount = (ActivityDiscount) paramDto.get("storeActivity");
+		
 		// 返回App店铺信息
 		AppStoreDto appStoreDto = AppAdapter.convert(storeInfo);
 		if (parserBo != null) {
@@ -186,7 +198,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		if(req.getData().getOrderType() != PlaceOrderTypeEnum.CVS_ORDER){
 			resp.getData().setStoreServExt(AppAdapter.convertAppStoreServiceExtDto(storeInfo));
 			resp.getData().setSeckillInfo(AppAdapter.convert(seckillInfo));
-			List<CurrentStoreSkuBo> skuList = new ArrayList<CurrentStoreSkuBo>();
+			List<CurrentStoreSkuBo> skuList = new ArrayList<>();
 			// 服务商品判定支付方式：如果多个商品，一定是线上支付。单个商品，根据商品设置的支付方式进行处理
 			if (parserBo != null && CollectionUtils.isNotEmpty(parserBo.getCurrentSkuMap().values())) {
 				for(CurrentStoreSkuBo skuBo:parserBo.getCurrentSkuMap().values()){
@@ -230,6 +242,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 			resp.getData().setAbsentNum(resp.getData().getAbsentNum() - joinUserList.size());
 		}
 		// End V2.6.3 added by maojj 2017-10-13
+		
 		resp.getData().setCurrentTime(System.currentTimeMillis());
 	}
 

@@ -111,6 +111,7 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 			return;
 		}
 		parserBo.setSkuIdList(skuIdList);
+		//加载购买商品列表  将提交商品数量到 当前店铺商品列表中及计算其总订单金额
 		parserBo.loadBuySkuList(paramDto.getSkuList());
 		// 缓存商品解析结果
 		paramDto.put("parserBo", parserBo);
@@ -249,27 +250,21 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		for (PlaceOrderItemDto item : req.getSkuList()) {
 			CurrentStoreSkuBo currentSku = parserBo.getCurrentStoreSkuBo(item.getStoreSkuId());
 			// 检查是否下架
+			boolean checkFlag = true;
 			if (currentSku.getOnline() == BSSC.UNSHELVE) {
-				if(kindSize > 1){
-					checkResult = ResultCodeEnum.PART_GOODS_IS_CHANGE;
-				}else{
-					checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
-				}
+				checkFlag = false;
 			} else if (currentSku.getOnlinePrice().compareTo(item.getSkuPrice()) > 0) {
-				if(kindSize > 1){
-					checkResult = ResultCodeEnum.PART_GOODS_IS_CHANGE;
-				}else{
-					checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
-				}
+				checkFlag = false;
 			} else if (!currentSku.getUpdateTime().equals(item.getUpdateTime())) {
+				checkFlag = false;
+			}
+			//检查不合法
+			if(!checkFlag){
 				if(kindSize > 1){
 					checkResult = ResultCodeEnum.PART_GOODS_IS_CHANGE;
 				}else{
 					checkResult = ResultCodeEnum.GOODS_IS_CHANGE;
 				}
-			}
-			
-			if(checkResult != ResultCodeEnum.SUCCESS){
 				break;
 			}
 		}

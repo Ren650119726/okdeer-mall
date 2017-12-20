@@ -141,7 +141,7 @@ public class CurrentStoreSkuBo {
 	private SpuTypeEnum spuType;
 	
 	/**
-	 * 绑定类型, 0:普通商品 1:制单组合 2:制单拆分  3:捆绑商品 4:自动转货
+	 * 绑定类型, 0:普通商品 1:制单组合 2:制单拆分  3:捆绑商品 4:自动转货,5:满赠 6：换购商品
 	 */
 	private SkuBindType bindType;
 
@@ -177,6 +177,11 @@ public class CurrentStoreSkuBo {
 	 * 商品最后更新时间
 	 */
 	private String updateTime;
+	
+	/**
+	 * N件X元优惠价格，不能分摊到单价上去
+	 */
+	private BigDecimal preferentialPrice;
 
 	/**
 	 * 到店消费商品有效截止时间
@@ -185,7 +190,8 @@ public class CurrentStoreSkuBo {
 
 	public BigDecimal getTotalAmount() {
 		BigDecimal totalAmount = BigDecimal.valueOf(0);
-		totalAmount = totalAmount.add(onlinePrice.multiply(BigDecimal.valueOf(quantity)));
+		//去除如N件X元不计算 优惠的价格
+		totalAmount = totalAmount.add(onlinePrice.multiply(BigDecimal.valueOf(quantity))).subtract(preferentialPrice);
 		return totalAmount;
 	}
 
@@ -474,6 +480,14 @@ public class CurrentStoreSkuBo {
 
 	public void setSpuCategoryId(String spuCategoryId) {
 		this.spuCategoryId = spuCategoryId;
+	}
+
+	public BigDecimal getPreferentialPrice() {
+		return preferentialPrice;
+	}
+
+	public void setPreferentialPrice(BigDecimal preferentialPrice) {
+		this.preferentialPrice = preferentialPrice;
 	}
 
 }
