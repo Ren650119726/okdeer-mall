@@ -106,9 +106,11 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 		String storeActivityId = paramDto.getStoreActivityId();
 		String activityItemId = paramDto.getStoreActivityItemId();
 		//不存在活动id或梯度说明不存在活动 
-		if(StringUtils.isBlank(activityItemId) || StringUtils.isBlank(storeActivityId)){
+		if(StringUtils.isBlank(activityItemId) || StringUtils.isBlank(storeActivityId) 
+				|| CollectionUtils.isEmpty(paramDto.getSkuList())){
 			return;
 		}
+		
 		// 查询活动是否信息
 		ActivityDiscount activity = activityDiscountMapper.findById(storeActivityId);
 		if(activity == null || activity.getStatus() != ActivityDiscountStatus.ing){
@@ -118,6 +120,11 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 		ActivityCloudStoreParamDto param= new ActivityCloudStoreParamDto();
 		param.setActivityId(storeActivityId);
 		param.setStoreId(paramDto.getStoreId());
+		List<String> skuIds =  Lists.newArrayList();
+		paramDto.getSkuList().forEach(e ->{
+			skuIds.add(e.getStoreSkuId());
+		});
+		param.setStoreSkuIdList(skuIds);
 		param.setStoreInfo((StoreInfo)paramDto.get("storeInfo"));
 		//查询验证活动及店铺是否匹配
 		ActivityCloudStoreResultDto result = activityCloudStoreService.getCloudStoreActivity(param);
@@ -191,7 +198,7 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 		}
 		String multiItemId = paramDto.getStoreActivityMultiItemId();
 		//如果为N件x元
-		if(type == ActivityTypeEnum.NJXY &&  StringUtils.isNotBlank(multiItemId)){
+		if(type == ActivityTypeEnum.NJXY &&  StringUtils.isBlank(multiItemId)){
 			resp.setResult(ResultCodeEnum.ILLEGAL_PARAM);
 			return false;
 		}
@@ -204,7 +211,7 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 			}
 		});
 		//传入参数为空或梯度匹配为空
-		if(paramDto.get(ACTIVITY_ITEM_INFO) == null || CollectionUtils.isNotEmpty(paramDto.getSkuList())){
+		if(paramDto.get(ACTIVITY_ITEM_INFO) == null || CollectionUtils.isEmpty(paramDto.getSkuList())){
 			resp.setResult(ResultCodeEnum.ILLEGAL_PARAM);
 			return false;
 		}
@@ -230,33 +237,16 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 		ActivityCloudItemReultDto item = (ActivityCloudItemReultDto) paramDto.get(ACTIVITY_ITEM_INFO);
 		//订单满足多少金额
 		BigDecimal toatalPrice = BigDecimal.ZERO;
-		//N件X元需要满足多少钱
-		BigDecimal toatalActPrice = BigDecimal.ZERO;
 		//攻击多少件 //记录换购或加价购数量
 		int total = 0;
 		int otherToltal = 0;
 		List<ActivityDiscountItemRel> reList = Lists.newArrayList();
-		//N件x元的均摊价格
-		Queue<BigDecimal> dividePriceQueue = new LinkedList<>();
 		//查询梯度下加价购或满赠商品
 		if(type != ActivityTypeEnum.NJXY){
 			reList = activityDiscountItemRelMapper.findNotNormalById(item.getActivityId(), item.getId());
-		}else if(item.getPiece() != null && StringUtils.isNotBlank(item.getPrice())){
-			toatalActPrice = new BigDecimal(item.getPrice());
-			//均摊价格 最后一个价格均摊
-			BigDecimal piecePrice = toatalActPrice.divide(new BigDecimal(item.getPiece()), 1);
-			for(int i=0;i < item.getPiece();i++){
-				if(i == (item.getPiece()-1)){
-					dividePriceQueue.add(toatalActPrice);
-				}
-				dividePriceQueue.add(piecePrice);
-				//减掉均摊，剩余放在最后一个价格中
-				toatalActPrice = toatalActPrice.multiply(piecePrice);
-			}
-			
 		}
 		
-		boolean isNormal = false;
+		boolean isNormal = true;
 		//缓存需要剔除的赠品或加价购商品
 		List<PlaceOrderItemDto> itemChangeDto = Lists.newArrayList();
 		//N件X元提交的商品
@@ -274,8 +264,8 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 					if(type == ActivityTypeEnum.NJXY ){
 						multiItemList.add(itemDto);
 					}
-					toatalPrice.add(itemDto.getSkuPrice());
-					total++;
+					toatalPrice = toatalPrice.add(itemDto.getSkuPrice().multiply(new BigDecimal(itemDto.getQuantity())));
+					total = total + itemDto.getQuantity();
 				} 
 			
 			//如果为1说是参加了活动的满赠商品  如果为2说是参加了活动的加价购商品
@@ -298,27 +288,62 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 			//根据价格比较反序
 			Comparator<PlaceOrderItemDto> comparator = (item1,item2) -> item1.getSkuPrice().compareTo(item2.getSkuPrice());
 			multiItemList.sort(comparator.reversed());
-			for(PlaceOrderItemDto temp : multiItemList){
-				//均摊分配完就不进行设置优惠了
-				if(CollectionUtils.isEmpty(dividePriceQueue)){
-					continue;
-				}
-				BigDecimal preferentialPrice = BigDecimal.ZERO;
-				for(int i=0 ;i < temp.getQuantity(); i++){
-					//获得第一个并移除
-					preferentialPrice.add(dividePriceQueue.poll());
-				}
-				//设置这个商品的优惠价格 multiItemList中元素就是paramDto.getSkuList()的对象，所以等于直接缓存
-				temp.setPreferentialPrice(preferentialPrice);
-			}
-			
-			return total >= item.getPiece() && StringUtils.isBlank(item.getPrice())
+			//循环获得添加要计算的价格,并返回总优惠金额
+			BigDecimal multiPrefere = countPrefereMulti(multiItemList, item.getPiece(), new BigDecimal(item.getPrice()));
+			paramDto.put("multiPreferePrice", multiPrefere.toString());
+			return total >= item.getPiece() && StringUtils.isNotBlank(item.getPrice())
 					&& toatalPrice.compareTo(new BigDecimal(item.getPrice())) >= 0;
 		}
 		//否则为满送或加价购 价格是否超过限制要求，且订单最多换购及赠送
-		return StringUtils.isBlank(item.getLimitOrderAmount()) 
+		return StringUtils.isNotBlank(item.getLimitOrderAmount()) 
 				&& toatalPrice.compareTo(new BigDecimal(item.getLimitOrderAmount())) >= 0 
 				&& otherToltal <= item.getOrderMaxCount();
+	}
+	
+	/**
+	 * @Description: 循环获得添加要计算的价格
+	 * @param multiItemList N件X元集合
+	 * @param piece N件
+	 * @param price X元
+	 * @author tuzhd
+	 * @date 2017年12月20日
+	 */
+	private BigDecimal countPrefereMulti(List<PlaceOrderItemDto> multiItemList,int piece,BigDecimal price){
+		//循环获得添加要计算的价格
+		BigDecimal totalPrice = BigDecimal.ZERO;
+		int goodsCount = piece;
+		for(PlaceOrderItemDto temp : multiItemList){
+			for(int i=0 ;i < temp.getQuantity(); i++){
+				if(goodsCount == 0){
+					break;
+				}
+				//添加要计算的价格
+				totalPrice = totalPrice.add(temp.getSkuPrice());
+				goodsCount--;
+			}
+		}
+		
+		//已分配的优惠金额
+		BigDecimal hadPrice =BigDecimal.ZERO;
+		//在循环计算分摊优惠
+		for(PlaceOrderItemDto temp : multiItemList){
+			BigDecimal preferentialPrice = BigDecimal.ZERO;
+			for(int i=0 ;i < temp.getQuantity(); i++){
+				if(piece == 0){
+					break;
+				}
+				BigDecimal actPrice = temp.getSkuPrice().divide(totalPrice,2).multiply(price);
+				//计算商品的优惠价格 //最后优惠 等于总金额 - X元 - 已优惠金额
+				BigDecimal prefer = piece > 1 ? temp.getSkuPrice().subtract(actPrice) : totalPrice.subtract(price).subtract(hadPrice);
+				preferentialPrice = preferentialPrice.add(prefer);
+				hadPrice = hadPrice.add(prefer);
+				piece--;
+				
+			}
+			//设置这个商品的优惠价格 multiItemList中元素就是paramDto.getSkuList()的对象，所以等于直接缓存
+			temp.setPreferentialPrice(preferentialPrice);
+		}
+		return hadPrice;
 	}
 	
 	/**
