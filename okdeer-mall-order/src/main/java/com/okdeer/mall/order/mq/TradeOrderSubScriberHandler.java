@@ -63,12 +63,10 @@ public class TradeOrderSubScriberHandler {
 	 * @date 2017年1月11日
 	 */
 	public void activityAddPrizeCcount(TradeOrder tradeOrder)throws Exception{
-		logger.info("订单完成后增加抽奖次数：{}",JsonMapper.nonEmptyMapper().toJson(tradeOrder));
 		SysBuyerExt user = sysBuyerExtService.findByUserId(tradeOrder.getUserId());
 		if(user != null ){
 			//获得用户每日订单排序值，属为前三单可以抽奖
-			int orderNumber = getUserOrderByDay(tradeOrder, user.getId());
-			logger.info("订单完成后增加抽奖次数：{}",JsonMapper.nonEmptyMapper().toJson(orderNumber));
+			int orderNumber = getUserOrderByDay(tradeOrder, user.getUserId());
 			if(orderNumber > 5){
 				return;
 			}
@@ -112,22 +110,10 @@ public class TradeOrderSubScriberHandler {
  		param.put("status", OrderStatusEnum.HAS_BEEN_SIGNED);
  		param.put("startReceivedTime", DateUtils.getDateStart(new Date()));
  		param.put("endReceivedTime", DateUtils.getDateEnd(new Date()));
- 		List<TradeOrder> list = tradeOrderService.selectByParams(param);
- 		logger.info("订单完成后增加抽奖次数：{}",JsonMapper.nonEmptyMapper().toJson(list));
  		param.put("actualAmount", 10);
  		param.put("orderBy", "received_time");
- 		List<TradeOrder> list2 = tradeOrderService.selectByParams(param);
- 		logger.info("订单完成后增加抽奖次数：{}",JsonMapper.nonEmptyMapper().toJson(list2));
- 		//12月套鹿活动注释
- 		int index = 0;
- 		if(CollectionUtils.isEmpty(list)){
-			for(TradeOrder tradeOrder : list){
-				if(tradeOrder.getActualAmount().compareTo(new BigDecimal(10))>= 0){
-					index++;
-				}
-			}
- 		}
- 		return index;
+ 		List<TradeOrder> list = tradeOrderService.selectByParams(param);
+ 		return list.size();
 	}
 	
 	/**
