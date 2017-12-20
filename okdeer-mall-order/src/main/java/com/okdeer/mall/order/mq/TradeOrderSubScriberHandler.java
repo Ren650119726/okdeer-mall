@@ -1,6 +1,5 @@
 package com.okdeer.mall.order.mq;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.okdeer.base.common.utils.DateUtils;
-import com.okdeer.base.common.utils.PageUtils;
+import com.okdeer.base.common.utils.mapper.JsonMapper;
 import com.okdeer.mall.activity.coupons.service.ActivityCouponsRecordService;
 import com.okdeer.mall.activity.prize.entity.ActivityLuckDraw;
 import com.okdeer.mall.activity.prize.entity.ActivityLuckDrawVo;
@@ -63,6 +62,7 @@ public class TradeOrderSubScriberHandler {
 	 * @date 2017年1月11日
 	 */
 	public void activityAddPrizeCcount(TradeOrder tradeOrder)throws Exception{
+		logger.info("订单完成后增加抽奖次数：{}",JsonMapper.nonEmptyMapper().toJson(tradeOrder));
 		SysBuyerExt user = sysBuyerExtService.findByUserId(tradeOrder.getUserId());
 		if(user != null ){
 			//获得用户每日订单排序值，属为前三单可以抽奖
@@ -75,21 +75,22 @@ public class TradeOrderSubScriberHandler {
 			ActivityLuckDrawVo vo =new ActivityLuckDrawVo();
 			vo.setStatus(SeckillStatusEnum.ing);
 			List<ActivityLuckDraw> al = activityLuckDrawService.findLuckDrawList(vo);
+			logger.info("订单完成后增加抽奖次数：{}",JsonMapper.nonEmptyMapper().toJson(al));
 			if(CollectionUtils.isEmpty(al)){
 				return;
 			}
 			
 			//获取当前抽奖活动id集合
-			List<String> ids = new ArrayList<String>();
+			/*List<String> ids = new ArrayList<String>();
 			al.forEach(e -> {
 				ids.add(e.getId());
-			});
+			});*/
 			// xuzq 12月套鹿活动 不计算抽奖次数 
 			//int count = activityDrawRecordService.findCountByUserIdAndIds(tradeOrder.getUserId(), ids);
 			//查询剩余的抽奖次数
 			//if((count+user.getPrizeCount()) < 15){
 				//执行充值人送代金劵及抽奖次数 1
-				sysBuyerExtService.updateAddPrizeCount(tradeOrder.getUserId(), 1);
+			sysBuyerExtService.updateAddPrizeCount(tradeOrder.getUserId(), 1);
 			//}
 		}
 			
@@ -109,9 +110,11 @@ public class TradeOrderSubScriberHandler {
  		param.put("status", OrderStatusEnum.HAS_BEEN_SIGNED);
  		param.put("startReceivedTime", DateUtils.getDateStart(new Date()));
  		param.put("endReceivedTime", DateUtils.getDateEnd(new Date()));
+ 		param.put("actualAmount", 10);
  		param.put("orderBy", "received_time");
  		List<TradeOrder> list = tradeOrderService.selectByParams(param);
- 		int index = 0;
+ 		//12月套鹿活动注释
+ 		/*int index = 0;
  		if(CollectionUtils.isEmpty(list)){
 			for(TradeOrder tradeOrder : list){
 				index++;
@@ -119,8 +122,8 @@ public class TradeOrderSubScriberHandler {
 					break;
 				}
 			}
- 		}
- 		return index;
+ 		}*/
+ 		return list.size();
 	}
 	
 	/**
