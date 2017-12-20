@@ -1992,23 +1992,5 @@
 		</where>
 		ORDER BY refunds.create_time DESC
 	</select>
-	<select id="findRefundList" parameterType="com.okdeer.mall.order.dto.OrderRefundQueryParamDto"
-		resultMap="BaseResultMap">
-		SELECT <include refid="Refunds_Column_List" />
-		from trade_order_refunds refunds
-		WHERE refunds.disabled = 0
-		<if test="null != buyerUserId and '' != buyerUserId">
-			AND refunds.user_id = #{buyerUserId, jdbcType=VARCHAR}
-		</if>
-		<if test="null != totalAmount and '' != totalAmount">
-			AND refunds.total_amount <![CDATA[>=]]>  #{totalAmount, jdbcType=DECIMAL}
-		</if>
-		<if test="null != startTime and startTime != ''">
-			<![CDATA[AND refunds.create_time >= #{startTime, jdbcType=VARCHAR}]]>
-		</if>
-		<if test="null != endTime and endTime != ''">
-			<![CDATA[AND refunds.create_time <= #{endTime, jdbcType=VARCHAR}]]>
-		</if>
-		ORDER BY refunds.create_time DESC
-	</select>
+	
 </mapper>
