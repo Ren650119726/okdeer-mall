@@ -173,7 +173,7 @@
         	<foreach collection="idList" open="(" close=")" separator="," item="item">
 	  	 		#{item}
 	  	 	</foreach>
-	  	ORDER BY limit_order_amcount
+	  	ORDER BY limit_order_amount
     </select>
     
 	
