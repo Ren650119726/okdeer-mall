@@ -684,9 +684,4 @@ public class TradeOrderRefundsApiImpl implements TradeOrderRefundsApi {
 		return tradeOrderRefundsDto;
 	}
 
-	@Override
-	public List<TradeOrderRefunds> findRefundList(OrderRefundQueryParamDto dto) {
-		return tradeOrderRefundsService.findRefundList(dto);
-	}
-
 }

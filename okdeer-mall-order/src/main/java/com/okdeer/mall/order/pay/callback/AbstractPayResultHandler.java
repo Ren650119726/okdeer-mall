@@ -1,5 +1,6 @@
 package com.okdeer.mall.order.pay.callback;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -182,9 +183,13 @@ public abstract class AbstractPayResultHandler {
 				//下单赠送抽奖活动的抽奖次数  九月活动需求 改为已完成订单（原来为消费即可获取抽奖次数）
 			}
 			// 3612 会员卡线下订单支付完成后 可以获取抽奖机会
-			if(tradeOrder.getOrderResource() == OrderResourceEnum.MEMCARD){
-				//有规定时间和每天领取次数 在这个方法里面都有限制 这里不需要判断
-				tradeOrderSubScriberHandler.activityAddPrizeCcount(tradeOrder);
+			// xuzq 12月套鹿活动 不限制订单类型 会员卡 便利店扫码购 和微信小程序扫码购满足条件都可以获取次数
+			if(tradeOrder.getOrderResource() == OrderResourceEnum.MEMCARD 
+					|| tradeOrder.getOrderResource() == OrderResourceEnum.SWEEP || tradeOrder.getOrderResource() == OrderResourceEnum.WECHAT_MIN){
+				if(tradeOrder.getActualAmount().compareTo(new BigDecimal(10)) >= 0){
+					//有规定时间和每天领取次数 在这个方法里面都有限制 这里不需要判断
+					tradeOrderSubScriberHandler.activityAddPrizeCcount(tradeOrder);
+				}
 			}
 		} catch (Exception e) {
 			logger.error(ExceptionConstant.COUPONS_REGISTE_RETURN_FAIL, tradeOrder.getTradeNum(), e);

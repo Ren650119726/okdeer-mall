@@ -361,12 +361,4 @@ public interface TradeOrderRefundsMapper extends IBaseCrudMapper {
 	List<TradeOrderRefunds> findList(TradeOrderRefundsParamDto tradeOrderRefundsParam);
 	// end v1.1.0 add by zengjz 20160914
 
-	/**
-	 * @Description: 条件查询退款单列表
-	 * @param dto
-	 * @return   
-	 * @author xuzq01
-	 * @date 2017年12月14日
-	 */
-	List<TradeOrderRefunds> findRefundList(OrderRefundQueryParamDto dto);
 }
