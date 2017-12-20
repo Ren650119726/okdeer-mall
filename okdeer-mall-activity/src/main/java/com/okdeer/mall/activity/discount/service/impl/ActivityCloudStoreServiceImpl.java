@@ -104,7 +104,7 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 		List<String> idList = Lists.newArrayList();
 		actList.forEach(e -> idList.add(e.getId()));
 		//2、根据商品查询其一级导航分类 商品id,导航分类id
-		Map<String,String> skuMap = goodsStoreSkuServiceApi.findCategoryBySkuIds(paramDto.getStoreSkuIdList());
+		Map<String,List<String>> skuMap = goodsStoreSkuServiceApi.findCategoryBySkuIds(paramDto.getStoreSkuIdList(),paramDto.getStoreId());
 		//3、根据店铺查询符合要求的活动梯度 
 		List<ActivityDiscountItem> itemList = activityDiscountItemMapper.findByActivityIdList(idList);
 		//4、查询业务关联及N件X元的梯度表
@@ -123,7 +123,7 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 	 */
 	private ActivityCloudStoreResultDto combActivityItemList(List<ActivityDiscount> actList,
 			List<ActivityDiscountItem> itemList,List<ActivityDiscountItemRel> relList,
-			List<ActivityDiscountMultiItem> multiList,List<String> skuList,Map<String,String> skuMap){
+			List<ActivityDiscountMultiItem> multiList,List<String> skuList,Map<String,List<String>> skuMap){
 
 		//满赠梯度集合
 		List<ActivityCloudItemReultDto> giveItemList = Lists.newArrayList();
@@ -138,28 +138,29 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 		}
 		for(ActivityDiscount discount : actList){
 			for(ActivityDiscountItem item : itemList){
-				//获取梯度信息
-				ActivityCloudItemReultDto itemResult = BeanMapper.map(item, ActivityCloudItemReultDto.class);
-				//设置活动类型
-				itemResult.setType(discount.getType());
-				//组合符合梯度的购物车商品
-				itemResult.setSkuIdList(combStoreSku(item, relList, skuList, skuMap));
-				
-				switch (discount.getType()) {
-				case MMS:
-					giveItemList.add(itemResult);
-					break;
-				case JJG:
-					priceItemList.add(itemResult);
-					break;
-				case NJXY:
-					//组装N件x元
-					multiItemList.addAll(combMultiItem(itemResult, multiList));
-					break;
-				default:
-					break;
+				if(item.getActivityId().equals(discount.getId())){
+					//获取梯度信息
+					ActivityCloudItemReultDto itemResult = BeanMapper.map(item, ActivityCloudItemReultDto.class);
+					//设置活动类型
+					itemResult.setType(discount.getType().ordinal());
+					//组合符合梯度的购物车商品
+					itemResult.setSkuIdList(combStoreSku(item, relList, skuList, skuMap));
+					
+					switch (discount.getType()) {
+					case MMS:
+						giveItemList.add(itemResult);
+						break;
+					case JJG:
+						priceItemList.add(itemResult);
+						break;
+					case NJXY:
+						//组装N件x元
+						multiItemList.addAll(combMultiItem(itemResult, multiList));
+						break;
+					default:
+						break;
+					}
 				}
-
 			}
 		}
 		return new ActivityCloudStoreResultDto(giveItemList, priceItemList, multiItemList);
@@ -204,7 +205,7 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 	 * @date 2017年12月8日
 	 */
 	private List<String> combStoreSku(ActivityDiscountItem item,List<ActivityDiscountItemRel> relList,
-										List<String> skuList,Map<String,String> skuMap){
+										List<String> skuList,Map<String,List<String>> skuMap){
 		//包含的购物车商品
 		List<String> containList = Lists.newArrayList();
 		//如果是商品限制：0:不限，1：指定导航分类，2：指定商品
@@ -218,24 +219,23 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 		relList.forEach(rel -> {
 			//符合这个梯度的商品，购物车的skuList包含， categoryInvert为包含，type不为赠品 
 			if(item.getId().equals(rel.getActivityItemId()) && rel.getType() != 1){
-				//如果是商品限制：0:不限，1：指定导航分类，2：指定商品
-				if(item.getLimitSku() == 2){
-					//导航分类是否包含0包含 1不包
-					if(item.getCategoryInvert() == 0 && skuList.contains(rel.getBusinessId())){
-						containList.add(rel.getBusinessId());
-					}else if(item.getCategoryInvert() == 1 && !skuList.contains(rel.getBusinessId())){
-						containList.add(rel.getBusinessId());
-					}
-				}else if(item.getLimitSku() == 1 ){
-					//导航分类是否包含0包含 1不包
-					for(Map.Entry<String,String> entry : skuMap.entrySet()){
-						if(item.getCategoryInvert() == 0 && entry.getValue().equals(rel.getBusinessId())){
+				//导航分类是否包含0包含 1不包
+				for(Map.Entry<String,List<String>> entry : skuMap.entrySet()){
+					//如果是商品限制：0:不限，1：指定导航分类，2：指定商品
+					if(item.getLimitSku() == 2){
+						if(item.getCategoryInvert() == 0 && rel.getBusinessId().equals(entry.getValue().get(0))){
 							containList.add(entry.getKey());
-						}else if(item.getCategoryInvert() == 1 && !entry.getValue().equals(rel.getBusinessId())){
+						}else if(item.getCategoryInvert() == 1 && !rel.getBusinessId().equals(entry.getValue().get(0))){
+							containList.add(entry.getKey());
+						}
+					}else if(item.getLimitSku() == 1 ){
+						//导航分类是否包含0包含 1不包
+						if(item.getCategoryInvert() == 0 && rel.getBusinessId().equals(entry.getValue().get(1))){
+							containList.add(entry.getKey());
+						}else if(item.getCategoryInvert() == 1 && !rel.getBusinessId().equals(entry.getValue().get(1))){
 							containList.add(entry.getKey());
 						}
 					}
-					
 				}
 			}
 		});

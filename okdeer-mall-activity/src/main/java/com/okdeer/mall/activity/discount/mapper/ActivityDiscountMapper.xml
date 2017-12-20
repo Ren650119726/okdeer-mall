@@ -555,7 +555,7 @@
   </select>
   
     <!-- 注：V2.7版本查询满赠/加价购/N件X元 活动 -->
-  <select id="findByStoreAndArea" parameterType="com.okdeer.mall.activity.dto.ActivityParamDto" resultType="string">
+  <select id="findByStoreAndArea" parameterType="com.okdeer.mall.activity.dto.ActivityParamDto" resultMap="BaseResultMap" >
        SELECT DISTINCT <include refid="Base_Column_List" />
        FROM activity_discount t
        WHERE t.status = 1 AND
