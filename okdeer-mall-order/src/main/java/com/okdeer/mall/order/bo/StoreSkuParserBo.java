@@ -119,6 +119,11 @@ public class StoreSkuParserBo {
 	private BigDecimal totalItemAmount = BigDecimal.valueOf(0.0);
 	
 	/**
+	 * 订单项优惠店铺总金额
+	 */
+	private BigDecimal totalStorePereferAmount = BigDecimal.valueOf(0.0);
+	
+	/**
 	 * 缓存请求的低价商品的活动数量
 	 */
 	private Map<String,Integer> skuActNumMap = new HashMap<String,Integer>();
@@ -139,7 +144,7 @@ public class StoreSkuParserBo {
 	private BigDecimal fare = BigDecimal.valueOf(0.0);
 	
 	/**
-	 * 是否是低价活动订单
+	 * 是否是低价活动订单  N件X元或加价商品 作为低阶计算优惠
 	 */
 	private boolean isLowFavour;
 	
@@ -200,6 +205,11 @@ public class StoreSkuParserBo {
 	 * 运费代金券活动Id
 	 */
 	private String fareActivityId;
+	
+	/**
+	 * 店铺活动类型(5:特惠活动6:秒杀活动7:低价活动,9:满赠，10:加价购，11:N件X元)
+	 */
+	private ActivityTypeEnum storeActivityType;
 	
 	/**
 	 * 使用的代金券列表信息 
@@ -387,7 +397,8 @@ public class StoreSkuParserBo {
 	 * @author maojj
 	 * @date 2017年1月4日
 	 */
-	public void loadBuySkuList(List<PlaceOrderItemDto> buySkuList) {
+	public void loadBuySkuList(PlaceOrderParamDto paramDto) {
+		List<PlaceOrderItemDto> buySkuList = paramDto.getSkuList();
 		CurrentStoreSkuBo skuBo = null;
 		for (PlaceOrderItemDto item : buySkuList) {
 			skuBo = this.currentSkuMap.get(item.getStoreSkuId());
@@ -402,34 +413,50 @@ public class StoreSkuParserBo {
 			BigDecimal itemPrice = skuBo.getOnlinePrice().multiply(BigDecimal.valueOf(skuBo.getQuantity()));
 			//如果为加价购商品或N件X元 减掉优惠金额 start tuzhd 2017-12-14
 			if(item.getSkuActType() == ActivityTypeEnum.NJXY.ordinal()){
+				//设置店铺活动类型
+				setStoreActivityType(ActivityTypeEnum.enumValueOf(item.getSkuActType()));
 				skuBo.setActivityType(item.getSkuActType());
+				skuBo.setPreferentialPrice(item.getPreferentialPrice());
+				skuBo.setActivityId(paramDto.getStoreActivityId());
 				//设置商品活动类型   其优惠金额不能分摊到活动价格上
-				this.totalItemAmount = totalItemAmount.add(itemPrice).subtract(item.getPreferentialPrice());
+				this.totalStorePereferAmount = totalStorePereferAmount.add(item.getPreferentialPrice());
+				this.totalAmountInLowPrice = totalAmountInLowPrice.add(item.getPreferentialPrice());
 			//属于非正常购买商品，因为验证过合法,判断null兼容
 			}else if((item.getSkuActType() == ActivityTypeEnum.JJG.ordinal() || 
 					item.getSkuActType() == ActivityTypeEnum.MMS.ordinal())){
 				skuBo.setActivityType(item.getSkuActType());
+				//设置店铺活动类型
+				setStoreActivityType(ActivityTypeEnum.enumValueOf(item.getSkuActType()));
+				skuBo.setActivityId(paramDto.getStoreActivityId());
 				//设置商品活动类型 
-				if(item.getActivityPriceType() !=null && 
-						item.getActivityPriceType() != ActivityDiscountItemRelType.NORMAL_GOODS.ordinal()){
+				if(item.getActivityPriceType() !=null){
 					skuBo.setActivityPriceType(item.getActivityPriceType());
 					skuBo.setActPrice(item.getSkuActPrice());
 					//满赠或换购商品记录器活动价格
-					itemPrice = item.getSkuActPrice().multiply(BigDecimal.valueOf(skuBo.getQuantity()));
-					this.totalItemAmount =totalItemAmount.add(itemPrice);
-					//需要排除参与享受优惠的金额
-					this.totalAmountInLowPrice = this.totalAmountInLowPrice.add(itemPrice);
+					BigDecimal itemActPrice = item.getSkuActPrice().multiply(BigDecimal.valueOf(skuBo.getQuantity()));
+					if(item.getActivityPriceType() == ActivityDiscountItemRelType.JJG_GOODS.ordinal()){
+						BigDecimal perefer =itemPrice.subtract(itemActPrice);
+						skuBo.setPreferentialPrice(perefer);
+						//设置商品活动类型   其优惠金额不能分摊到活动价格上
+						this.totalStorePereferAmount = totalStorePereferAmount.add(perefer);
+						//需要排除参与享受优惠的金额
+						this.totalAmountInLowPrice = totalAmountInLowPrice.add(itemActPrice);
+					}else{
+						itemPrice = itemActPrice;
+					}
 				}
-			}else{
-				this.totalItemAmount = totalItemAmount.add(itemPrice);
 			}
+			this.totalItemAmount = totalItemAmount.add(itemPrice);
 			// end tuzhd 2017-12-14
 
 			this.totalQuantity += skuBo.getQuantity();
 			
 			this.skuActNumMap.put(item.getStoreSkuId(), Integer.valueOf(item.getSkuActQuantity()));
-			if (item.getSkuActType() == ActivityTypeEnum.LOW_PRICE.ordinal() && item.getSkuActQuantity() > 0
-					&& skuBo.getActivityType() == ActivityTypeEnum.NO_ACTIVITY.ordinal()) {
+			
+			if (skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal()){
+				//设置店铺活动类型
+				setStoreActivityType(ActivityTypeEnum.LOW_PRICE);
+			}else if (item.getSkuActType() == ActivityTypeEnum.LOW_PRICE.ordinal() && item.getSkuActQuantity() > 0) {
 				// 如果购买请求中，存在商品为低价商品类型，但是经过后台解析之后，该商品活动类型为未参加活动商品，则标识低价活动当前已经结束。
 				this.isCloseLow = true;
 			}
@@ -507,6 +534,13 @@ public class StoreSkuParserBo {
 						.multiply(BigDecimal.valueOf(skuBo.getSkuActQuantity())));
 				this.totalAmountInLowPrice = this.totalAmountInLowPrice
 						.add(skuBo.getOnlinePrice().multiply(BigDecimal.valueOf(skuBo.getSkuActQuantity())));
+				
+			//N件X元或加价商品 作为低阶计算优惠
+			}else if(skuBo.getActivityType() == ActivityTypeEnum.NJXY.ordinal() 
+					|| (skuBo.getActivityPriceType() !=null && skuBo.getActivityPriceType() == ActivityDiscountItemRelType.JJG_GOODS.ordinal()) ){
+				this.isLowFavour = true;
+				this.lowActivityId = skuBo.getActivityId();
+				this.totalLowFavour =totalLowFavour.add(skuBo.getPreferentialPrice());
 			}
 		}
 		return false;
@@ -888,5 +922,26 @@ public class StoreSkuParserBo {
 	public Map<String, GoodsStoreSkuStock> getBindStockMap() {
 		return bindStockMap;
 	}
+
+	
+	public BigDecimal getTotalStorePereferAmount() {
+		return totalStorePereferAmount;
+	}
+
+	
+	public void setTotalStorePereferAmount(BigDecimal totalStorePereferAmount) {
+		this.totalStorePereferAmount = totalStorePereferAmount;
+	}
+
+	
+	public ActivityTypeEnum getStoreActivityType() {
+		return storeActivityType;
+	}
+
+	
+	public void setStoreActivityType(ActivityTypeEnum storeActivityType) {
+		this.storeActivityType = storeActivityType;
+	}
+	
 	
 }
