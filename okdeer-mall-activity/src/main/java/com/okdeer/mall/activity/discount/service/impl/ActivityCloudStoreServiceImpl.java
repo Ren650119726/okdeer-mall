@@ -15,6 +15,7 @@ import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.common.utils.JsonDateUtil;
+import com.okdeer.mall.activity.coupons.enums.ActivityDiscountItemRelType;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudItemReultDto;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudStoreParamDto;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudStoreResultDto;
@@ -217,8 +218,8 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 		}
 		//组合商品
 		relList.forEach(rel -> {
-			//符合这个梯度的商品，购物车的skuList包含， categoryInvert为包含，type不为赠品 
-			if(item.getId().equals(rel.getActivityItemId()) && rel.getType() != 1){
+			//符合这个梯度的商品，购物车的skuList包含， categoryInvert为包含，type不为赠品 及加价购商品
+			if(item.getId().equals(rel.getActivityItemId()) && rel.getType() == ActivityDiscountItemRelType.NORMAL_GOODS.ordinal()){
 				//导航分类是否包含0包含 1不包
 				for(Map.Entry<String,List<String>> entry : skuMap.entrySet()){
 					//如果是商品限制：0:不限，1：指定导航分类，2：指定商品
