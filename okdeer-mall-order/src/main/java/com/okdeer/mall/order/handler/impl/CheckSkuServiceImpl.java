@@ -112,7 +112,7 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		}
 		parserBo.setSkuIdList(skuIdList);
 		//加载购买商品列表  将提交商品数量到 当前店铺商品列表中及计算其总订单金额
-		parserBo.loadBuySkuList(paramDto.getSkuList());
+		parserBo.loadBuySkuList(paramDto);
 		// 缓存商品解析结果
 		paramDto.put("parserBo", parserBo);
 		//所有商品ID(包含捆绑商品中的成分商品)

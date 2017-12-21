@@ -77,7 +77,7 @@ public class CheckServSkuServiceImpl implements RequestHandler<PlaceOrderParamDt
 		if(paramDto.getOrderType() == PlaceOrderTypeEnum.SECKILL_ORDER){
 			parserBo.processSeckill();
 		}
-		parserBo.loadBuySkuList(paramDto.getSkuList());
+		parserBo.loadBuySkuList(paramDto);
 		List<GoodsStoreSkuStock> stockList = goodsStoreSkuStockApi.findByStoreSkuIdList(skuIdList);
 		parserBo.loadStockList(stockList);
 		// 检查请求的商品类型

@@ -38,6 +38,7 @@ import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.system.service.SysBuyerFirstOrderRecordService;
+import com.okdeer.mall.system.utils.ConvertUtil;
 
 /**
  * ClassName: CheckStoreActivityServiceImpl 
@@ -288,7 +289,7 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 			multiItemList.sort(comparator.reversed());
 			//循环获得添加要计算的价格,并返回总优惠金额
 			BigDecimal multiPrefere = countPrefereMulti(multiItemList, item.getPiece(), new BigDecimal(item.getPrice()));
-			paramDto.put("multiPreferePrice", multiPrefere.toString());
+			paramDto.put("multiPreferePrice", ConvertUtil.format(multiPrefere));
 			return total >= item.getPiece() && StringUtils.isNotBlank(item.getPrice())
 					&& toatalPrice.compareTo(new BigDecimal(item.getPrice())) >= 0;
 		}

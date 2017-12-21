@@ -197,7 +197,8 @@ public class CurrentStoreSkuBo {
 	public BigDecimal getTotalAmount() {
 		BigDecimal totalAmount = BigDecimal.valueOf(0);
 		//去除如N件X元不计算 优惠的价格
-		totalAmount = totalAmount.add(onlinePrice.multiply(BigDecimal.valueOf(quantity))).subtract(preferentialPrice);
+		totalAmount = preferentialPrice == null ? totalAmount.add(onlinePrice.multiply(BigDecimal.valueOf(quantity))) :
+				totalAmount.add(onlinePrice.multiply(BigDecimal.valueOf(quantity))).subtract(preferentialPrice);
 		return totalAmount;
 	}
 

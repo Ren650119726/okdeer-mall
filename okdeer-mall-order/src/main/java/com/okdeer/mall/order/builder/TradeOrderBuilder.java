@@ -389,7 +389,7 @@ public class TradeOrderBuilder {
 		// 店铺优惠
 		if(parserBo.isLowFavour()){
 			// 如果有低价优惠.记录店铺优惠类型和店铺优惠金额
-			tradeOrder.setStoreActivityType(ActivityTypeEnum.LOW_PRICE);
+			tradeOrder.setStoreActivityType(parserBo.getStoreActivityType());
 			tradeOrder.setStorePreferential(parserBo.getTotalLowFavour());
 			tradeOrder.setStoreActivityId(parserBo.getLowActivityId());
 		} else if (paramDto.getOrderType() == PlaceOrderTypeEnum.SECKILL_ORDER){
@@ -397,7 +397,7 @@ public class TradeOrderBuilder {
 			ActivitySeckill seckillInfo = (ActivitySeckill)paramDto.get("seckillInfo");
 			BigDecimal favourAmount = parserBo.getCurrentStoreSkuBo(seckillInfo.getStoreSkuId()).getOnlinePrice().subtract(seckillInfo.getSeckillPrice());
 			tradeOrder.setStorePreferential(favourAmount);
-		} else {
+		}else {
 			tradeOrder.setStorePreferential(BigDecimal.valueOf(0.0));
 		}
 		// 运费优惠
@@ -599,14 +599,32 @@ public class TradeOrderBuilder {
 			tradeOrderItem.setCreateTime(new Date());
 			tradeOrderItem.setServiceAssurance(
 					StringUtils.isEmpty(skuBo.getGuaranteed()) ? 0 : Integer.valueOf(skuBo.getGuaranteed()));
+			
 			if(tradeOrder.getType() == OrderTypeEnum.GROUP_ORDER){
 				// 如果是团购订单，服务保障默认为1天
 				tradeOrderItem.setServiceAssurance(1);
 			}
+			
+			// 订单项店铺优惠金额
+			BigDecimal storeFavourItem = BigDecimal.valueOf(0.0);
 			if(skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && skuBo.getSkuActQuantity() > 0){
 				tradeOrderItem.setStoreActivityType(ActivityTypeEnum.enumValueOf(skuBo.getActivityType()));
 				tradeOrderItem.setStoreActivityId(skuBo.getActivityId());
 				tradeOrderItem.setActivityQuantity(skuBo.getSkuActQuantity());
+				storeFavourItem = skuBo.getOnlinePrice().subtract(skuBo.getActPrice())
+						.multiply(BigDecimal.valueOf(skuBo.getSkuActQuantity()));
+			}else if(skuBo.getActivityType() == ActivityTypeEnum.SECKILL_ACTIVITY.ordinal()){
+				storeFavourItem = tradeOrder.getStorePreferential();
+					
+			//满赠、加价购、N件x元活动计算到店铺活动中
+			}else if(skuBo.getActivityType() == ActivityTypeEnum.MMS.ordinal() 
+					|| skuBo.getActivityType() == ActivityTypeEnum.JJG.ordinal()
+					|| skuBo.getActivityType() == ActivityTypeEnum.NJXY.ordinal()){
+				if(skuBo.getBindType() != SkuBindType.MMS){
+					storeFavourItem = skuBo.getPreferentialPrice();
+				}
+				tradeOrderItem.setStoreActivityType(ActivityTypeEnum.enumValueOf(skuBo.getActivityType()));
+				tradeOrderItem.setStoreActivityId(skuBo.getActivityId());
 			}else{
 				tradeOrderItem.setActivityType(paramDto.getActivityType().ordinal());
 				tradeOrderItem.setActivityId(paramDto.getActivityId());
@@ -623,19 +641,6 @@ public class TradeOrderBuilder {
 			tradeOrderItem.setTotalAmount(totalAmountOfItem);
 			// 计算订单项平台优惠金额
 			BigDecimal favourItem = BigDecimal.valueOf(0.0);
-			// 订单项店铺优惠金额
-			BigDecimal storeFavourItem = BigDecimal.valueOf(0.0);
-			if(skuBo.getActivityType() == ActivityTypeEnum.LOW_PRICE.ordinal() && skuBo.getSkuActQuantity() > 0){
-				storeFavourItem = skuBo.getOnlinePrice().subtract(skuBo.getActPrice())
-						.multiply(BigDecimal.valueOf(skuBo.getSkuActQuantity()));
-			}else if(skuBo.getActivityType() == ActivityTypeEnum.SECKILL_ACTIVITY.ordinal()){
-				storeFavourItem = tradeOrder.getStorePreferential();
-				
-			//加价购计算店铺优惠
-			}else if(skuBo.getBindType() == SkuBindType.JJG){
-				storeFavourItem = skuBo.getOnlinePrice().subtract(skuBo.getActPrice())
-						.multiply(BigDecimal.valueOf(skuBo.getQuantity()));
-			}
 			if (platformFavour.compareTo(referenceValue) > 0) {
 				// 如果有优惠的商品项不包含改商品，意味着该商品不享有平台优惠  2017-12-14 添加换购商品及赠送商品不享受平台优惠
 				if(!parserBo.getEnjoyFavourSkuIdList().contains(skuBo.getId()) || skuBo.getBindType() == SkuBindType.JJG 
