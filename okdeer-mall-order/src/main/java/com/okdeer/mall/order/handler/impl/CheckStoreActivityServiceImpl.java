@@ -3,9 +3,7 @@ package com.okdeer.mall.order.handler.impl;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 import javax.annotation.Resource;
 
