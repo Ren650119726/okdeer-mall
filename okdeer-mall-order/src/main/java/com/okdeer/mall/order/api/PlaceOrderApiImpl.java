@@ -189,7 +189,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		AppStoreDto appStoreDto = AppAdapter.convert(storeInfo);
 		if (parserBo != null) {
 			resp.getData().setOrderFare(ConvertUtil.format(parserBo.getFare()));
-			resp.getData().setFavour(ConvertUtil.format(parserBo.getTotalLowFavour()));
+			resp.getData().setFavour(ConvertUtil.format(parserBo.getTotalLowFavour().subtract(parserBo.getTotalStorePereferAmount())));
 		}
 		// 设置返回给App的店铺信息
 		resp.getData().setStoreInfo(appStoreDto);
