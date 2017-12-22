@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Lists;
+import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
@@ -19,6 +20,7 @@ import com.okdeer.mall.activity.coupons.enums.ActivityDiscountItemRelType;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudItemReultDto;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudStoreParamDto;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudStoreResultDto;
+import com.okdeer.mall.activity.discount.dto.ActivityGoodsParamDto;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountItem;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountItemRel;
@@ -264,4 +266,17 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 		return actDto;
 	}
 
+	/**
+	 * @Description: 获得买满送的商品列表
+	 * @param param   
+	 * @author tuzhd
+	 * @date 2017年12月22日
+	 */
+	@Override
+	public List<GoodsStoreActivitySkuDto> getGiveActivityGoods(ActivityGoodsParamDto param){
+		//查询赠品信息并将标准库id转为店铺商品id
+		return activityDiscountItemRelMapper.findGoodsByActivityId(param);
+		
+		
+	}
 }
