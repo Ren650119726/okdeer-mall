@@ -130,21 +130,18 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 		//如果查询到了梯度信息，说明活动与店铺匹配
 		switch (activity.getType()){
 			case MMS:
-				 paramDto.setActivityType(String.valueOf(ActivityTypeEnum.MMS.ordinal()));
 				 if(!checkItemInfo(result.getGiveItemList(), paramDto,resp, 
 						 ActivityDiscountItemRelType.MMS_GOODS,ActivityTypeEnum.MMS)){
 					 return;
 				 }
 				break;
 			case JJG:
-				paramDto.setActivityType(String.valueOf(ActivityTypeEnum.JJG.ordinal()));
 				if(!checkItemInfo(result.getPriceItemList(), paramDto,resp, 
 						ActivityDiscountItemRelType.JJG_GOODS,ActivityTypeEnum.JJG)){
 					return;
 				}
 				break;
 			case NJXY:
-				paramDto.setActivityType(String.valueOf(ActivityTypeEnum.NJXY.ordinal()));
 				//组装N件x元 
 				if(!checkItemInfo(result.getMultiItemList(), paramDto,resp, null,ActivityTypeEnum.NJXY)){
 					return;

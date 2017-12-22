@@ -179,7 +179,7 @@ public class CurrentStoreSkuBo {
 	private String updateTime;
 	
 	/**
-	 * 活动价格类型0 满赠商品、1加价购商品
+	 * 活动价格类型0 正常购买商品,1满赠商品、2加价购商品
 	 * v2.7 tuzhd 添加字段
 	 */   
 	private Integer activityPriceType;
@@ -243,10 +243,19 @@ public class CurrentStoreSkuBo {
 	}
 
 	public String getPropertiesIndb() {
+		return this.propertiesIndb;
+	}
+	
+	public String getPropertiesIndbSkuName() {
 		if (!StringUtils.isEmpty(this.propertiesIndb)) {
-			JSONObject propertiesJson = JSONObject.fromObject(this.propertiesIndb);
-			String skuProperties = propertiesJson.get("skuName").toString();
-			return skuProperties;
+			String skuProperties = this.propertiesIndb;
+			try{
+				JSONObject propertiesJson = JSONObject.fromObject(this.propertiesIndb);
+				skuProperties = propertiesJson.get("skuName").toString();
+				return skuProperties;
+			}catch(Exception e){
+				return this.propertiesIndb;
+			}
 		} else {
 			return "";
 		}

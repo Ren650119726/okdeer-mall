@@ -413,6 +413,7 @@ public class StoreSkuParserBo {
 			BigDecimal itemPrice = skuBo.getOnlinePrice().multiply(BigDecimal.valueOf(skuBo.getQuantity()));
 			//如果为加价购商品或N件X元 减掉优惠金额 start tuzhd 2017-12-14
 			if(item.getSkuActType() == ActivityTypeEnum.NJXY.ordinal()){
+				skuBo.setActivityPriceType(item.getActivityPriceType());
 				//设置店铺活动类型
 				setStoreActivityType(ActivityTypeEnum.enumValueOf(item.getSkuActType()));
 				skuBo.setActivityType(item.getSkuActType());

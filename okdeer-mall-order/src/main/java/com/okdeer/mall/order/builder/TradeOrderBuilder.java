@@ -514,14 +514,8 @@ public class TradeOrderBuilder {
 				if(e.getStoreSkuId().equals(goods.getId())){
 					CurrentStoreSkuBo skuBo = BeanMapper.map(goods, CurrentStoreSkuBo.class);
 					skuBo.setQuantity(e.getQuantity());
-					//如果为加价购商品或N件X元 减掉优惠金额 start tuzhd 2017-12-14
-					if(e.getSkuActType() == ActivityTypeEnum.NJXY.ordinal()){
-						//设置商品活动类型   其优惠金额不能分摊到活动价格上
-						skuBo.setActivityType(e.getSkuActType());
-						skuBo.setPreferentialPrice(e.getPreferentialPrice());
-					//属于非正常购买商品，因为验证过合法,判断null兼容
-					}else if((e.getSkuActType() == ActivityTypeEnum.JJG.ordinal() || 
-							e.getSkuActType() == ActivityTypeEnum.MMS.ordinal())){
+					if(e.getSkuActType() == ActivityTypeEnum.JJG.ordinal() || 
+							e.getSkuActType() == ActivityTypeEnum.MMS.ordinal()){
 						//设置商品活动类型 
 						skuBo.setActivityType(e.getSkuActType());
 						if(e.getActivityPriceType() !=null && 
@@ -532,9 +526,6 @@ public class TradeOrderBuilder {
 							skuBo.setBindType(e.getActivityPriceType() == ActivityDiscountItemRelType.MMS_GOODS.ordinal() 
 									? SkuBindType.MMS:SkuBindType.JJG);
 						}
-					}else{
-						//n件X元等活动不包含低价
-						skuBo.setQuantity(skuBo.getQuantity() + e.getSkuActQuantity());
 					}
 					newList.add(skuBo);
 				}
@@ -586,7 +577,7 @@ public class TradeOrderBuilder {
 			tradeOrderItem.setStoreSpuId(skuBo.getStoreSpuId());
 			tradeOrderItem.setStoreSkuId(skuBo.getId());
 			tradeOrderItem.setSkuName(skuBo.getName());
-			tradeOrderItem.setPropertiesIndb(skuBo.getPropertiesIndb());
+			tradeOrderItem.setPropertiesIndb(skuBo.getPropertiesIndbSkuName());
 			tradeOrderItem.setMainPicPrl(skuBo.getMainPicUrl());
 			tradeOrderItem.setSpuType(skuBo.getSpuType());
 			tradeOrderItem.setBindType(skuBo.getBindType());
@@ -626,19 +617,21 @@ public class TradeOrderBuilder {
 				tradeOrderItem.setStoreActivityType(ActivityTypeEnum.enumValueOf(skuBo.getActivityType()));
 				tradeOrderItem.setStoreActivityId(skuBo.getActivityId());
 			}else{
-				tradeOrderItem.setActivityType(paramDto.getActivityType().ordinal());
-				tradeOrderItem.setActivityId(paramDto.getActivityId());
 				tradeOrderItem.setStoreActivityType(ActivityTypeEnum.NO_ACTIVITY);
 				tradeOrderItem.setStoreActivityId("0");
 			}
+			tradeOrderItem.setActivityType(paramDto.getActivityType().ordinal());
+			tradeOrderItem.setActivityId(paramDto.getActivityId());
 			
 			tradeOrderItem.setBarCode(skuBo.getBarCode());
 			tradeOrderItem.setStyleCode(skuBo.getStyleCode());
 			tradeOrderItem.setUnit(skuBo.getUnit());
 
-			// 订单项总金额
-			BigDecimal totalAmountOfItem = skuBo.getTotalAmount();
+			// 订单项总金额 //如果为N件X元、加价购之类的优惠项，需要记录到总金额中
+			BigDecimal totalAmountOfItem = skuBo.getPreferentialPrice() != null ? 
+					skuBo.getTotalAmount().add(skuBo.getPreferentialPrice()) : skuBo.getTotalAmount() ;
 			tradeOrderItem.setTotalAmount(totalAmountOfItem);
+			
 			// 计算订单项平台优惠金额
 			BigDecimal favourItem = BigDecimal.valueOf(0.0);
 			if (platformFavour.compareTo(referenceValue) > 0) {
