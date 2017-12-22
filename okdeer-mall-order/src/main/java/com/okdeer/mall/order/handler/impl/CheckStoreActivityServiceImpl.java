@@ -239,7 +239,7 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 		List<ActivityDiscountItemRel> reList = Lists.newArrayList();
 		//查询梯度下加价购或满赠商品
 		if(type != ActivityTypeEnum.NJXY){
-			reList = activityDiscountItemRelMapper.findNotNormalById(item.getActivityId(), item.getId());
+			reList = activityDiscountItemRelMapper.findNotNormalById(item.getActivityId(), item.getId(),paramDto.getStoreId());
 		}
 		
 		boolean isNormal = true;

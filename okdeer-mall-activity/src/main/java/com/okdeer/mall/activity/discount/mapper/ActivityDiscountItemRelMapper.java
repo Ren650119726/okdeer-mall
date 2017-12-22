@@ -10,7 +10,9 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
+import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
 import com.okdeer.base.dal.IBaseMapper;
+import com.okdeer.mall.activity.discount.dto.ActivityGoodsParamDto;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountItemRel;
 
 public interface ActivityDiscountItemRelMapper extends IBaseMapper {
@@ -42,13 +44,25 @@ public interface ActivityDiscountItemRelMapper extends IBaseMapper {
 	
 	/**
 	 * @Description: 查询梯度下非正常价格购买商品 如满赠或加价购
-	 * @param activityId
-	 * @param activityItemId
+	 * @param activityId 活动id
+	 * @param activityItemId 梯度id
+	 * @param storeId 店铺id
 	 * @author tuzhd
 	 * @date 2017年12月12日
 	 */
 	List<ActivityDiscountItemRel> findNotNormalById(@Param("activityId")String activityId,
-			@Param("activityItemId")String activityItemId);
+			@Param("activityItemId")String activityItemId,@Param("storeId")String storeId);
+	
+	/**
+	 * @Description: 查询梯度下非正常价格购买商品列表
+	 * @param activityId 活动id
+	 * @param activityItemId 梯度id
+	 * @param storeId 店铺id
+	 * @author tuzhd
+	 * @date 2017年12月12日
+	 */
+	List<GoodsStoreActivitySkuDto> findGoodsByActivityId(ActivityGoodsParamDto dto);
+	
 	
 	/**
 	 * @Description: 根据id集合查询

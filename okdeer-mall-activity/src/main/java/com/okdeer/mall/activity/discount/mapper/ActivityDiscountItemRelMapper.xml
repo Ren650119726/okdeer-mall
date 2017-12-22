@@ -140,16 +140,18 @@
     
     <!-- 查询梯度下非正常价格购买商品 如满赠或加价购 -->
     <select id="findNotNormalById" resultMap="BaseResultMap">
-        select 
-        <include refid="Base_Column_List" />
-        from activity_discount_item_rel
-        where type != 0
-        <if test="activityId != null and activityId != ''">
-        	and activity_id = #{activityId}
-        </if>
-        <if test="activityItemId != null and activityItemId != ''">
-        	and activity_item_id = #{activityItemId}
-        </if>
+        SELECT 
+         	rel.id, rel.activity_id, rel.activity_item_id, rel.type, sku.business_id, rel.sort, rel.price
+        FROM activity_discount_item_rel rel
+        	INNER JOIN  goods_store_sku sku ON rel.`business_id`= sku.`id`
+        WHERE TYPE != 0 AND 
+        	sku.store_id =#{storeId,jdbcType=VARCHAR}
+	        <if test="activityId != null and activityId != ''">
+	        	and rel.activity_id = #{activityId,jdbcType=VARCHAR}
+	        </if>
+	        <if test="activityItemId != null and activityItemId != ''">
+	        	and rel.activity_item_id = #{activityItemId,jdbcType=VARCHAR}
+	        </if>
     </select>
     <!-- 根据ids集合查询活动 -->
     <select id="findByActivityIdList" resultMap="BaseResultMap" >
@@ -161,5 +163,66 @@
 	  	 		#{item}
 	  	 	</foreach>
     </select>
-
+ <!-- 活动商品信息  tuzhd-->
+  <resultMap id="advertGoodsMap" type="com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto" >
+    <result column="id" property="id" jdbcType="VARCHAR" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="alias" property="alias" jdbcType="VARCHAR" />
+    <result column="tagType" property="tagType" jdbcType="INTEGER" />
+    <result column="bar_code" property="barCode" jdbcType="VARCHAR" />
+    <result column="onlinePrice" property="onlinePrice" jdbcType="DECIMAL" />
+    <result column="marketPrice" property="marketPrice" jdbcType="DECIMAL" />
+    <result column="sellableStock" property="sellableStock" jdbcType="INTEGER" />
+    <result column="tradeMax" property="tradeMax" jdbcType="INTEGER" />
+    <result column="limitNum" property="limitNum" jdbcType="INTEGER" />
+    <result column="guaranteed" property="guaranteed" jdbcType="INTEGER" />
+    <result column="obsolete" property="obsolete" jdbcType="INTEGER" />
+    <result column="propertiesIndb" property="propertiesIndb" jdbcType="INTEGER" />
+    <result column="activityType" property="activityType" jdbcType="INTEGER" />
+    <result column="url" property="url" jdbcType="VARCHAR" />
+    <result column="updateTime" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="store_id" property="shopId" jdbcType="VARCHAR" />
+    <result column="store_name" property="shopName" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="INTEGER" />
+    <result column="isPrivliege" property="isPrivliege" jdbcType="INTEGER" />
+    <result column="sale_price" property="salePrice" jdbcType="DECIMAL" />
+    <result column="limitNum" property="limitNum" jdbcType="INTEGER" />
+    <result column="lockedStock" property="lockedStock" jdbcType="INTEGER" />
+    <result column="lowPriceUpper" property="lowPriceUpper" jdbcType="INTEGER" />
+    <result column="online" property="online" jdbcType="INTEGER" />
+    <result column="activityPriceType" property="activityPriceType" jdbcType="INTEGER" />
+    <result column="unit" property="unit" jdbcType="VARCHAR" />
+  </resultMap>
+    <!-- begin 根据店铺活动类型 活动商品列表 tuzhd 20171222-->
+	<select id="findGoodsByActivityId" resultMap="advertGoodsMap" parameterType="com.okdeer.mall.activity.discount.dto.ActivityGoodsParamDto" >
+		SELECT DISTINCT
+	        sku.id, sku.name, sku.alias, sku.tag_type AS tagType, sku.bar_code,
+			sku.update_time AS updateTime, sku.store_id, sku.type,
+			sku.online_price AS onlinePrice,sku.market_price AS marketPrice,
+			sku.trade_max AS tradeMax,sku.guaranteed,sku.obsolete,sku.properties_indb AS propertiesIndb, 		
+			sku.activity_type AS activityType, picture.url,stock.sellable AS sellableStock,
+			stock.locked AS lockedStock,sku.`online` AS online,sku.unit,
+			rel.price AS salePrice,rel.type AS activityPriceType
+		FROM activity_discount_item_rel rel
+			inner goods_store_sku sku ON rel.business_id= sku.id
+			LEFT JOIN goods_store_sku_plu plu ON plu.store_sku_id = sku.id AND plu.type = 1 AND plu.disabled = 0
+			LEFT JOIN goods_store_sku_picture picture ON sku.id = picture.store_sku_id AND picture.type =1
+			LEFT JOIN goods_store_sku_stock stock ON stock.`store_sku_id` = sku.`id`
+	    WHERE sku.disabled = 0
+			AND stock.disabled = 0
+			AND sku.`status` = 1
+			AND sku.violation = 0
+			AND sku.activity_type = 0
+			AND sku.online = 1
+			AND TYPE != 0 
+			AND sku.store_id =#{storeId,jdbcType=VARCHAR}
+	        <if test="activityId != null and activityId != ''">
+	        	and rel.activity_id = #{activityId,jdbcType=VARCHAR}
+	        </if>
+	        <if test="activityItemId != null and activityItemId != ''">
+	        	and rel.activity_item_id = #{activityItemId,jdbcType=VARCHAR}
+	        </if>
+			ORDER BY rel.sort 
+	</select>
+	<!-- end 根据店铺活动类型 活动商品列表 20171222-->
 </mapper>
