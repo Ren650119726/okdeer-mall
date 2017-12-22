@@ -192,7 +192,7 @@ public class CurrentStoreSkuBo {
 	/**
 	 * N件X元优惠价格，不能分摊到单价上去
 	 */
-	private BigDecimal preferentialPrice;
+	private BigDecimal preferentialPrice =BigDecimal.ZERO;
 
 	/**
 	 * 到店消费商品有效截止时间

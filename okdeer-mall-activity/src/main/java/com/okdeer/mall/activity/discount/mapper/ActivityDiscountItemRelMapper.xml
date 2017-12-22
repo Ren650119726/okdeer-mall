@@ -141,10 +141,10 @@
     <!-- 查询梯度下非正常价格购买商品 如满赠或加价购 -->
     <select id="findNotNormalById" resultMap="BaseResultMap">
         SELECT 
-         	rel.id, rel.activity_id, rel.activity_item_id, rel.type, sku.business_id, rel.sort, rel.price
+         	rel.id, rel.activity_id, rel.activity_item_id, rel.type, sku.id as business_id, rel.sort, rel.price
         FROM activity_discount_item_rel rel
         	INNER JOIN  goods_store_sku sku ON rel.business_id = sku.sku_id
-        WHERE TYPE != 0 AND 
+        WHERE rel.type != 0 AND 
         	sku.store_id =#{storeId,jdbcType=VARCHAR}
 	        <if test="activityId != null and activityId != ''">
 	        	and rel.activity_id = #{activityId,jdbcType=VARCHAR}
