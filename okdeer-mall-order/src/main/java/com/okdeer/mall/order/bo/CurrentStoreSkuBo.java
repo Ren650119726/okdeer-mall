@@ -185,6 +185,11 @@ public class CurrentStoreSkuBo {
 	private Integer activityPriceType;
 	
 	/**
+	 * 店铺活动梯度id N件X元为三级梯度id
+	 */
+	private String storeActivityItemId;
+	
+	/**
 	 * N件X元优惠价格，不能分摊到单价上去
 	 */
 	private BigDecimal preferentialPrice;
@@ -516,4 +521,15 @@ public class CurrentStoreSkuBo {
 		this.activityPriceType = activityPriceType;
 	}
 
+	
+	public String getStoreActivityItemId() {
+		return storeActivityItemId;
+	}
+
+	
+	public void setStoreActivityItemId(String storeActivityItemId) {
+		this.storeActivityItemId = storeActivityItemId;
+	}
+
+	
 }

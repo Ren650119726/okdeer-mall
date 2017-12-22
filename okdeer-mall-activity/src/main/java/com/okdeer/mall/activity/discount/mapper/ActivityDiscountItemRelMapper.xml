@@ -217,8 +217,8 @@
 			<if test="priceTypeList != null and priceTypeList.size() > 0 ">
 	       	    AND rel.type IN 
 	            <foreach collection="priceTypeList" open="(" close=")" separator="," item="item">
-		  	 		#{item}
-		  	 	</foreach>	
+		  	 		#{item,jdbcType=TINYINT}
+		  	 	</foreach>
 		  	</if>
 			AND sku.store_id =#{storeId,jdbcType=VARCHAR}
 	        <if test="activityId != null and activityId != ''">

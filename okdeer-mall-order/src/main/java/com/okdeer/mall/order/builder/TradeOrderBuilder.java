@@ -612,6 +612,7 @@ public class TradeOrderBuilder {
 					|| skuBo.getActivityType() == ActivityTypeEnum.JJG.ordinal()
 					|| skuBo.getActivityType() == ActivityTypeEnum.NJXY.ordinal()){
 				//参加以上活动商品不可退
+				tradeOrderItem.setStoreActivityItemId(skuBo.getStoreActivityItemId());
 				tradeOrderItem.setServiceAssurance(0);
 				if(skuBo.getBindType() != SkuBindType.MMS){
 					storeFavourItem = skuBo.getPreferentialPrice();

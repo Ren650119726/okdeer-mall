@@ -419,6 +419,7 @@ public class StoreSkuParserBo {
 				skuBo.setActivityType(item.getSkuActType());
 				skuBo.setPreferentialPrice(item.getPreferentialPrice());
 				skuBo.setActivityId(paramDto.getStoreActivityId());
+				skuBo.setStoreActivityItemId(paramDto.getStoreActivityMultiItemId());
 				//设置商品活动类型   其优惠金额不能分摊到活动价格上
 				this.totalStorePereferAmount = totalStorePereferAmount.add(item.getPreferentialPrice());
 				this.totalAmountInLowPrice = totalAmountInLowPrice.add(item.getPreferentialPrice());
@@ -426,6 +427,7 @@ public class StoreSkuParserBo {
 			}else if((item.getSkuActType() == ActivityTypeEnum.JJG.ordinal() || 
 					item.getSkuActType() == ActivityTypeEnum.MMS.ordinal())){
 				skuBo.setActivityType(item.getSkuActType());
+				skuBo.setStoreActivityItemId(paramDto.getStoreActivityItemId());
 				//设置店铺活动类型
 				setStoreActivityType(ActivityTypeEnum.enumValueOf(item.getSkuActType()));
 				skuBo.setActivityId(paramDto.getStoreActivityId());
