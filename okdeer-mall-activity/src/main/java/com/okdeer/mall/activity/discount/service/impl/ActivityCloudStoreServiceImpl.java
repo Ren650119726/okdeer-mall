@@ -316,7 +316,7 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 			param.setIds(ids);
 		}
 		PageHelper.startPage(param.getPageNumber(), param.getPageSize(), true);
-		List<GoodsStoreActivitySkuDto> list  = activityDiscountItemRelMapper.findGiveAddPriceGoods(param);
+		List<GoodsStoreActivitySkuDto> list  = activityDiscountItemRelMapper.findActivityGoods(param);
 		return new PageUtils<>(list);
 		
 	}

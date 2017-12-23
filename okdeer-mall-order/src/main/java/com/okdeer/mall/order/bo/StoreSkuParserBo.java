@@ -119,7 +119,7 @@ public class StoreSkuParserBo {
 	private BigDecimal totalItemAmount = BigDecimal.valueOf(0.0);
 	
 	/**
-	 * 订单项优惠店铺总金额
+	 * N件X元 满赠 加价购商品的优惠金额
 	 */
 	private BigDecimal totalStorePereferAmount = BigDecimal.valueOf(0.0);
 	
@@ -420,7 +420,7 @@ public class StoreSkuParserBo {
 				skuBo.setPreferentialPrice(item.getPreferentialPrice());
 				skuBo.setActivityId(paramDto.getStoreActivityId());
 				skuBo.setStoreActivityItemId(paramDto.getStoreActivityMultiItemId());
-				//设置商品活动类型   其优惠金额不能分摊到活动价格上
+				//N件X元 满赠 加价购商品的优惠金额
 				this.totalStorePereferAmount = totalStorePereferAmount.add(item.getPreferentialPrice());
 				this.totalAmountInLowPrice = totalAmountInLowPrice.add(item.getPreferentialPrice());
 			//属于非正常购买商品，因为验证过合法,判断null兼容
@@ -437,18 +437,14 @@ public class StoreSkuParserBo {
 					skuBo.setActPrice(item.getSkuActPrice());
 					//满赠或换购商品记录器活动价格
 					BigDecimal itemActPrice = item.getSkuActPrice().multiply(BigDecimal.valueOf(skuBo.getQuantity()));
-					if(item.getActivityPriceType() == ActivityDiscountItemRelType.JJG_GOODS.ordinal()){
-						BigDecimal perefer =itemPrice.subtract(itemActPrice);
-						skuBo.setPreferentialPrice(perefer);
-						//设置商品活动类型   其优惠金额不能分摊到活动价格上
-						this.totalStorePereferAmount = totalStorePereferAmount.add(perefer);
-						//需要排除参与享受优惠的金额
-						this.totalAmountInLowPrice = totalAmountInLowPrice.add(itemPrice);
-						//用于排除加价购商品 不计算到优惠金额中
-						item.setPreferentialPrice(itemPrice);
-					}else{
-						itemPrice = itemActPrice;
-					}
+					//用于排除加价购商品 不计算到优惠金额中
+					item.setPreferentialPrice(itemPrice);
+					BigDecimal perefer =itemPrice.subtract(itemActPrice);
+					skuBo.setPreferentialPrice(perefer);
+					//N件X元 满赠 加价购商品的优惠金额
+					this.totalStorePereferAmount = totalStorePereferAmount.add(perefer);
+					//需要排除参与享受优惠的金额
+					this.totalAmountInLowPrice = totalAmountInLowPrice.add(itemPrice);
 				}
 			}
 			this.totalItemAmount = totalItemAmount.add(itemPrice);
@@ -542,7 +538,8 @@ public class StoreSkuParserBo {
 				
 			//N件X元或加价商品 作为低阶计算优惠
 			}else if(skuBo.getActivityType() == ActivityTypeEnum.NJXY.ordinal() 
-					|| (skuBo.getActivityPriceType() !=null && skuBo.getActivityPriceType() == ActivityDiscountItemRelType.JJG_GOODS.ordinal()) ){
+					|| skuBo.getActivityType() == ActivityTypeEnum.JJG.ordinal() 
+					|| skuBo.getActivityType() == ActivityTypeEnum.MMS.ordinal()){
 				this.isLowFavour = true;
 				this.lowActivityId = skuBo.getActivityId();
 				this.totalLowFavour =totalLowFavour.add(skuBo.getPreferentialPrice());

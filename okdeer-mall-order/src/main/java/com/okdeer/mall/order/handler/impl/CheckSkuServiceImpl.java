@@ -283,8 +283,8 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		BigDecimal freeFarePrice = storeExt.getFreeFreightPrice() == null ? BigDecimal.valueOf(0.0) : storeExt.getFreeFreightPrice();
 		// 店铺运费
 		BigDecimal fare = storeExt.getFreight() == null ? new BigDecimal(0.0) : storeExt.getFreight();
-		// 获取订单总金额
-		BigDecimal totalAmount = parserBo.getTotalItemAmount();
+		// 获取订单总金额  去掉 N件X元 满赠 加价购商品的优惠金额
+		BigDecimal totalAmount = parserBo.getTotalItemAmount().subtract(parserBo.getTotalStorePereferAmount());
 		if (totalAmount.compareTo(freeFarePrice) >= 0){
 			parserBo.setFare(BigDecimal.valueOf(0.00));
 		}else{
