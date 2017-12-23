@@ -194,14 +194,14 @@
     <result column="unit" property="unit" jdbcType="VARCHAR" />
   </resultMap>
     <!-- begin 根据店铺活动类型 活动商品列表 tuzhd 20171222-->
-	<select id="findGoodsByActivityId" resultMap="advertGoodsMap" parameterType="com.okdeer.mall.activity.discount.dto.ActivityGoodsParamDto" >
+	<select id="findGiveAddPriceGoods" resultMap="advertGoodsMap" parameterType="com.okdeer.mall.activity.discount.dto.ActivityGoodsParamDto" >
 		SELECT DISTINCT
 	        sku.id, sku.name, sku.alias, sku.tag_type AS tagType, sku.bar_code,
 			sku.update_time AS updateTime, sku.store_id, sku.type,
 			sku.online_price AS onlinePrice,sku.market_price AS marketPrice,
 			sku.trade_max AS tradeMax,sku.guaranteed,sku.obsolete,sku.properties_indb AS propertiesIndb, 		
 			sku.activity_type AS activityType, picture.url,stock.sellable AS sellableStock,
-			stock.locked AS lockedStock,sku.`online` AS online,sku.unit,
+			stock.locked AS lockedStock,sku.online,sku.unit,
 			rel.price AS salePrice,rel.type AS activityPriceType
 		FROM activity_discount_item_rel rel
 			INNER JOIN goods_store_sku sku ON rel.business_id= sku.sku_id
@@ -230,4 +230,50 @@
 			ORDER BY rel.sort 
 	</select>
 	<!-- end 根据店铺活动类型 活动商品列表 20171222-->
+	
+	<!-- begin 根据店铺活动类型 活动商品列表 tuzhd 20171222-->
+	<select id="findActivityGoods" resultMap="advertGoodsMap" parameterType="com.okdeer.mall.activity.discount.dto.ActivityGoodsParamDto" >
+			SELECT DISTINCT
+		        sku.id, sku.name, sku.alias, sku.tag_type AS tagType, sku.bar_code,
+				sku.update_time AS updateTime, sku.store_id, sku.type,
+				sku.online_price AS onlinePrice,sku.market_price AS marketPrice,
+				sku.trade_max AS tradeMax,sku.guaranteed,sku.obsolete,sku.properties_indb AS propertiesIndb, 		
+				sku.activity_type AS activityType, picture.url,stock.sellable AS sellableStock,
+				stock.locked AS lockedStock,sku.online,sku.unit,
+				rel.price AS salePrice,rel.type AS activityPriceType
+			FROM  goods_store_sku sku 
+				LEFT JOIN activity_discount_item_rel rel ON rel.business_id= sku.sku_id
+				LEFT JOIN goods_store_sku_plu plu ON plu.store_sku_id = sku.id AND plu.type = 1 AND plu.disabled = 0
+				LEFT JOIN goods_store_sku_picture picture ON sku.id = picture.store_sku_id AND picture.type =1
+				LEFT JOIN goods_store_sku_stock stock ON stock.`store_sku_id` = sku.`id`
+				LEFT JOIN goods_navigate_category_association gca ON gca.spu_category_id= sku.spu_category_id
+		    WHERE sku.disabled = 0
+				AND stock.disabled = 0
+				AND sku.`status` = 1
+				AND sku.violation = 0
+				AND sku.activity_type = 0
+				AND sku.online = 1 
+				AND rel.type = 0
+				AND sku.store_id =#{storeId,jdbcType=VARCHAR}
+				<if test="limitSku == 2 and ids != null and ids.sze() > 0">
+				    AND rel.activity_item_id = #{activityItemId,jdbcType=VARCHAR}
+				    AND sku.sku_id IN 
+				    <foreach collection="ids" open="(" close=")" separator="," item="id">
+						#{id}
+				    </foreach>
+				</if>
+				<if test="limitSku == 2 and ids != null and ids.sze() > 0 ">
+				    AND rel.activity_item_id = #{activityItemId,jdbcType=VARCHAR}
+				    AND gca.navigate_category_id IN 
+				    <foreach collection="ids" open="(" close=")" separator="," item="id">
+						#{id}
+				    </foreach>
+				</if>
+				<if test="saleNumSort != null and saleNumSort != ''">
+					ORDER BY sku.sale_num #{saleNumSort},sku.sort DESC
+				</if>
+			    <if test="priceSort != null and priceSort != ''">
+					ORDER BY sku.online_price #{priceSort}
+				</if>
+		</select>
 </mapper>
