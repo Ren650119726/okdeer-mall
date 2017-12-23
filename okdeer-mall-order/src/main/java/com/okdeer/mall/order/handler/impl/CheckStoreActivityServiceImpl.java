@@ -38,6 +38,7 @@ import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.handler.RequestHandler;
 import com.okdeer.mall.system.service.SysBuyerFirstOrderRecordService;
+import com.okdeer.mall.system.utils.ConvertUtil;
 
 /**
  * ClassName: CheckStoreActivityServiceImpl 
@@ -120,7 +121,9 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 		param.setStoreId(paramDto.getStoreId());
 		List<String> skuIds =  Lists.newArrayList();
 		paramDto.getSkuList().forEach(e ->{
-			skuIds.add(e.getStoreSkuId());
+			if(!skuIds.contains(e.getStoreSkuId())){
+				skuIds.add(e.getStoreSkuId());
+			}
 		});
 		param.setStoreSkuIdList(skuIds);
 		param.setStoreInfo((StoreInfo)paramDto.get("storeInfo"));
@@ -129,21 +132,18 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 		//如果查询到了梯度信息，说明活动与店铺匹配
 		switch (activity.getType()){
 			case MMS:
-				 paramDto.setActivityType(String.valueOf(ActivityTypeEnum.MMS.ordinal()));
 				 if(!checkItemInfo(result.getGiveItemList(), paramDto,resp, 
 						 ActivityDiscountItemRelType.MMS_GOODS,ActivityTypeEnum.MMS)){
 					 return;
 				 }
 				break;
 			case JJG:
-				paramDto.setActivityType(String.valueOf(ActivityTypeEnum.JJG.ordinal()));
 				if(!checkItemInfo(result.getPriceItemList(), paramDto,resp, 
 						ActivityDiscountItemRelType.JJG_GOODS,ActivityTypeEnum.JJG)){
 					return;
 				}
 				break;
 			case NJXY:
-				paramDto.setActivityType(String.valueOf(ActivityTypeEnum.NJXY.ordinal()));
 				//组装N件x元 
 				if(!checkItemInfo(result.getMultiItemList(), paramDto,resp, null,ActivityTypeEnum.NJXY)){
 					return;
@@ -241,7 +241,7 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 		List<ActivityDiscountItemRel> reList = Lists.newArrayList();
 		//查询梯度下加价购或满赠商品
 		if(type != ActivityTypeEnum.NJXY){
-			reList = activityDiscountItemRelMapper.findNotNormalById(item.getActivityId(), item.getId());
+			reList = activityDiscountItemRelMapper.findNotNormalById(item.getActivityId(), item.getId(),paramDto.getStoreId());
 		}
 		
 		boolean isNormal = true;
@@ -257,8 +257,13 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 			}
 			//如果为0说是参加了活动的正常商品
 			if(itemDto.getActivityPriceType() == ActivityDiscountItemRelType.NORMAL_GOODS.ordinal()){
+				//如果不限制及验证是否是该店铺商品
+				if(item.getLimitSku() == 0 ){
+					toatalPrice = toatalPrice.add(itemDto.getSkuPrice().multiply(new BigDecimal(itemDto.getQuantity())));
+					total = total + itemDto.getQuantity();
 				//梯度信息不存在或者不包含，活动信息发生变化
-				if(CollectionUtils.isNotEmpty(item.getSkuIdList()) && item.getSkuIdList().contains(itemDto.getStoreSkuId())){
+				}else if(CollectionUtils.isNotEmpty(item.getSkuIdList()) && item.getSkuIdList().contains(itemDto.getStoreSkuId())){
+					//用于记算优惠
 					if(type == ActivityTypeEnum.NJXY ){
 						multiItemList.add(itemDto);
 					}
@@ -288,7 +293,7 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 			multiItemList.sort(comparator.reversed());
 			//循环获得添加要计算的价格,并返回总优惠金额
 			BigDecimal multiPrefere = countPrefereMulti(multiItemList, item.getPiece(), new BigDecimal(item.getPrice()));
-			paramDto.put("multiPreferePrice", multiPrefere.toString());
+			paramDto.put("multiPreferePrice", ConvertUtil.format(multiPrefere));
 			return total >= item.getPiece() && StringUtils.isNotBlank(item.getPrice())
 					&& toatalPrice.compareTo(new BigDecimal(item.getPrice())) >= 0;
 		}

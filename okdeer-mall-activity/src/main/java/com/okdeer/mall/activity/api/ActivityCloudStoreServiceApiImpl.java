@@ -1,10 +1,15 @@
 package com.okdeer.mall.activity.api;
 
+import java.util.List;
+
 import javax.annotation.Resource;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudStoreParamDto;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudStoreResultDto;
+import com.okdeer.mall.activity.discount.dto.ActivityGoodsParamDto;
 import com.okdeer.mall.activity.discount.service.ActivityCloudStoreService;
 import com.okdeer.mall.activity.discount.service.ActivityCloudStoreServiceApi;
 
@@ -34,4 +39,26 @@ public class ActivityCloudStoreServiceApiImpl implements ActivityCloudStoreServi
 		return activityCloudStoreService.getCloudStoreActivity(paramDto);
 	}
 
+	/**
+	 * @Description: 获得买满送的商品列表
+	 * @param param   
+	 * @author tuzhd
+	 * @date 2017年12月22日
+	 */
+	@Override
+	public List<GoodsStoreActivitySkuDto> getGiveActivityGoods(ActivityGoodsParamDto param){
+		return activityCloudStoreService.getGiveActivityGoods(param);
+	}
+	
+	/**
+	 * @Description: 获得梯度下的商品列表
+	 * @param param   
+	 * @author tuzhd
+	 * @date 2017年12月22日
+	 */
+	@Override
+	public PageUtils<GoodsStoreActivitySkuDto> getActivityItemGoods(ActivityGoodsParamDto param){
+		return activityCloudStoreService.getActivityItemGoods(param);
+	}
+	
 }

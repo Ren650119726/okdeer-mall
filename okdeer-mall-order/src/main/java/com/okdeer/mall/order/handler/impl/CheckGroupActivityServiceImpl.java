@@ -136,7 +136,7 @@ public class CheckGroupActivityServiceImpl implements RequestHandler<PlaceOrderP
 		// 按照叶伟需求，团购不算任何优惠
 		storeSkuBo.setOnlinePrice(groupSku.getGroupPrice());
 		// 加载购买商品记录
-		parserBo.loadBuySkuList(paramDto.getSkuList());
+		parserBo.loadBuySkuList(paramDto);
 		// 检查用户是否超出日限购
 		if(isOutOfLimit(paramDto,storeSkuBo,groupSku.getUserDayCountLimit(),LIMIT_SKU_USER_DAY)){
 			resp.setResult(ResultCodeEnum.GROUP_SKU_USER_DAY_LIMIT_OUT);

@@ -39,6 +39,7 @@
     <result column="store_activity_type" property="storeActivityType"
 			jdbcType="TINYINT" javaType="com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum" />
 	<result column="store_activity_id" property="storeActivityId" jdbcType="VARCHAR" />
+	<result column="store_activity_item_id" property="storeActivityItemId" jdbcType="VARCHAR" />
     <!-- End V2.0 added by maojj 2017-06-23-->
     <!-- Begin V2.6.1 added by maojj 2017-08-28 -->
     <result column="bind_type" property="bindType" jdbcType="TINYINT" javaType="com.okdeer.archive.goods.spu.enums.SkuBindType"/>
@@ -92,6 +93,7 @@
     <result column="store_activity_type" property="storeActivityType"
 			jdbcType="TINYINT" javaType="com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum" />
 	<result column="store_activity_id" property="storeActivityId" jdbcType="VARCHAR" />
+	<result column="store_activity_item_id" property="storeActivityItemId" jdbcType="VARCHAR" />
 	<result column="bind_type" property="bindType" jdbcType="TINYINT" javaType="com.okdeer.archive.goods.spu.enums.SkuBindType"/>
     <result column="income" property="income" jdbcType="DECIMAL" />
   </resultMap>
@@ -100,7 +102,7 @@
     id, order_id, store_spu_id, store_sku_id, sku_name,properties_indb, main_pic_prl, bar_code,
     spu_type, unit_price, quantity,weight,service_assurance,total_amount,income, actual_amount, preferential_price, 
     status, appraise,compain_status,create_time,income,recharge_mobile,is_complete,activity_type,activity_price,
-    activity_quantity,store_preferential,bind_type
+    activity_quantity,store_preferential,bind_type,store_activity_item_id
   </sql>
   
   <sql id="condition" >
@@ -122,7 +124,7 @@
     T.id, T.order_id, T.store_spu_id, T.store_sku_id, T.sku_name, T.properties_indb, T.main_pic_prl, T.bar_code,
     T.spu_type, T.unit_price, T.quantity, T.weight, T.service_assurance, T.total_amount, T.income, T.actual_amount, T.preferential_price, 
     R.status, T.appraise, T.compain_status, T.create_time, T.income, T.recharge_mobile,T.activity_type,T.activity_price,T.activity_quantity,
-    T.unit,T.store_preferential,T.store_activity_type,T.store_activity_id,T.bind_type
+    T.unit,T.store_preferential,T.store_activity_type,T.store_activity_id,T.bind_type,T.store_activity_item_id
     FROM trade_order_item T
     LEFT JOIN trade_order_refunds_item R
     on T.id = R.order_item_id 
@@ -238,7 +240,7 @@
 			store_preferential,
 			store_activity_type,
 			store_activity_id,
-			
+			store_activity_item_id,
 			bind_type
 		)values
 		<foreach collection="list" item="item" index="index" separator="," >
@@ -278,7 +280,7 @@
 			IFNULL(#{item.storePreferential,jdbcType=DECIMAL},0.00),
 			IFNULL(#{item.storeActivityType,jdbcType=TINYINT},0),
 			IFNULL(#{item.storeActivityId,jdbcType=VARCHAR},'0'),
-			
+			IFNULL(#{item.storeActivityItemId,jdbcType=VARCHAR},'0'),
 			IFNULL(#{item.bindType,jdbcType=TINYINT},0)
         )
 		</foreach>
@@ -541,7 +543,7 @@
     item.unit_price, item.quantity,item.total_amount, item.actual_amount, item.preferential_price, 
     item.status, item.appraise, item.create_time,detail.status AS itemDetailStatus,detail.consume_code,
     detail.start_time,detail.end_time,item.service_assurance,item.income,item.recharge_mobile,item.activity_type,
-    item.activity_price,item.activity_quantity,item.store_preferential,item.store_activity_type,item.store_activity_id,item.bind_type
+    item.activity_price,item.activity_quantity,item.store_preferential,item.store_activity_type,item.store_activity_id,item.bind_type,item.store_activity_item_id 
   </sql>
   
   <!-- wusw:订单项和订单项详细字段 -->
@@ -549,7 +551,7 @@
     item.id, item.order_id, item.store_sku_id, item.sku_name, item.spu_type,item.main_pic_prl,item.properties_indb, item.bar_code,item.weight,
     item.unit_price, item.quantity,item.total_amount, item.actual_amount, item.preferential_price, item.service_assurance,
     item.status, item.appraise, item.create_time,item.income,item.recharge_mobile,item.is_complete,item.activity_type,item.activity_id,item.activity_price,
-    item.activity_quantity,item.unit,item.store_preferential,item.store_activity_type,item.store_activity_id,item.bind_type
+    item.activity_quantity,item.unit,item.store_preferential,item.store_activity_type,item.store_activity_id,item.bind_type,item.store_activity_item_id 
   </sql>
   
   <!-- wusw:订单项和订单项信息resultMap  -->

@@ -179,15 +179,20 @@ public class CurrentStoreSkuBo {
 	private String updateTime;
 	
 	/**
-	 * 活动价格类型0 满赠商品、1加价购商品
+	 * 活动价格类型0 正常购买商品,1满赠商品、2加价购商品
 	 * v2.7 tuzhd 添加字段
 	 */   
 	private Integer activityPriceType;
 	
 	/**
+	 * 店铺活动梯度id N件X元为三级梯度id
+	 */
+	private String storeActivityItemId;
+	
+	/**
 	 * N件X元优惠价格，不能分摊到单价上去
 	 */
-	private BigDecimal preferentialPrice;
+	private BigDecimal preferentialPrice =BigDecimal.ZERO;
 
 	/**
 	 * 到店消费商品有效截止时间
@@ -197,7 +202,8 @@ public class CurrentStoreSkuBo {
 	public BigDecimal getTotalAmount() {
 		BigDecimal totalAmount = BigDecimal.valueOf(0);
 		//去除如N件X元不计算 优惠的价格
-		totalAmount = totalAmount.add(onlinePrice.multiply(BigDecimal.valueOf(quantity))).subtract(preferentialPrice);
+		totalAmount = preferentialPrice == null ? totalAmount.add(onlinePrice.multiply(BigDecimal.valueOf(quantity))) :
+				totalAmount.add(onlinePrice.multiply(BigDecimal.valueOf(quantity))).subtract(preferentialPrice);
 		return totalAmount;
 	}
 
@@ -242,10 +248,19 @@ public class CurrentStoreSkuBo {
 	}
 
 	public String getPropertiesIndb() {
+		return this.propertiesIndb;
+	}
+	
+	public String getPropertiesIndbSkuName() {
 		if (!StringUtils.isEmpty(this.propertiesIndb)) {
-			JSONObject propertiesJson = JSONObject.fromObject(this.propertiesIndb);
-			String skuProperties = propertiesJson.get("skuName").toString();
-			return skuProperties;
+			String skuProperties = this.propertiesIndb;
+			try{
+				JSONObject propertiesJson = JSONObject.fromObject(this.propertiesIndb);
+				skuProperties = propertiesJson.get("skuName").toString();
+				return skuProperties;
+			}catch(Exception e){
+				return this.propertiesIndb;
+			}
 		} else {
 			return "";
 		}
@@ -506,4 +521,15 @@ public class CurrentStoreSkuBo {
 		this.activityPriceType = activityPriceType;
 	}
 
+	
+	public String getStoreActivityItemId() {
+		return storeActivityItemId;
+	}
+
+	
+	public void setStoreActivityItemId(String storeActivityItemId) {
+		this.storeActivityItemId = storeActivityItemId;
+	}
+
+	
 }

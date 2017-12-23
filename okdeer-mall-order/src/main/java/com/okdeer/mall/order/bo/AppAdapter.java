@@ -56,6 +56,10 @@ public class AppAdapter {
 			dto.setOnline(skuBo.getOnline().ordinal());
 			dto.setOnlinePrice(ConvertUtil.format(skuBo.getOnlinePrice()));
 			dto.setActPrice(ConvertUtil.format(skuBo.getActPrice()));
+			if(StringUtils.isNotBlank(skuBo.getPropertiesIndbSkuName()) && 
+					StringUtils.isNotBlank(skuBo.getUnit())){
+				dto.setUnit(skuBo.getPropertiesIndbSkuName()+"/"+skuBo.getUnit());
+			}
 			dtoList.add(dto);
 		}
 		return dtoList;

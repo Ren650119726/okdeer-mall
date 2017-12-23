@@ -112,7 +112,7 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		}
 		parserBo.setSkuIdList(skuIdList);
 		//加载购买商品列表  将提交商品数量到 当前店铺商品列表中及计算其总订单金额
-		parserBo.loadBuySkuList(paramDto.getSkuList());
+		parserBo.loadBuySkuList(paramDto);
 		// 缓存商品解析结果
 		paramDto.put("parserBo", parserBo);
 		//所有商品ID(包含捆绑商品中的成分商品)
@@ -283,8 +283,8 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		BigDecimal freeFarePrice = storeExt.getFreeFreightPrice() == null ? BigDecimal.valueOf(0.0) : storeExt.getFreeFreightPrice();
 		// 店铺运费
 		BigDecimal fare = storeExt.getFreight() == null ? new BigDecimal(0.0) : storeExt.getFreight();
-		// 获取订单总金额
-		BigDecimal totalAmount = parserBo.getTotalItemAmount();
+		// 获取订单总金额  去掉 N件X元 满赠 加价购商品的优惠金额
+		BigDecimal totalAmount = parserBo.getTotalItemAmount().subtract(parserBo.getTotalStorePereferAmount());
 		if (totalAmount.compareTo(freeFarePrice) >= 0){
 			parserBo.setFare(BigDecimal.valueOf(0.00));
 		}else{

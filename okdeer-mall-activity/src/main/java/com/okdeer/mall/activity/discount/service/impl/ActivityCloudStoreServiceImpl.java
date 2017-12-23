@@ -9,20 +9,26 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Lists;
+import com.okdeer.archive.goods.base.entity.GoodsSpuCategory;
+import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.base.common.utils.mapper.BeanMapper;
 import com.okdeer.common.utils.JsonDateUtil;
 import com.okdeer.mall.activity.coupons.enums.ActivityDiscountItemRelType;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudItemReultDto;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudStoreParamDto;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudStoreResultDto;
+import com.okdeer.mall.activity.discount.dto.ActivityGoodsParamDto;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountItem;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountItemRel;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscountMultiItem;
+import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountItemMapper;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountItemRelMapper;
@@ -264,4 +270,54 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 		return actDto;
 	}
 
+	/**
+	 * @Description: 获得买满送的商品列表
+	 * @param param   
+	 * @author tuzhd
+	 * @date 2017年12月22日
+	 */
+	@Override
+	public List<GoodsStoreActivitySkuDto> getGiveActivityGoods(ActivityGoodsParamDto param){
+		//查询赠品信息并将标准库id转为店铺商品id
+		return activityDiscountItemRelMapper.findGiveAddPriceGoods(param);
+		
+		
+	}
+	
+	/**
+	 * @Description: 获取梯度下商品列表
+	 * @param param   
+	 * @author tuzhd
+	 * @date 2017年12月22日
+	 */
+	@Override
+	public PageUtils<GoodsStoreActivitySkuDto> getActivityItemGoods(ActivityGoodsParamDto param){
+		ActivityDiscountItem item =activityDiscountItemMapper.findById(param.getActivityItemId());
+		if(item == null){
+			return null;
+		}
+		
+		param.setLimitSku(item.getLimitSku());
+		//如果是商品限制：0:不限，1：指定导航分类，2：指定商品
+		if(item.getLimitSku() != 0){
+			List<ActivityDiscountItemRel> list = activityDiscountItemRelMapper.
+					findByActivityId(param.getActivityId(), param.getActivityItemId());
+			//存储梯度或正常商品id
+			List<String> ids = Lists.newArrayList();
+			if(CollectionUtils.isEmpty(list)){
+				return null;
+			}
+			//组装出对应的业务id
+			for(ActivityDiscountItemRel rel : list){
+				if(rel.getType() == ActivityDiscountItemRelType.NORMAL_GOODS.ordinal()){
+					ids.add(rel.getBusinessId());
+				}
+			}
+			param.setIds(ids);
+		}
+		PageHelper.startPage(param.getPageNumber(), param.getPageSize(), true);
+		List<GoodsStoreActivitySkuDto> list  = activityDiscountItemRelMapper.findActivityGoods(param);
+		return new PageUtils<>(list);
+		
+	}
 }

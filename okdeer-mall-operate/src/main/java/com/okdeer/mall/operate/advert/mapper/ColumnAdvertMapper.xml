@@ -1162,7 +1162,22 @@
 		    AND ca.belong_type <![CDATA[ <> ]]> 0 AND app.status = 1
             </otherwise> 
 		</choose>
-	    AND ((#{startTime} BETWEEN ca.start_time AND ca.end_time) OR #{endTime} BETWEEN ca.start_time AND ca.end_time)
+<!-- 	    AND ((#{startTime} BETWEEN ca.start_time AND ca.end_time) OR #{endTime} BETWEEN ca.start_time AND ca.end_time) -->
+	    AND 
+	    	(
+	    		(	
+	    			#{startTime} BETWEEN ca.start_time AND ca.end_time
+	    		) 
+	    		OR 
+	    		(
+	    			#{endTime} BETWEEN ca.start_time AND ca.end_time
+	    		)
+	    		OR 
+	    		(
+	    			#{startTime} &lt;= ca.start_time AND #{endTime} &gt;= ca.end_time
+	    		)
+	    	)
+	    
 	    <if test="positionId != null and positionId !=''">
 	   	   AND ap.id = #{positionId, jdbcType=VARCHAR}
 	    </if>   
