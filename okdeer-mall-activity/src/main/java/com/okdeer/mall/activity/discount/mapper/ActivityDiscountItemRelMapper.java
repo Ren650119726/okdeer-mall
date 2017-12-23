@@ -61,7 +61,16 @@ public interface ActivityDiscountItemRelMapper extends IBaseMapper {
 	 * @author tuzhd
 	 * @date 2017年12月12日
 	 */
-	List<GoodsStoreActivitySkuDto> findGoodsByActivityId(ActivityGoodsParamDto dto);
+	List<GoodsStoreActivitySkuDto> findGiveAddPriceGoods(ActivityGoodsParamDto dto);
+	
+	/**
+	 * @Description: 查询梯度下正常价格购买商品列表
+	 * @param activityItemId 梯度id
+	 * @param storeId 店铺id
+	 * @author tuzhd
+	 * @date 2017年12月12日
+	 */
+	List<GoodsStoreActivitySkuDto> findActivityGoods(ActivityGoodsParamDto dto);
 	
 	
 	/**

@@ -3,6 +3,7 @@ package com.okdeer.mall.activity.discount.service;
 import java.util.List;
 
 import com.okdeer.archive.goods.store.dto.GoodsStoreActivitySkuDto;
+import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudStoreParamDto;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudStoreResultDto;
 import com.okdeer.mall.activity.discount.dto.ActivityGoodsParamDto;
@@ -38,5 +39,13 @@ public interface ActivityCloudStoreService {
 	 * @date 2017年12月22日
 	 */
 	List<GoodsStoreActivitySkuDto> getGiveActivityGoods(ActivityGoodsParamDto param);
+
+	/**
+	 * @Description: 获取梯度下商品列表
+	 * @param param   
+	 * @author tuzhd
+	 * @date 2017年12月22日
+	 */
+	PageUtils<GoodsStoreActivitySkuDto> getActivityItemGoods(ActivityGoodsParamDto param);
 
 }

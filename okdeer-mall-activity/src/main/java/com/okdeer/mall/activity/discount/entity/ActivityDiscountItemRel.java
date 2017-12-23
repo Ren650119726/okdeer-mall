@@ -17,6 +17,10 @@ import java.math.BigDecimal;
 public class ActivityDiscountItemRel implements java.io.Serializable{
 
     /**
+	 * @Fields serialVersionUID : TODO
+	 */
+	private static final long serialVersionUID = 1L;
+	/**
      * ID
      */
     private String id;
