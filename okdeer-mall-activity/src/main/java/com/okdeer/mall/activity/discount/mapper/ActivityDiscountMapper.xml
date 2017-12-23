@@ -636,4 +636,19 @@
 	  	 	#{item}
 	  	 </foreach>
 	  </select>
+	  
+	  <select id="findByGoodsStoreSkuId" resultType="string" parameterType="java.util.List">
+		  	 SELECT
+				DISTINCT (discountGroup.store_sku_id)
+			FROM
+				activity_discount discount
+			INNER JOIN activity_discount_group discountGroup ON discount.id = discountGroup.discount_id
+			WHERE
+				discount.`status` = 1
+			AND discount.`type` = 3
+			AND discountGroup.store_sku_id IN
+			<foreach collection="idList" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+	  </select>
 </mapper>
