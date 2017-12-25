@@ -69,4 +69,9 @@ public class ActivityDiscountApiImpl implements ActivityDiscountApi{
 		return activityDiscountService.findByStore(paramDto);
 	}
 
+	@Override
+	public List<String> findByGoodsStoreSkuId(List<String> goodsStoreSkuId) {
+		return activityDiscountService.findByGoodsStoreSkuId(goodsStoreSkuId);
+	}
+
 }

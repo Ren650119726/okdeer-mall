@@ -189,7 +189,8 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		AppStoreDto appStoreDto = AppAdapter.convert(storeInfo);
 		if (parserBo != null) {
 			resp.getData().setOrderFare(ConvertUtil.format(parserBo.getFare()));
-			resp.getData().setFavour(ConvertUtil.format(parserBo.getTotalLowFavour()));
+			//减掉 N件X元 满赠 加价购商品的优惠金额
+			resp.getData().setFavour(ConvertUtil.format(parserBo.getTotalLowFavour().subtract(parserBo.getTotalStorePereferAmount())));
 			resp.getData().setTotalOrderPrice(ConvertUtil.format(parserBo.getTotalItemAmount().subtract(parserBo.getTotalStorePereferAmount())));
 		}
 		// 设置返回给App的店铺信息
