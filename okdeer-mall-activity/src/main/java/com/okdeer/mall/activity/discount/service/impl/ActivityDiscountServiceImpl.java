@@ -882,7 +882,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	}
 
 	@Override
-	public List<String> findByGoodsStoreSkuId(List<String> goodsStoreSkuId) {
+	public List<Map<String,Object>> findByGoodsStoreSkuId(List<String> goodsStoreSkuId) {
 		return activityDiscountMapper.findByGoodsStoreSkuId(goodsStoreSkuId);
 	}
 }
