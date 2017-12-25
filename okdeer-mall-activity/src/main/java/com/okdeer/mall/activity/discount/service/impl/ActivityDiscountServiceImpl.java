@@ -24,6 +24,7 @@ import com.okdeer.archive.goods.base.entity.GoodsSpuCategory;
 import com.okdeer.archive.goods.base.service.GoodsNavigateCategoryServiceApi;
 import com.okdeer.archive.goods.base.service.GoodsSpuCategoryServiceApi;
 import com.okdeer.archive.goods.dto.StoreSkuParamDto;
+import com.okdeer.archive.goods.service.GoodsSkuApi;
 import com.okdeer.archive.goods.spu.entity.GoodsSku;
 import com.okdeer.archive.goods.spu.service.GoodsSkuServiceApi;
 import com.okdeer.archive.goods.store.dto.StoreSkuDto;
@@ -876,5 +877,10 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	@Override
 	public List<ActivityDiscountCondition> getActivityDiscountConditions(String discountId) {
 		return activityDiscountConditionMapper.findByActivityId(discountId);
+	}
+
+	@Override
+	public List<String> findByGoodsStoreSkuId(List<String> goodsStoreSkuId) {
+		return activityDiscountMapper.findByGoodsStoreSkuId(goodsStoreSkuId);
 	}
 }

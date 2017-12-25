@@ -103,4 +103,15 @@ public interface ActivityDiscountMapper extends IBaseMapper {
 	 * @date 2017年7月27日
 	 */
 	List<ActivityDiscount> findByIds(@Param("idList")List<String> idList);
+
+	/**
+	 * @Description: 根据店铺商品id,查询团购商品id
+	 * @param goodsStoreSkuId
+	 * @return   
+	 * @return List<String>  
+	 * @throws
+	 * @author zhangchm
+	 * @date 2017年12月22日
+	 */
+	List<String> findByGoodsStoreSkuId(@Param("idList")List<String> goodsStoreSkuId);
 }

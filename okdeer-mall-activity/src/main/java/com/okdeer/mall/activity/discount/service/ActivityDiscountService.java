@@ -146,5 +146,16 @@ public interface ActivityDiscountService extends IBaseService{
 	 * @date 2017年8月25日
 	 */
 	List<ActivityDiscountCondition> getActivityDiscountConditions(String discountId);
+	
+	/**
+	 * @Description: 根据店铺商品id,查询团购商品id
+	 * @param goodsStoreSkuId
+	 * @return   
+	 * @return List<String>  
+	 * @throws
+	 * @author zhangchm
+	 * @date 2017年12月22日
+	 */
+	List<String> findByGoodsStoreSkuId(List<String> goodsStoreSkuId);
 
 }
