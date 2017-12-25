@@ -435,6 +435,16 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 				msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_LZGGATHERING;
 				serviceFkId = sendMsgParamVo.getOrderId();
 				break;
+			case orderStatusUpdate:
+				msgTitle = "您有一条订单状态更改";
+				msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_ORDER_STATUS_UPDATE;
+				serviceFkId = sendMsgParamVo.getOrderId();
+				break;
+			case returnOrderStatusUpdate:
+				msgTitle = "您有一条售后单状态改变";
+				msgTypeCustom = OrderMsgConstant.SELLER_MESSAGE_REFUND_STATUS_UPDATE;
+				serviceFkId = sendMsgParamVo.getOrderId();
+				break;
 			default:
 				break;
 		}
@@ -887,21 +897,40 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		TradeOrderRefunds tradeOrderRefunds = tradeOrderRefundContext.getTradeOrderRefunds();
 		TradeOrder tradeOrder = tradeOrderRefundContext.getTradeOrder();
 		RefundsStatusEnum refundsStatusEnum = tradeOrderRefunds.getRefundsStatus();
+		SendMsgParamVo sendMsgParamVo = new SendMsgParamVo(tradeOrderRefunds);
 		switch (refundsStatusEnum) {
 			case YSC_REFUND:
 			case FORCE_SELLER_REFUND:
 			case SELLER_REFUNDING:
 				// 卖家同意退款后发送短信
 				this.sendSmsByAgreePay(tradeOrderRefunds, tradeOrder.getPayWay());
+				// 推送消息
+				try {
+					this.sendSellerAppMessage(sendMsgParamVo, SendMsgType.returnOrderStatusUpdate);
+				} catch (Exception e) {
+					throw new MallApiException("发送消息到商家app出错",e);
+				}
 				break;
 			case REFUND_SUCCESS:
+				// 推送消息
+				try {
+					this.sendSellerAppMessage(sendMsgParamVo, SendMsgType.returnOrderStatusUpdate);
+				} catch (Exception e) {
+					throw new MallApiException("发送消息到商家app出错",e);
+				}
+				break;
 			case YSC_REFUND_SUCCESS:
 			case FORCE_SELLER_REFUND_SUCCESS:
 				// 退款成功后发送短信
 				refundAmountSuccess(tradeOrderRefundContext);
+				// 推送消息
+				try {
+					this.sendSellerAppMessage(sendMsgParamVo, SendMsgType.returnOrderStatusUpdate);
+				} catch (Exception e) {
+					throw new MallApiException("发送消息到商家app出错",e);
+				}
 				break;
 			case WAIT_SELLER_REFUND:
-				SendMsgParamVo sendMsgParamVo = new SendMsgParamVo(tradeOrderRefunds);
 				// 推送消息
 				try {
 					this.sendSellerAppMessage(sendMsgParamVo, SendMsgType.returnShipments);

@@ -23,7 +23,6 @@ import com.okdeer.mall.order.entity.TradeOrderItemDetail;
 import com.okdeer.mall.order.entity.TradeOrderRefunds;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItem;
 import com.okdeer.mall.order.entity.TradeOrderRefundsItemDetail;
-import com.okdeer.mall.order.enums.CompainStatusEnum;
 import com.okdeer.mall.order.enums.ConsumeStatusEnum;
 import com.okdeer.mall.order.enums.ConsumerCodeStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
