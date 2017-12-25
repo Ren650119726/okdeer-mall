@@ -943,6 +943,10 @@ public class StoreSkuParserBo {
 
 	
 	public void setStoreActivityType(ActivityTypeEnum storeActivityType) {
+		//有低价显示低价
+		if(this.storeActivityType == ActivityTypeEnum.LOW_PRICE){
+			return;
+		}
 		this.storeActivityType = storeActivityType;
 	}
 	
