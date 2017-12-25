@@ -103,7 +103,7 @@
     </delete>
     
      <delete id="deleteByActivityId" parameterType="java.lang.String" >
-        delete from activity_discount_item
+        delete from activity_discount_item_rel
         where activity_id = #{value}
     </delete>
     
