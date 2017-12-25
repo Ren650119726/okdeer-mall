@@ -2,6 +2,7 @@ package com.okdeer.mall.order.bo;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -945,5 +946,39 @@ public class StoreSkuParserBo {
 		this.storeActivityType = storeActivityType;
 	}
 	
-	
+	/**
+	 * @Description: 拆分商品项便于生产订单，及设置商品项的价格及活动类型
+	 * @param paramDto   
+	 * @author tuzhd
+	 * @date 2017年12月14日
+	 */
+	public List<CurrentStoreSkuBo> splitSkuMap(PlaceOrderParamDto paramDto){
+		Collection<CurrentStoreSkuBo> goodsItemList = getCurrentSkuMap().values();
+		List<CurrentStoreSkuBo> newList = Lists.newArrayList();
+		for(CurrentStoreSkuBo goods :goodsItemList){
+			paramDto.getSkuList().forEach(e -> {
+				if(e.getStoreSkuId().equals(goods.getId())){
+					CurrentStoreSkuBo skuBo = BeanMapper.map(goods, CurrentStoreSkuBo.class);
+					skuBo.setQuantity(e.getQuantity());
+					if(e.getSkuActType() == ActivityTypeEnum.JJG.ordinal() || 
+							e.getSkuActType() == ActivityTypeEnum.MMS.ordinal()){
+						//设置商品活动类型 
+						skuBo.setActivityType(e.getSkuActType());
+						skuBo.setActivityPriceType(e.getActivityPriceType());
+						if(e.getActivityPriceType() !=null && 
+								e.getActivityPriceType() != ActivityDiscountItemRelType.NORMAL_GOODS.ordinal()){
+							//满赠或换购商品记录器活动价格
+							skuBo.setAppActPrice(e.getSkuActPrice());
+							skuBo.setActPrice(e.getSkuActPrice());
+							skuBo.setBindType(e.getActivityPriceType() == ActivityDiscountItemRelType.MMS_GOODS.ordinal() 
+									? SkuBindType.MMS:SkuBindType.JJG);
+						}
+					}
+					newList.add(skuBo);
+				}
+			});
+		}
+		return newList;
+			
+	}
 }
