@@ -251,7 +251,7 @@
 				AND sku.activity_type = 0
 				AND sku.online = 1 
 				AND sku.store_id =#{storeId,jdbcType=VARCHAR}
-				<if test="limitSku == 2 and ids != null and ids.sze() > 0">
+				<if test="limitSku == 2 and ids != null and ids.size() > 0">
 					AND rel.type = 0
 				    AND rel.activity_item_id = #{activityItemId,jdbcType=VARCHAR}
 				    AND sku.sku_id IN 
@@ -259,7 +259,7 @@
 						#{id}
 				    </foreach>
 				</if>
-				<if test="limitSku == 1 and ids != null and ids.sze() > 0 ">
+				<if test="limitSku == 1 and ids != null and ids.size() > 0 ">
 					AND rel.type = 0
 				    AND rel.activity_item_id = #{activityItemId,jdbcType=VARCHAR}
 				    AND gca.navigate_category_id IN 
