@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -437,18 +438,21 @@ public class PlaceOrderServiceImpl implements RequestHandler<PlaceOrderParamDto,
 	 * @date 2017年12月14日
 	 */
 	private void saveActivityJoinRec(PlaceOrderParamDto paramDto,String orderId){
-		ActivityJoinRecord activityJoinRec = new ActivityJoinRecord();
-		activityJoinRec.setId(UuidUtils.getUuid());
-		activityJoinRec.setActivityType(paramDto.getActivityType());
-		activityJoinRec.setActivityId(paramDto.getStoreActivityId());
-		activityJoinRec.setActivityItemId(paramDto.getStoreActivityItemId());
-		activityJoinRec.setActivityNum(1);
-		activityJoinRec.setUserId(paramDto.getUserId());
-		activityJoinRec.setOrderId(orderId);
-		activityJoinRec.setDeviceId(paramDto.getDeviceId());
-		activityJoinRec.setCreateDate(new Date());
-		activityJoinRec.setDisabled(Disabled.valid);
-		activityJoinRecordMapper.add(activityJoinRec);
+		//没有店铺活动不进行保存
+		if(StringUtils.isNotBlank(paramDto.getStoreActivityId())){
+			ActivityJoinRecord activityJoinRec = new ActivityJoinRecord();
+			activityJoinRec.setId(UuidUtils.getUuid());
+			activityJoinRec.setActivityType(paramDto.getActivityType());
+			activityJoinRec.setActivityId(paramDto.getStoreActivityId());
+			activityJoinRec.setActivityItemId(paramDto.getStoreActivityItemId());
+			activityJoinRec.setActivityNum(1);
+			activityJoinRec.setUserId(paramDto.getUserId());
+			activityJoinRec.setOrderId(orderId);
+			activityJoinRec.setDeviceId(paramDto.getDeviceId());
+			activityJoinRec.setCreateDate(new Date());
+			activityJoinRec.setDisabled(Disabled.valid);
+			activityJoinRecordMapper.add(activityJoinRec);
+		}
 	}
 	
 	/**
