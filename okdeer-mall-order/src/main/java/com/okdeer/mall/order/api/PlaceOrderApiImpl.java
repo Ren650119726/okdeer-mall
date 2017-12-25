@@ -196,7 +196,7 @@ public class PlaceOrderApiImpl implements PlaceOrderApi {
 		// 设置返回给App的店铺信息
 		resp.getData().setStoreInfo(appStoreDto);
 		// 设置返回给App的商品信息
-		resp.getData().setSkuList(AppAdapter.convert(parserBo));
+		resp.getData().setSkuList(AppAdapter.convert(parserBo,paramDto));
 		if(req.getData().getOrderType() != PlaceOrderTypeEnum.CVS_ORDER){
 			resp.getData().setStoreServExt(AppAdapter.convertAppStoreServiceExtDto(storeInfo));
 			resp.getData().setSeckillInfo(AppAdapter.convert(seckillInfo));

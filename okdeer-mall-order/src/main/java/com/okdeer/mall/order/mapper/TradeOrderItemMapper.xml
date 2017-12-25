@@ -146,7 +146,7 @@
 	    item.id, item.order_id, item.store_spu_id, item.store_sku_id, item.sku_name,item.properties_indb, item.main_pic_prl, 
 	    item.spu_type, item.unit_price, item.quantity,item.weight,item.service_assurance,item.total_amount, item.actual_amount, item.preferential_price, 
 	    item.status, item.appraise,item.compain_status,item.create_time,item.recharge_mobile,item.activity_type,item.activity_price,item.activity_quantity,
-	    refound.id as refoundId,refound.refunds_status,refound.total_amount as refund_total_amount,item.unit
+	    refound.id as refoundId,refound.refunds_status,refound.total_amount as refund_total_amount,item.unit,item.bind_type
 	    FROM trade_order_item item left join trade_order_refunds_item refundItem on item.id = refundItem.order_item_id
 	    left join trade_order_refunds refound on refound.id = refundItem.refunds_id
 	    WHERE item.order_id = #{orderId,jdbcType=VARCHAR}

@@ -19,6 +19,7 @@ import com.okdeer.mall.common.utils.DateUtils;
 import com.okdeer.mall.order.dto.AppStoreDto;
 import com.okdeer.mall.order.dto.AppStoreServiceExtDto;
 import com.okdeer.mall.order.dto.AppStoreSkuDto;
+import com.okdeer.mall.order.dto.PlaceOrderParamDto;
 import com.okdeer.mall.order.dto.SeckillInfoDto;
 import com.okdeer.mall.order.dto.TimeInterval;
 import com.okdeer.mall.system.utils.ConvertUtil;
@@ -45,13 +46,15 @@ public class AppAdapter {
 	 * @author maojj
 	 * @date 2017年3月13日
 	 */
-	public static List<AppStoreSkuDto> convert(StoreSkuParserBo parserBo){
+	public static List<AppStoreSkuDto> convert(StoreSkuParserBo parserBo,PlaceOrderParamDto paramDto){
 		if(parserBo == null || parserBo.getCurrentSkuMap() == null || CollectionUtils.isEmpty(parserBo.getCurrentSkuMap().values())){
 			return null;
 		}
-		List<AppStoreSkuDto> dtoList = new ArrayList<AppStoreSkuDto>();
+		List<AppStoreSkuDto> dtoList = new ArrayList<>();
+		//拆分商品项
+		List<CurrentStoreSkuBo> newList = parserBo.splitSkuMap(paramDto);
 		AppStoreSkuDto dto = null;
-		for(CurrentStoreSkuBo skuBo : parserBo.getCurrentSkuMap().values()){
+		for(CurrentStoreSkuBo skuBo : newList){
 			dto = BeanMapper.map(skuBo, AppStoreSkuDto.class);
 			dto.setOnline(skuBo.getOnline().ordinal());
 			dto.setOnlinePrice(ConvertUtil.format(skuBo.getOnlinePrice()));

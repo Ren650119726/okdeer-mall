@@ -97,7 +97,7 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 		List<String> skuIdList = extractSkuId(paramDto.getSkuList());
 		// 查询当前商品信息
 		List<GoodsStoreSku> currentSkuList = findCurrentSkuList(skuIdList);
-		// 判断商品列表与请求清单是否一致
+		//判断商品列表与请求清单是否一致 
 		if (currentSkuList.size() != skuIdList.size()) {
 			resp.setResult(ResultCodeEnum.GOODS_IS_CHANGE);
 			return;
@@ -163,7 +163,10 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 	private List<String> extractSkuId(List<PlaceOrderItemDto> itemList) {
 		List<String> skuIdList = new ArrayList<String>();
 		for (PlaceOrderItemDto item : itemList) {
-			skuIdList.add(item.getStoreSkuId());
+			//新增的赠品或换购商品与正常商品分开显示  2017-12-25
+			if(!skuIdList.contains(item.getStoreSkuId())){
+				skuIdList.add(item.getStoreSkuId());
+			}
 		}
 		return skuIdList;
 	}

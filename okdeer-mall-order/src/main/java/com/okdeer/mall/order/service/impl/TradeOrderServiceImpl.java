@@ -4378,6 +4378,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                 item.put("skuActualAmount", tradeOrderItem.getActualAmount().toString());
                 item.put("preferentialPrice", tradeOrderItem.getPreferentialPrice() == null ? "0.00"
                         : ConvertUtil.format(tradeOrderItem.getPreferentialPrice()));
+                item.put("bindType", tradeOrderItem.getBindType().ordinal());
                 // 服务保障
                 String serviceAssurance = "0";
                 // 订单是否完成

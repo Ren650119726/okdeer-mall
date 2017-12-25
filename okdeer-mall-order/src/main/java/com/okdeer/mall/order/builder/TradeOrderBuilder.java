@@ -501,39 +501,6 @@ public class TradeOrderBuilder {
 		}
 	}
 	
-	/**
-	 * @Description: 拆分商品项便于生产订单，及设置商品项的价格及活动类型
-	 * @param paramDto   
-	 * @author tuzhd
-	 * @date 2017年12月14日
-	 */
-	private List<CurrentStoreSkuBo> splitSkuMap(PlaceOrderParamDto paramDto,Collection<CurrentStoreSkuBo> goodsItemList){
-		List<CurrentStoreSkuBo> newList = Lists.newArrayList();
-		for(CurrentStoreSkuBo goods :goodsItemList){
-			paramDto.getSkuList().forEach(e -> {
-				if(e.getStoreSkuId().equals(goods.getId())){
-					CurrentStoreSkuBo skuBo = BeanMapper.map(goods, CurrentStoreSkuBo.class);
-					skuBo.setQuantity(e.getQuantity());
-					if(e.getSkuActType() == ActivityTypeEnum.JJG.ordinal() || 
-							e.getSkuActType() == ActivityTypeEnum.MMS.ordinal()){
-						//设置商品活动类型 
-						skuBo.setActivityType(e.getSkuActType());
-						if(e.getActivityPriceType() !=null && 
-								e.getActivityPriceType() != ActivityDiscountItemRelType.NORMAL_GOODS.ordinal()){
-							//满赠或换购商品记录器活动价格
-							skuBo.setAppActPrice(e.getSkuActPrice());
-							skuBo.setActPrice(e.getSkuActPrice());
-							skuBo.setBindType(e.getActivityPriceType() == ActivityDiscountItemRelType.MMS_GOODS.ordinal() 
-									? SkuBindType.MMS:SkuBindType.JJG);
-						}
-					}
-					newList.add(skuBo);
-				}
-			});
-		}
-		return newList;
-			
-	}
 	
 	/**
 	 * @Description: 构建交易订单项
@@ -561,10 +528,9 @@ public class TradeOrderBuilder {
 				: parserBo.getEnjoyFavourSkuIdList().size();
 		TradeOrderItem tradeOrderItem = null;
 
-		Collection<CurrentStoreSkuBo> skuBoSet = parserBo.getCurrentSkuMap().values();
 		List<CurrentStoreSkuBo> goodsItemList = new ArrayList<>();
 		//拆分订单项
-		goodsItemList.addAll(splitSkuMap(paramDto, skuBoSet));
+		goodsItemList.addAll(parserBo.splitSkuMap(paramDto));
 		
 		ComparatorChain chain = new ComparatorChain();
 		chain.addComparator(new BeanComparator("onlinePrice"), false);
