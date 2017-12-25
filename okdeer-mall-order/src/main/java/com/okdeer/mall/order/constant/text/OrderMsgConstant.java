@@ -63,6 +63,15 @@ public interface OrderMsgConstant {
 	 */
 	String SELLER_MESSAGE_LZGGATHERING = "230";
 	
+	/**
+	 * 便利店订单状态改变标识
+	 */
+	String SELLER_MESSAGE_ORDER_STATUS_UPDATE = "231";
+	
+	/**
+	 * 便利店退款单状态改变标识
+	 */
+	String SELLER_MESSAGE_REFUND_STATUS_UPDATE = "232";
 	/********************用户表************************/
 
 

@@ -54,6 +54,7 @@ import com.okdeer.mall.order.enums.OrderCancelType;
 import com.okdeer.mall.order.enums.OrderStatusEnum;
 import com.okdeer.mall.order.enums.OrderTypeEnum;
 import com.okdeer.mall.order.enums.PayWayEnum;
+import com.okdeer.mall.order.enums.SendMsgType;
 import com.okdeer.mall.order.mapper.TradeOrderItemMapper;
 import com.okdeer.mall.order.mapper.TradeOrderLogMapper;
 import com.okdeer.mall.order.mapper.TradeOrderMapper;
@@ -62,9 +63,9 @@ import com.okdeer.mall.order.service.StockOperateService;
 import com.okdeer.mall.order.service.TradeMessageService;
 import com.okdeer.mall.order.service.TradeOrderPayService;
 import com.okdeer.mall.order.service.TradeOrderTraceService;
-import com.okdeer.mall.order.service.TradePinMoneyObtainService;
 import com.okdeer.mall.order.service.TradePinMoneyUseService;
 import com.okdeer.mall.order.service.TradeorderProcessLister;
+import com.okdeer.mall.order.vo.SendMsgParamVo;
 import com.okdeer.mall.system.mq.RollbackMQProducer;
 
 /**
@@ -92,9 +93,6 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 
 	@Autowired
 	private ActivityCouponsRecordService activityCouponsRecordService;
-
-	@Autowired
-	private TradePinMoneyObtainService tradePinMoneyObtainService;
 
 	@Autowired
 	private TradePinMoneyUseService tradePinMoneyUseService;
@@ -290,6 +288,10 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 				// 如果不是支付中的状态是需要退款给用户的
 				this.tradeOrderPayService.cancelOrderPay(tradeOrder);
 			}
+			// begin V2.7.0 xuzq 20171225 订单状态改变 推送商家版app消息
+			SendMsgParamVo sendMsgParamVo = new SendMsgParamVo(tradeOrder);
+			tradeMessageService.sendSellerAppMessage(sendMsgParamVo, SendMsgType.orderStatusUpdate);
+			// end V2.7.0 xuzq 20171225 订单状态改变 推送商家版app消息
 		} catch (Exception e) {
 			rollbackMQProducer.sendStockRollbackMsg(rpcIdList);
 			throw e;
