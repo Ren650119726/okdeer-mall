@@ -261,6 +261,15 @@ public class CheckSkuServiceImpl implements RequestHandler<PlaceOrderParamDto, P
 			} else if (!currentSku.getUpdateTime().equals(item.getUpdateTime())) {
 				checkFlag = false;
 			}
+			
+			//如果加价购 满赠 N件X元活动没有传递店铺活动id 会跳过校验需要核查
+			if((currentSku.getActivityType()== ActivityTypeEnum.NJXY.ordinal() ||
+			   currentSku.getActivityType()== ActivityTypeEnum.MMS.ordinal() ||
+			   currentSku.getActivityType()== ActivityTypeEnum.JJG.ordinal()
+			   ) && StringUtils.isBlank(currentSku.getActivityId())){
+				checkFlag = false;
+			}
+			
 			//检查不合法
 			if(!checkFlag){
 				if(kindSize > 1){
