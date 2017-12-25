@@ -260,7 +260,7 @@
 						#{id}
 				    </foreach>
 				</if>
-				<if test="limitSku == 2 and ids != null and ids.sze() > 0 ">
+				<if test="limitSku == 1 and ids != null and ids.sze() > 0 ">
 					AND rel.type = 0
 				    AND rel.activity_item_id = #{activityItemId,jdbcType=VARCHAR}
 				    AND gca.navigate_category_id IN 
