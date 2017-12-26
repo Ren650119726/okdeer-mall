@@ -640,7 +640,8 @@
 	  <select id="findByGoodsStoreSkuId" resultType="java.util.Map" parameterType="java.util.List">
 		  	 SELECT
 		  		 discount.id discountId,
-				discountGroup.store_sku_id storeSkuId
+				discountGroup.store_sku_id storeSkuId,
+				IFNULL(discountGroup.group_price,0) groupPrice
 			FROM
 				activity_discount discount
 			INNER JOIN activity_discount_group discountGroup ON discount.id = discountGroup.discount_id
