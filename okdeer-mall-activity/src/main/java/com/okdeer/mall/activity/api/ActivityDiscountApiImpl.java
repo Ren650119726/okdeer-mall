@@ -1,6 +1,7 @@
 package com.okdeer.mall.activity.api;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
@@ -70,7 +71,7 @@ public class ActivityDiscountApiImpl implements ActivityDiscountApi{
 	}
 
 	@Override
-	public List<String> findByGoodsStoreSkuId(List<String> goodsStoreSkuId) {
+	public List<Map<String,Object>> findByGoodsStoreSkuId(List<String> goodsStoreSkuId) {
 		return activityDiscountService.findByGoodsStoreSkuId(goodsStoreSkuId);
 	}
 
