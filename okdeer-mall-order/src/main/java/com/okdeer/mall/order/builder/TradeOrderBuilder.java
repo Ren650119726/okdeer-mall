@@ -591,6 +591,9 @@ public class TradeOrderBuilder {
 				//参加以上活动商品不可退
 				tradeOrderItem.setStoreActivityItemId(skuBo.getStoreActivityItemId());
 				tradeOrderItem.setServiceAssurance(0);
+				if(skuBo.getBindType() == SkuBindType.JJG || skuBo.getBindType() == SkuBindType.MMS){
+					tradeOrderItem.setUnitPrice(skuBo.getActPrice());
+				}	
 				tradeOrderItem.setStoreActivityType(ActivityTypeEnum.enumValueOf(skuBo.getActivityType()));
 				tradeOrderItem.setStoreActivityId(skuBo.getActivityId());
 			}else{
@@ -609,8 +612,6 @@ public class TradeOrderBuilder {
 			if(skuBo.getActivityType() == ActivityTypeEnum.NJXY.ordinal()){
 				storeFavourItem = skuBo.getPreferentialPrice();
 				totalAmountOfItem = totalAmountOfItem.add(storeFavourItem);
-			}else{
-				tradeOrderItem.setUnitPrice(skuBo.getActPrice());
 			}
 			tradeOrderItem.setTotalAmount(totalAmountOfItem);
 			
