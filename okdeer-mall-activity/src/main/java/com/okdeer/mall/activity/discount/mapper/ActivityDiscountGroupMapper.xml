@@ -139,7 +139,7 @@
                 #{createUserId,jdbcType=VARCHAR},
             </if>
             <if test="sort != null" >
-                #{item.sort,jdbcType=INTEGER},
+                #{sort,jdbcType=INTEGER},
             </if>
         </trim>
     </insert>
@@ -184,7 +184,7 @@
                 create_user_id = #{createUserId,jdbcType=VARCHAR},
             </if>
             <if test="sort != null" >
-               #{item.sort,jdbcType=INTEGER},
+               sort = #{sort,jdbcType=INTEGER},
             </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}

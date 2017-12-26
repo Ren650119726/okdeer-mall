@@ -8,6 +8,7 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.archive.goods.base.entity.GoodsSpuCategory;
 import com.okdeer.base.common.utils.PageUtils;
 import com.okdeer.mall.activity.discount.dto.ActivityGoodsGroupSkuDto;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscountGroup;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountGroupApi;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountGroupService;
 
@@ -38,4 +39,8 @@ public class ActivityDiscountGroupApiImpl implements ActivityDiscountGroupApi {
 		return activityDiscountGroupService.findGroupGoodsList(param, pageNumber, pageSize);
 	}
 
+	@Override
+	public void update(ActivityDiscountGroup group) throws Exception{
+		activityDiscountGroupService.update(group);
+	}
 }
