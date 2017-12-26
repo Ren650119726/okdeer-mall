@@ -86,4 +86,20 @@
         delete from activity_advert_draw
         where activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
     </delete>
+    <!-- 条件查询列表 -->
+    <select id="findList" resultMap="BaseResultMap" parameterType="com.okdeer.mall.activity.prize.entity.ActivityAdvertDraw">
+        select 
+        <include refid="Base_Column_List" />
+        from activity_advert_draw
+        where 1=1
+         <if test="luckDrawId != null" >
+            and luck_draw_id = #{luckDrawId,jdbcType=VARCHAR}
+         </if>
+         <if test="activityAdvertId != null" >
+            and activity_advert_id = #{activityAdvertId,jdbcType=VARCHAR}
+         </if>
+         <if test="modelId != null" >
+            and model_id = #{modelId,jdbcType=VARCHAR}
+         </if>
+    </select>
 </mapper>

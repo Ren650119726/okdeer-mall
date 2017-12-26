@@ -986,6 +986,10 @@
 			AND update_time <![CDATA[ <= ]]>
 				#{endUpdateTime,jdbcType=TIMESTAMP}
 		</if>
+		<if test="actualAmount != null">
+			AND actual_amount <![CDATA[ >= ]]>
+				#{actualAmount,jdbcType=DECIMAL}
+		</if>
 		<if test="orderBy != null and orderBy !='' ">
 		  	ORDER BY received_time
 		</if>
@@ -6211,7 +6215,8 @@
 			 INNER JOIN trade_order_pay p ON trade.id = p.order_id
 			 LEFT JOIN trade_order_refunds r ON trade.id=r.`order_id`
 			 <!-- V2.6.3 xuzq 20171102 查询所有订单来源数据 会员卡和扫码购支付类型为null -->
-		WHERE (trade.pay_way = 0 or (trade.`order_resource` in (4,5) and trade.pay_way is null))
+			 <!-- V2.7.0 xuzq 20171218 pay_way 1107已经修复默认为0 -->
+		WHERE trade.pay_way = 0
 			<if test="userId != null and userId !='' ">
 			  	AND trade.user_id = #{userId,jdbcType=VARCHAR} 
 			</if>
@@ -6239,6 +6244,16 @@
 			<if test="endTime != null">
 				AND trade.create_time <![CDATA[ <= ]]>
 					#{endTime,jdbcType=TIMESTAMP}
+			</if>
+			<!-- 起始更新时间-->
+			<if test="startUpdateTime != null">
+				AND trade.update_time <![CDATA[ >= ]]>
+					#{startUpdateTime,jdbcType=TIMESTAMP}
+			</if>
+			<!-- 结束更新时间 -->
+			<if test="endUpdateTime != null">
+				AND trade.update_time <![CDATA[ <= ]]>
+					#{endUpdateTime,jdbcType=TIMESTAMP}
 			</if>
 	</select>
 	

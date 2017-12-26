@@ -1,6 +1,7 @@
 
 package com.okdeer.mall.order.service.impl;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -33,10 +34,17 @@ import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.service.ActivityCollectCouponsService;
 import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
 import com.okdeer.mall.activity.discount.service.ActivityDiscountService;
+import com.okdeer.mall.activity.prize.entity.ActivityLuckDraw;
+import com.okdeer.mall.activity.prize.entity.ActivityLuckDrawVo;
+import com.okdeer.mall.activity.prize.service.ActivityDrawRecordService;
+import com.okdeer.mall.activity.prize.service.ActivityLuckDrawService;
+import com.okdeer.mall.activity.seckill.enums.SeckillStatusEnum;
 import com.okdeer.mall.common.dto.Response;
 import com.okdeer.mall.common.utils.RobotUserUtil;
 import com.okdeer.mall.member.member.entity.MemberConsigneeAddress;
+import com.okdeer.mall.member.member.entity.SysBuyerExt;
 import com.okdeer.mall.member.service.MemberConsigneeAddressService;
+import com.okdeer.mall.member.service.SysBuyerExtService;
 import com.okdeer.mall.order.bo.TradeOrderRefundContextBo;
 import com.okdeer.mall.order.constant.mq.PayMessageConstant;
 import com.okdeer.mall.order.dto.OrderRefundQueryParamDto;
@@ -155,7 +163,15 @@ public class TradeOrderRefundsServiceImpl extends AbstractTradeOrderRefundsServi
 
 	@Resource
 	private StockOperateService stockOperateService;
-
+	
+	@Autowired
+	private SysBuyerExtService sysBuyerExtService;
+	
+	@Autowired
+	private ActivityLuckDrawService activityLuckDrawService;
+	
+	@Autowired
+	ActivityDrawRecordService  activityDrawRecordService;
 	/**
 	 * 根据主键查询退款单
 	 *
@@ -213,8 +229,37 @@ public class TradeOrderRefundsServiceImpl extends AbstractTradeOrderRefundsServi
 		this.tradeOrderRefundsItemService.insert(orderRefunds.getTradeOrderRefundsItem());
 		// 保存退款凭证
 		tradeOrderRefundsCertificateService.addCertificate(certificate);
+		// xuzq 12月套鹿活动 调用方法 将抽奖次数减一
+		activityCutPrizeCcount(orderRefunds);
 	}
-
+	/**
+	 * 有判断是否有进行中的抽奖活动 没有的话不会扣减
+	 * @Description: 用户发起退款 就减一次抽奖次数
+	 * @param tradeOrder   
+	 * @return void  
+	 * @author tuzhd
+	 * @date 2017年1月11日
+	 */
+	private void activityCutPrizeCcount(TradeOrderRefunds orderRefunds)throws Exception{
+		TradeOrder tradeOrder = tradeOrderMapper.selectByPrimaryKey(orderRefunds.getOrderId());
+		// 小于10块的不扣减次数 直接返回
+		if(tradeOrder.getActualAmount().compareTo(new BigDecimal(10)) < 0){
+			return;
+		}
+		SysBuyerExt user = sysBuyerExtService.findByUserId(tradeOrder.getUserId());
+		// 用户抽奖次数大于0的时候才扣减
+		if(user != null && user.getPrizeCount() > 0 ){
+			//查询当前进行中的抽奖活动 
+			ActivityLuckDrawVo vo =new ActivityLuckDrawVo();
+			vo.setStatus(SeckillStatusEnum.ing);
+			List<ActivityLuckDraw> al = activityLuckDrawService.findLuckDrawList(vo);
+			if(CollectionUtils.isEmpty(al)){
+				return;
+			}
+			//只要抽奖次数大于0 每次退款都扣减次数
+			sysBuyerExtService.updateCutPrizeCount(tradeOrder.getUserId());
+		}
+	}
 	/**
 	 * 更新退款单并添加凭证
 	 */
