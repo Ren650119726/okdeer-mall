@@ -427,6 +427,8 @@ public class StoreSkuParserBo {
 			//属于非正常购买商品，因为验证过合法,判断null兼容
 			}else if((item.getSkuActType() == ActivityTypeEnum.JJG.ordinal() || 
 					item.getSkuActType() == ActivityTypeEnum.MMS.ordinal())){
+				//因为商品是分开显示的，所以不能使用skuBo的数量
+				BigDecimal itemActPrice = skuBo.getOnlinePrice().multiply(BigDecimal.valueOf(item.getQuantity()));
 				skuBo.setActivityType(item.getSkuActType());
 				skuBo.setStoreActivityItemId(paramDto.getStoreActivityItemId());
 				//设置店铺活动类型
@@ -435,14 +437,16 @@ public class StoreSkuParserBo {
 				skuBo.setActivityPriceType(item.getActivityPriceType());
 				//设置商品活动价格，参与活动的正常商品不设置
 				if(item.getActivityPriceType() !=null && item.getActivityPriceType() != ActivityDiscountItemRelType.NORMAL_GOODS.ordinal()){
+					//因为商品是分开显示的，所以不能使用skuBo的数量
+					itemActPrice = item.getSkuActPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
 					skuBo.setActPrice(item.getSkuActPrice());
-					//满赠或换购商品记录器活动价格
-					BigDecimal itemActPrice = item.getSkuActPrice().multiply(BigDecimal.valueOf(skuBo.getQuantity()));
+					//满赠或换购商品记录器活动价格 
+					itemPrice = skuBo.getOnlinePrice().multiply(BigDecimal.valueOf(item.getQuantity()));
 					//用于排除加价购商品 不计算到优惠金额中
 					item.setPreferentialPrice(itemPrice);
 					BigDecimal perefer =itemPrice.subtract(itemActPrice);
 					skuBo.setPreferentialPrice(perefer);
-					//N件X元 满赠 加价购商品的优惠金额
+					//N件X元 满赠 加价购商品的优惠金额 
 					this.totalStorePereferAmount = totalStorePereferAmount.add(perefer);
 					//需要排除参与享受优惠的金额
 					this.totalAmountInLowPrice = totalAmountInLowPrice.add(itemPrice);
