@@ -43,6 +43,8 @@ import com.okdeer.common.consts.LogConstants;
 import com.okdeer.mall.activity.coupons.enums.ActivityDiscountItemRelType;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
 import com.okdeer.mall.activity.coupons.mapper.ActivityCouponsRecordMapper;
+import com.okdeer.mall.activity.discount.entity.ActivityDiscount;
+import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
 import com.okdeer.mall.activity.discount.mapper.ActivityDiscountMapper;
 import com.okdeer.mall.activity.seckill.entity.ActivitySeckill;
 import com.okdeer.mall.common.utils.DateUtils;
@@ -229,7 +231,7 @@ public class TradeOrderBuilder {
 		tradeOrder.setTotalKind(paramDto.getSkuList().size());
 		// 设置订单总数量
 		tradeOrder.setTotalQuantity(parserBo.getTotalQuantity());
-		// 设置订单总金额
+		// 设置订单总金额  不包括N件X元 满赠 加价购优惠
 		tradeOrder.setTotalAmount(parserBo.getTotalItemAmount());
 		// 设置订单状态
 		setOrderStatus(tradeOrder,paramDto.getPayType());
@@ -384,13 +386,22 @@ public class TradeOrderBuilder {
 	 */
 	public void parseFavour(TradeOrder tradeOrder,PlaceOrderParamDto paramDto) throws ServiceException{
 		StoreSkuParserBo parserBo = (StoreSkuParserBo) paramDto.get("parserBo");
+		
 		// 平台优惠
 		tradeOrder.setPlatformPreferential(format(parserBo.getPlatformPreferential()));
 		// 店铺优惠
 		if(parserBo.isLowFavour()){
 			// 如果有低价优惠.记录店铺优惠类型和店铺优惠金额
 			tradeOrder.setStoreActivityType(parserBo.getStoreActivityType());
-			tradeOrder.setStorePreferential(parserBo.getTotalLowFavour());
+			ActivityDiscount activity =(ActivityDiscount) paramDto.get("storeActivity");
+			if(activity != null && (activity.getType() == ActivityDiscountType.JJG || activity.getType() == ActivityDiscountType.MMS)){
+				//店铺不保存 满赠 加价购优惠
+				tradeOrder.setStorePreferential(parserBo.getTotalLowFavour().subtract(parserBo.getTotalStorePereferAmount()));
+				tradeOrder.setTotalAmount(tradeOrder.getTotalAmount().subtract(parserBo.getTotalStorePereferAmount()));
+			}else{
+				tradeOrder.setStorePreferential(parserBo.getTotalLowFavour());
+			}
+			
 			tradeOrder.setStoreActivityId(parserBo.getLowActivityId());
 		} else if (paramDto.getOrderType() == PlaceOrderTypeEnum.SECKILL_ORDER){
 			// 如果是秒杀订单。优惠是活动价格-商品原价。秒杀属于店铺优惠
@@ -580,9 +591,6 @@ public class TradeOrderBuilder {
 				//参加以上活动商品不可退
 				tradeOrderItem.setStoreActivityItemId(skuBo.getStoreActivityItemId());
 				tradeOrderItem.setServiceAssurance(0);
-				if(skuBo.getBindType() != SkuBindType.MMS){
-					storeFavourItem = skuBo.getPreferentialPrice();
-				}
 				tradeOrderItem.setStoreActivityType(ActivityTypeEnum.enumValueOf(skuBo.getActivityType()));
 				tradeOrderItem.setStoreActivityId(skuBo.getActivityId());
 			}else{
@@ -597,8 +605,13 @@ public class TradeOrderBuilder {
 			tradeOrderItem.setUnit(skuBo.getUnit());
 
 			// 订单项总金额 //如果为N件X元、加价购之类的优惠项，需要记录到总金额中
-			BigDecimal totalAmountOfItem = skuBo.getPreferentialPrice() != null ? 
-					skuBo.getTotalAmount().add(skuBo.getPreferentialPrice()) : skuBo.getTotalAmount() ;
+			BigDecimal totalAmountOfItem = skuBo.getTotalAmount();
+			if(skuBo.getActivityType() == ActivityTypeEnum.NJXY.ordinal()){
+				storeFavourItem = skuBo.getPreferentialPrice();
+				totalAmountOfItem = totalAmountOfItem.add(storeFavourItem);
+			}else{
+				tradeOrderItem.setUnitPrice(skuBo.getActPrice());
+			}
 			tradeOrderItem.setTotalAmount(totalAmountOfItem);
 			
 			// 计算订单项平台优惠金额
@@ -615,7 +628,10 @@ public class TradeOrderBuilder {
 						favourItem = skuBo.getOnlinePrice()
 								.multiply(BigDecimal.valueOf(skuBo.getQuantity() - skuBo.getSkuActQuantity()))
 								.multiply(platformFavour).divide(totalAmount, 2, BigDecimal.ROUND_FLOOR);
-					} else {
+					} else if(skuBo.getActivityType() == ActivityTypeEnum.NJXY.ordinal()){
+						favourItem = skuBo.getTotalAmount().multiply(platformFavour).divide(totalAmount, 2,
+								BigDecimal.ROUND_FLOOR);
+					}else {
 						favourItem = totalAmountOfItem.multiply(platformFavour).divide(totalAmount, 2,
 								BigDecimal.ROUND_FLOOR);
 					}
@@ -650,6 +666,8 @@ public class TradeOrderBuilder {
 				// 实付金额为0的到店消费商品，设置服务保障为无
 				tradeOrderItem.setServiceAssurance(0);
 			}
+			
+			
 			orderItemList.add(tradeOrderItem);
 		}
 		// Begin V2.6.1 added by maojj 2017-09-01
