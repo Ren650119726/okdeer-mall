@@ -282,6 +282,9 @@ public class InvitationCodeServiceImpl implements InvitationCodeServiceApi, Invi
 
 	@Override
 	public SysUserInvitationCode findInvitationCodeByUserId(String userId, InvitationUserType userType) {
+		if(userType == InvitationUserType.store){
+			return this.sysUserInvitationCodeMapper.findInvitationCodeByStoreId(userId);
+		}
 		return this.sysUserInvitationCodeMapper.findInvitationCodeByUserId(userId, userType.ordinal());
 	}
 
