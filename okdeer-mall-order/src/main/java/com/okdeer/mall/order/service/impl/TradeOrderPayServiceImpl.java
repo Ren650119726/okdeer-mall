@@ -746,6 +746,11 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		payTradeVo.setServiceNo(order.getOrderNo());// 服务单号，例如订单号、退单号
 		payTradeVo.setBatchNo(TradeNumUtil.getTradeNum());
 		payTradeVo.setStoreId(order.getStoreId());
+		BigDecimal subsidies = calculPlatformPrefeAmount(order);
+		if (subsidies.compareTo(BigDecimal.ZERO) > 0) {
+			payTradeVo.setActivitier(yscWalletAccount);
+			payTradeVo.setPrefeAmount(subsidies);
+		}
 		return payTradeVo;
 	}
 
@@ -840,14 +845,8 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 		} else {
 			payReqest.setApplicationEnum(ApplicationEnum.CONVENIENCE_STORE);
 		}
-		// 平台补贴
-		BigDecimal subsidies = BigDecimal.ZERO;
-		if (order.getPlatformPreferential() != null && order.getPlatformPreferential().compareTo(BigDecimal.ZERO) > 0) {
-			subsidies.add(order.getPlatformPreferential());
-		}
-		if (order.getPinMoney() != null && order.getPinMoney().compareTo(BigDecimal.ZERO) > 0) {
-			subsidies.add(order.getPinMoney());
-		}
+
+		BigDecimal subsidies = calculPlatformPrefeAmount(order);
 		if (subsidies.compareTo(BigDecimal.ZERO) > 0) {
 			payReqest.setActivitier(yscWalletAccount);
 			payReqest.setPrefeAmount(subsidies);
@@ -892,5 +891,17 @@ public class TradeOrderPayServiceImpl implements TradeOrderPayService {
 			payReqest.setTradeType(PayTradeTypeEnum.APP_BESTPAY);
 		}
 		return payReqest;
+	}
+
+	private BigDecimal calculPlatformPrefeAmount(TradeOrder order) {
+		// 平台补贴
+		BigDecimal subsidies = BigDecimal.ZERO;
+		if (order.getPlatformPreferential() != null && order.getPlatformPreferential().compareTo(BigDecimal.ZERO) > 0) {
+			subsidies.add(order.getPlatformPreferential());
+		}
+		if (order.getPinMoney() != null && order.getPinMoney().compareTo(BigDecimal.ZERO) > 0) {
+			subsidies.add(order.getPinMoney());
+		}
+		return subsidies;
 	}
 }
