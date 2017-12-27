@@ -410,12 +410,8 @@ public class CancelOrderServiceImpl implements CancelOrderService {
 		}
 		
 		// 团购活动参与记录 或满赠 或加价购或N件X元活动
-		if (tradeOrder.getActivityType() == ActivityTypeEnum.GROUP_ACTIVITY ||
-			tradeOrder.getActivityType() == ActivityTypeEnum.MMS ||
-			tradeOrder.getActivityType() == ActivityTypeEnum.JJG ||
-			tradeOrder.getActivityType() == ActivityTypeEnum.NJXY) {
-			activityJoinRecordService.updateByOrderId(new ActivityJoinRecord(tradeOrder.getId(), Disabled.invalid));
-		}
+		activityJoinRecordService.updateByOrderId(new ActivityJoinRecord(tradeOrder.getId(), Disabled.invalid));
+		
 		if (tradeOrder.getActivityType() == ActivityTypeEnum.SECKILL_ACTIVITY) {
 			// 秒杀活动释放购买记录
 			activitySeckillRecordService.updateStatusBySeckillId(tradeOrder.getId());
