@@ -37,7 +37,14 @@ public interface ActivityPrizeRecordService extends IBaseService {
 	 */
 	PageUtils<ActivityPrizeRecordVo> findPrizeRecord(String activityAdvertId,
 			int pageNumber, int pageSize);
-	
+	/**
+	 * 
+	 * @Description: 获取奖品的数量
+	 * @param prizeId
+	 * @return   
+	 * @author xuzq01
+	 * @date 2017年12月12日
+	 */
 	int findCountByPrizeId(String prizeId);
 	
 	int addPrizeRecord(String collectId,String userId,String luckDrawId,String prizeId,int isOffer);

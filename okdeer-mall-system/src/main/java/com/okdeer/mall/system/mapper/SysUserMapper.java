@@ -45,7 +45,7 @@ public interface SysUserMapper extends IBaseCrudMapper {
 	SysUser getUserById(String loginId);
 
 	/**
-	 * 根据店铺ID查询店铺内的用户
+	 * 根据店铺ID查询店铺关联的管理用户
 	 * @author zengj
 	 * @param storeId
 	 * @return

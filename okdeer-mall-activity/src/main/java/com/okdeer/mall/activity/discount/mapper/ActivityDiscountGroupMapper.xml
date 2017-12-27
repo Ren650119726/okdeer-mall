@@ -139,7 +139,7 @@
                 #{createUserId,jdbcType=VARCHAR},
             </if>
             <if test="sort != null" >
-                #{item.sort,jdbcType=INTEGER},
+                #{sort,jdbcType=INTEGER},
             </if>
         </trim>
     </insert>
@@ -184,7 +184,7 @@
                 create_user_id = #{createUserId,jdbcType=VARCHAR},
             </if>
             <if test="sort != null" >
-               #{item.sort,jdbcType=INTEGER},
+               sort = #{sort,jdbcType=INTEGER},
             </if>
         </set>
         where id = #{id,jdbcType=VARCHAR}
@@ -276,7 +276,15 @@
 			    and sku.spu_category_id = #{spuCategoryId,jdbcType=VARCHAR}
 		     </if>
 		GROUP BY g.store_sku_id
-		ORDER BY g.sort DESC,ad.create_time DESC,g.create_time DESC
+		<if test="sortType == null or sortType == 0 ">
+		    ORDER BY g.sort DESC,ad.create_time DESC,g.create_time DESC
+	    </if>
+		<if test="sortType != null and sortType == 1 ">
+		    ORDER BY g.group_price DESC,ad.create_time DESC,g.create_time DESC
+	    </if>
+	    <if test="sortType != null and sortType == 2 ">
+		    ORDER BY g.group_price,ad.create_time DESC,g.create_time DESC
+	    </if>
 	</select>
 	
 	

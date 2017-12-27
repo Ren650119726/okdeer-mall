@@ -6,6 +6,8 @@
  */    
 package com.okdeer.mall.activity.prize.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
@@ -61,6 +63,11 @@ public class ActivityAdvertDrawServiceImpl extends BaseServiceImpl implements Ac
 	 */
 	public int deleteByActivityAdvertId(String activityAdvertId){
 		return activityAdvertDrawMapper.deleteByActivityAdvertId(activityAdvertId);
+	}
+
+	@Override
+	public List<ActivityAdvertDraw> findList(ActivityAdvertDraw activityAdvertDraw) {
+		return activityAdvertDrawMapper.findList(activityAdvertDraw);
 	}
     
 }

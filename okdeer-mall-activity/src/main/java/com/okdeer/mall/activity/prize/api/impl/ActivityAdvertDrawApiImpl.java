@@ -7,6 +7,8 @@
 package com.okdeer.mall.activity.prize.api.impl;
 
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
@@ -55,5 +57,10 @@ public class ActivityAdvertDrawApiImpl implements ActivityAdvertDrawApi {
     public ActivityAdvertDraw findAdvertDrawByIdNo(int modelNo,String activityAdvertId){
     	return activityAdvertDrawService.findAdvertDrawByIdNo(modelNo, activityAdvertId);
     }
+
+	@Override
+	public List<ActivityAdvertDraw> findList(ActivityAdvertDraw activityAdvertDraw) {
+		return activityAdvertDrawService.findList(activityAdvertDraw);
+	}
 	
 }

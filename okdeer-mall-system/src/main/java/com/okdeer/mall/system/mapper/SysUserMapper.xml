@@ -360,8 +360,9 @@
   <select id="selectUserByStoreId" parameterType="java.lang.String" resultMap="BaseResultMap">
     select su.id, su.code_no, su.user_name, su.login_name, su.login_password, su.parent_id, su.path_ids, su.status, 
     su.type, su.email, su.phone, su.tel, su.birthday, su.description, su.last_visit, su.data_source, su.system_id, 
-    su.child_enabled, su.create_time, su.create_user_id, su.update_time, su.update_user_id, su.pwd_update_time,su.disabled,su.is_accept FROM
-    sys_user su inner join store_member_relation member ON su.id = member.sys_user_id
+    su.child_enabled, su.create_time, su.create_user_id, su.update_time, su.update_user_id, su.pwd_update_time,
+    su.disabled,su.is_accept 
+    FROM sys_user su inner join store_member_relation member ON su.id = member.sys_user_id
     where member.store_id=#{storeId,jdbcType=VARCHAR}
     AND su.disabled = 0
     AND member.disabled = 0

@@ -2,6 +2,7 @@ package com.okdeer.mall.order.bo;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -426,6 +427,8 @@ public class StoreSkuParserBo {
 			//属于非正常购买商品，因为验证过合法,判断null兼容
 			}else if((item.getSkuActType() == ActivityTypeEnum.JJG.ordinal() || 
 					item.getSkuActType() == ActivityTypeEnum.MMS.ordinal())){
+				//因为商品是分开显示的，所以不能使用skuBo的数量
+				BigDecimal itemActPrice = skuBo.getOnlinePrice().multiply(BigDecimal.valueOf(item.getQuantity()));
 				skuBo.setActivityType(item.getSkuActType());
 				skuBo.setStoreActivityItemId(paramDto.getStoreActivityItemId());
 				//设置店铺活动类型
@@ -434,14 +437,16 @@ public class StoreSkuParserBo {
 				skuBo.setActivityPriceType(item.getActivityPriceType());
 				//设置商品活动价格，参与活动的正常商品不设置
 				if(item.getActivityPriceType() !=null && item.getActivityPriceType() != ActivityDiscountItemRelType.NORMAL_GOODS.ordinal()){
+					//因为商品是分开显示的，所以不能使用skuBo的数量
+					itemActPrice = item.getSkuActPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
 					skuBo.setActPrice(item.getSkuActPrice());
-					//满赠或换购商品记录器活动价格
-					BigDecimal itemActPrice = item.getSkuActPrice().multiply(BigDecimal.valueOf(skuBo.getQuantity()));
+					//满赠或换购商品记录器活动价格 
+					itemPrice = skuBo.getOnlinePrice().multiply(BigDecimal.valueOf(item.getQuantity()));
 					//用于排除加价购商品 不计算到优惠金额中
 					item.setPreferentialPrice(itemPrice);
 					BigDecimal perefer =itemPrice.subtract(itemActPrice);
 					skuBo.setPreferentialPrice(perefer);
-					//N件X元 满赠 加价购商品的优惠金额
+					//N件X元 满赠 加价购商品的优惠金额 
 					this.totalStorePereferAmount = totalStorePereferAmount.add(perefer);
 					//需要排除参与享受优惠的金额
 					this.totalAmountInLowPrice = totalAmountInLowPrice.add(itemPrice);
@@ -942,8 +947,46 @@ public class StoreSkuParserBo {
 
 	
 	public void setStoreActivityType(ActivityTypeEnum storeActivityType) {
+		//有低价显示低价
+		if(this.storeActivityType == ActivityTypeEnum.LOW_PRICE){
+			return;
+		}
 		this.storeActivityType = storeActivityType;
 	}
 	
-	
+	/**
+	 * @Description: 拆分商品项便于生产订单，及设置商品项的价格及活动类型
+	 * @param paramDto   
+	 * @author tuzhd
+	 * @date 2017年12月14日
+	 */
+	public List<CurrentStoreSkuBo> splitSkuMap(PlaceOrderParamDto paramDto){
+		Collection<CurrentStoreSkuBo> goodsItemList = getCurrentSkuMap().values();
+		List<CurrentStoreSkuBo> newList = Lists.newArrayList();
+		for(CurrentStoreSkuBo goods :goodsItemList){
+			paramDto.getSkuList().forEach(e -> {
+				if(e.getStoreSkuId().equals(goods.getId())){
+					CurrentStoreSkuBo skuBo = BeanMapper.map(goods, CurrentStoreSkuBo.class);
+					skuBo.setQuantity(e.getQuantity());
+					if(e.getSkuActType() == ActivityTypeEnum.JJG.ordinal() || 
+							e.getSkuActType() == ActivityTypeEnum.MMS.ordinal()){
+						//设置商品活动类型 
+						skuBo.setActivityType(e.getSkuActType());
+						skuBo.setActivityPriceType(e.getActivityPriceType());
+						if(e.getActivityPriceType() !=null && 
+								e.getActivityPriceType() != ActivityDiscountItemRelType.NORMAL_GOODS.ordinal()){
+							//满赠或换购商品记录器活动价格
+							skuBo.setAppActPrice(e.getSkuActPrice());
+							skuBo.setActPrice(e.getSkuActPrice());
+							skuBo.setBindType(e.getActivityPriceType() == ActivityDiscountItemRelType.MMS_GOODS.ordinal() 
+									? SkuBindType.MMS:SkuBindType.JJG);
+						}
+					}
+					newList.add(skuBo);
+				}
+			});
+		}
+		return newList;
+			
+	}
 }

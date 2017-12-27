@@ -103,7 +103,7 @@
     </delete>
     
      <delete id="deleteByActivityId" parameterType="java.lang.String" >
-        delete from activity_discount_item
+        delete from activity_discount_item_rel
         where activity_id = #{value}
     </delete>
     
@@ -230,7 +230,7 @@
 	</select>
 	<!-- end 根据店铺活动类型 活动商品列表 20171222-->
 	
-	<!-- begin 根据店铺活动类型 活动商品列表 tuzhd 20171222-->
+	<!-- begin 根据店铺活动类型凑单 活动商品列表 tuzhd 20171222-->
 	<select id="findActivityGoods" resultMap="advertGoodsMap" parameterType="com.okdeer.mall.activity.discount.dto.ActivityGoodsParamDto" >
 			SELECT DISTINCT
 		        sku.id, sku.name, sku.alias, sku.tag_type AS tagType, sku.bar_code,
@@ -238,8 +238,7 @@
 				sku.online_price AS onlinePrice,sku.market_price AS marketPrice,
 				sku.trade_max AS tradeMax,sku.guaranteed,sku.obsolete,sku.properties_indb AS propertiesIndb, 		
 				sku.activity_type AS activityType, picture.url,stock.sellable AS sellableStock,
-				stock.locked AS lockedStock,sku.online,sku.unit,
-				rel.type AS activityPriceType
+				stock.locked AS lockedStock,sku.online,sku.unit
 			FROM  goods_store_sku sku 
 				LEFT JOIN activity_discount_item_rel rel ON rel.business_id= sku.sku_id
 				LEFT JOIN goods_store_sku_picture picture ON sku.id = picture.store_sku_id AND picture.type =1
@@ -252,7 +251,7 @@
 				AND sku.activity_type = 0
 				AND sku.online = 1 
 				AND sku.store_id =#{storeId,jdbcType=VARCHAR}
-				<if test="limitSku == 2 and ids != null and ids.sze() > 0">
+				<if test="limitSku == 2 and ids != null and ids.size() > 0">
 					AND rel.type = 0
 				    AND rel.activity_item_id = #{activityItemId,jdbcType=VARCHAR}
 				    AND sku.sku_id IN 
@@ -260,7 +259,7 @@
 						#{id}
 				    </foreach>
 				</if>
-				<if test="limitSku == 2 and ids != null and ids.sze() > 0 ">
+				<if test="limitSku == 1 and ids != null and ids.size() > 0 ">
 					AND rel.type = 0
 				    AND rel.activity_item_id = #{activityItemId,jdbcType=VARCHAR}
 				    AND gca.navigate_category_id IN 

@@ -16,8 +16,6 @@ import org.springframework.util.Assert;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.okdeer.common.consts.DescriptConstants;
-import com.okdeer.mall.ele.service.ExpressService;
-import com.okdeer.mall.order.bo.TradeOrderContext;
 import com.okdeer.mall.order.dto.CancelOrderDto;
 import com.okdeer.mall.order.dto.CancelOrderParamDto;
 import com.okdeer.mall.order.dto.UserRefuseDto;

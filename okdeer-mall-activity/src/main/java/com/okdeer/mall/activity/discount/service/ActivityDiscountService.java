@@ -151,11 +151,11 @@ public interface ActivityDiscountService extends IBaseService{
 	 * @Description: 根据店铺商品id,查询团购商品id
 	 * @param goodsStoreSkuId
 	 * @return   
-	 * @return List<String>  
+	 * @return List<Map<String,Object>>
 	 * @throws
 	 * @author zhangchm
 	 * @date 2017年12月22日
 	 */
-	List<String> findByGoodsStoreSkuId(List<String> goodsStoreSkuId);
+	List<Map<String,Object>> findByGoodsStoreSkuId(List<String> goodsStoreSkuId);
 
 }

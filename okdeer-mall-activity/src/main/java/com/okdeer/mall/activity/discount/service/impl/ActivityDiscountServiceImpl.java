@@ -611,6 +611,8 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 								}
 							} else if (itemDto.getLimitSku() == 2){
 								skuIdList.add(relDto.getBusinessId());
+							} else if (itemDto.getLimitSku() == 0){
+								skuIdList.add(relDto.getBusinessId());
 							}
 						}
 						//商品
@@ -619,7 +621,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 							Map<String,GoodsSku> skuMap = (Map)ListUtil.listToMap(skuList, "id");
 							//skuName
 							for(ActivityDiscountItemRelDto relDto : itemDto.getRelList()){
-								if(itemDto.getLimitSku() == 2 || (itemDto.getLimitSku() == 1 && relDto.getType() != 0)){
+								if(itemDto.getLimitSku() == 2 || itemDto.getLimitSku() == 0 || (itemDto.getLimitSku() == 1 && relDto.getType() != 0)){
 									relDto.setBusinessName(skuMap.get(relDto.getBusinessId()).getName());
 								}
 							}
@@ -880,7 +882,7 @@ public class ActivityDiscountServiceImpl extends BaseServiceImpl implements Acti
 	}
 
 	@Override
-	public List<String> findByGoodsStoreSkuId(List<String> goodsStoreSkuId) {
+	public List<Map<String,Object>> findByGoodsStoreSkuId(List<String> goodsStoreSkuId) {
 		return activityDiscountMapper.findByGoodsStoreSkuId(goodsStoreSkuId);
 	}
 }

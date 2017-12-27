@@ -1,5 +1,7 @@
 package com.okdeer.mall.order.mq;
 
+import java.math.BigDecimal;
+
 import javax.annotation.Resource;
 
 import org.slf4j.Logger;

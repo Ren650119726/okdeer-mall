@@ -79,5 +79,5 @@ public interface ActivityDiscountGroupService extends IBaseService{
 	 */
 	PageUtils<ActivityGoodsGroupSkuDto> findGroupGoodsList(Map<String, Object> param, Integer pageNumber,
 			Integer pageSize);
-
+	
 }

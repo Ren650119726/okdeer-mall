@@ -1889,7 +1889,8 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
      * @TZD 修改 2016-12-12
      * @UPDATE 去掉事务消息，快送服务已经不提供，重新添加完成消息，用于活动使用完成处理业务
      */
-    @Override
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
     @Transactional(rollbackFor = Exception.class)
     public boolean updateWithConfirm(TradeOrder tradeOrder) throws Exception {
         MQMessage anMessage = new MQMessage(TradeOrderTopic.ORDER_COMPLETE_TOCPIC, (Serializable) tradeOrder);
@@ -2012,6 +2013,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                 tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
                 tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
                 tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
+                
+                // begin V2.7.0 xuzq 20171225 订单状态改变 推送商家版app消息
+    			SendMsgParamVo sendMsgParamVo = new SendMsgParamVo(tradeOrder);
+    			tradeMessageService.sendSellerAppMessage(sendMsgParamVo, SendMsgType.orderStatusUpdate);
+    			// end V2.7.0 xuzq 20171225 订单状态改变 推送商家版app消息
             }
         } catch (Exception e) {
             // added by maojj 通知回滚库存修改
@@ -2240,6 +2246,11 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
             tradeOrderContext.setItemList(tradeOrder.getTradeOrderItem());
             tradeOrderContext.setTradeOrderLogistics(tradeOrder.getTradeOrderLogistics());
             tradeorderProcessLister.tradeOrderStatusChange(tradeOrderContext);
+            
+            // begin V2.7.0 xuzq 20171225 订单状态改变 推送商家版app消息
+		    SendMsgParamVo sendMsgParamVo = new SendMsgParamVo(tradeOrder);
+		    tradeMessageService.sendSellerAppMessage(sendMsgParamVo, SendMsgType.orderStatusUpdate);
+		    // end V2.7.0 xuzq 20171225 订单状态改变 推送商家版app消息
         }
     }
 
@@ -4378,6 +4389,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
                 item.put("skuActualAmount", tradeOrderItem.getActualAmount().toString());
                 item.put("preferentialPrice", tradeOrderItem.getPreferentialPrice() == null ? "0.00"
                         : ConvertUtil.format(tradeOrderItem.getPreferentialPrice()));
+                item.put("bindType", tradeOrderItem.getBindType().ordinal());
                 // 服务保障
                 String serviceAssurance = "0";
                 // 订单是否完成

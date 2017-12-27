@@ -104,9 +104,15 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 		//活动id 活动项ID
 		String storeActivityId = paramDto.getStoreActivityId();
 		String activityItemId = paramDto.getStoreActivityItemId();
-		//不存在活动id或梯度说明不存在活动 
-		if(StringUtils.isBlank(activityItemId) || StringUtils.isBlank(storeActivityId) 
+		//不存在活动id,说明正常商品，后续checkSku再核查是否存在商品标识活动
+		if(StringUtils.isBlank(activityItemId)){
+			return;
+		}
+		
+		//存在活动id 不存在梯度id说明不存在活动 
+		if(StringUtils.isBlank(storeActivityId) 
 				|| CollectionUtils.isEmpty(paramDto.getSkuList())){
+			resp.setResult(ResultCodeEnum.ILLEGAL_PARAM);
 			return;
 		}
 		
