@@ -80,6 +80,14 @@ public interface SysUserInvitationCodeMapper extends IBaseCrudMapper {
     SysUserInvitationCode findInvitationCodeByUserId(@Param("userId") String userId, @Param("userType")int userType);
     
     /**
+     * 根据店铺id查询总账号邀请码信息
+     * @param userId 用户Id
+     * @param userType 用户类型
+     * @return 邀请码实体
+     */
+    SysUserInvitationCode findInvitationCodeByStoreId(@Param("storeId") String storeId);
+    
+    /**
      * 根据用户Id及邀请码查询邀请码信息
      * @param userId 用户Id
      * @param invitationCode 邀请码
