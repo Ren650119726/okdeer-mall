@@ -343,9 +343,6 @@
 		<result column="delivery_type" property="deliveryType" jdbcType="INTEGER" />
 		<result column="actual_return_amount" property="actualReturnAmount" jdbcType="DECIMAL"/>
 		<!-- V2.1.0 end add by zhulq 增加订单所属城市  -->
-		<!-- V2.7 增加回款时间 zhangchm start -->
-		<result column="payment_time" property="paymentTme" jdbcType="TIMESTAMP" />
-		<!-- V2.7 增加回款时间 zhangchm end -->
 	</resultMap>
 	<!-- 订单列表 -财务系统接口调用 -luosm end -->
 	<sql id="Erp_column_list">
@@ -5948,11 +5945,11 @@
 		
 		<!-- V2.7 添加完成时间查询条件 zhangchm 20171213 start -->
 		<if test="startPaymentTime != null and startPaymentTime !='' ">
-			<![CDATA[AND trade.payment_time  >= #{startPaymentTime,jdbcType=VARCHAR}]]>
+			<![CDATA[AND trade.received_time  >= #{startPaymentTime,jdbcType=VARCHAR}]]>
 		</if>
 		
 		<if test="endPaymentTime != null and endPaymentTime !='' ">
-			<![CDATA[AND trade.payment_time  <= #{endPaymentTime,jdbcType=VARCHAR}]]>
+			<![CDATA[AND trade.received_time  <= #{endPaymentTime,jdbcType=VARCHAR}]]>
 		</if>
 		<!-- V2.7 添加完成时间查询条件 zhangchm 20171213 end -->
 		
@@ -6019,8 +6016,7 @@
 		trade.real_fare_preferential,
 		trade.platform_preferential,
 		trade.store_preferential,
-		toes.delivery_type,
-		trade.payment_time
+		toes.delivery_type
 		FROM trade_order trade
 		LEFT JOIN trade_order_pay pay ON pay.order_id = trade.id
 		LEFT JOIN trade_order_locate locate ON trade.id = locate.order_id
