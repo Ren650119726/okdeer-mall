@@ -5,6 +5,7 @@
  * @Date: 2016年3月31日 
  * 注意：本内容仅限于友门鹿公司内部传阅，禁止外泄以及用于其他的商业目的 
  */
+
 package com.okdeer.mall.order.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +55,7 @@ public class TradeOrderActivityServiceImpl implements TradeOrderActivityService,
 	 * @throws Exception 
 	 */
 	@Override
-	public String findActivityUserId(TradeOrder order) throws Exception{
+	public String findActivityUserId(TradeOrder order) throws Exception {
 		String activityUserId = null;
 		if (ActivityTypeEnum.FULL_DISCOUNT_ACTIVITIES == order.getActivityType()
 				|| ActivityTypeEnum.FULL_REDUCTION_ACTIVITIES == order.getActivityType()) {
@@ -79,6 +80,8 @@ public class TradeOrderActivityServiceImpl implements TradeOrderActivityService,
 				// 运营商
 				activityUserId = yscWalletAccount;
 			}
+		} else {
+			return yscWalletAccount;
 		}
 		return activityUserId;
 	}
