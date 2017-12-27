@@ -219,6 +219,27 @@
 		</if>
 	</select>
 	<!--end added by zhaoqc -->
+	
+	<!-- 根据用户Id查询邀请码信息 added by mengsj -->
+	<select id="findInvitationCodeByStoreId" resultMap="BaseResultMap">
+		SELECT
+			suic.id,suic.sys_user_id,suic.sys_buyer_user_id,suic.user_type,
+			suic.invitation_code,suic.invitation_user_num,suic.first_order_user_num,
+			suic.create_time,suic.update_time
+		FROM
+			store_member_relation aa
+		INNER JOIN sys_user_ext bb ON (
+			aa.sys_user_id = bb.user_id
+			AND bb.is_total_account = 1
+		)
+		INNER JOIN sys_user_invitation_code suic ON suic.sys_user_id = bb.user_id
+		WHERE
+			aa.store_id = #{storeId, jdbcType=VARCHAR}
+		ORDER BY
+			suic.create_time DESC
+		LIMIT 1
+	</select>
+	<!--end added by zhaoqc -->
 
 
 	<!-- 根据用户Id查询邀请码信息 added by tuzhiding 2016-10-4 -->
