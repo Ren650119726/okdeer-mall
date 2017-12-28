@@ -216,7 +216,9 @@ public class JxcSynTradeorderProcessLister implements TradeorderProcessLister {
 				if (item.getWeight() != null) {
 					actualPrice = item.getUnitPrice().subtract(
 							storePreferentialPrice.divide(item.getWeight(), 4, BigDecimal.ROUND_HALF_UP));
-				} else {
+				} else if(item.getStoreActivityType() == ActivityTypeEnum.NJXY){
+					actualPrice = item.getUnitPrice();
+				}else{
 					actualPrice = item.getUnitPrice().subtract(
 							storePreferentialPrice.divide(BigDecimal.valueOf(item.getQuantity()), 4, BigDecimal.ROUND_HALF_UP));
 				}
