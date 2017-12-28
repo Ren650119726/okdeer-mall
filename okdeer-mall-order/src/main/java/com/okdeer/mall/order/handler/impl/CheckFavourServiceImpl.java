@@ -373,10 +373,18 @@ public class CheckFavourServiceImpl implements RequestHandler<PlaceOrderParamDto
 						&& storeSkuBo.getQuantity() == storeSkuBo.getSkuActQuantity()) {
 					// 如果商品是低价商品，且商品购买数量=商品低价购买数量，则说明该商品不享受优惠活动
 					continue;
+					
+				//满赠、加价购、N件x元活动计算到店铺活动中
+				}else if(storeSkuBo.getActivityType() == ActivityTypeEnum.MMS.ordinal() 
+						|| storeSkuBo.getActivityType() == ActivityTypeEnum.JJG.ordinal()
+						|| storeSkuBo.getActivityType() == ActivityTypeEnum.NJXY.ordinal()){
+					totalAmount = totalAmount.add(storeSkuBo.getTotalAmount());
+				}else{
+					totalAmount = totalAmount.add(storeSkuBo.getOnlinePrice().multiply(
+							BigDecimal.valueOf(storeSkuBo.getQuantity() - storeSkuBo.getSkuActQuantity())));
 				}
 				enjoyFavourSkuIdList.add(storeSkuBo.getId());
-				totalAmount = totalAmount.add(storeSkuBo.getOnlinePrice().multiply(
-						BigDecimal.valueOf(storeSkuBo.getQuantity() - storeSkuBo.getSkuActQuantity())));
+				
 			}
 			if(totalAmount.compareTo(condition.getArrive()) < 0){
 				return false;
