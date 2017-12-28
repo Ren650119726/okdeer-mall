@@ -211,6 +211,7 @@
 			AND stock.disabled = 0
 			AND sku.`status` = 1
 			AND sku.violation = 0
+			AND sku.activity_type = 0
 			AND sku.online = 1
 			<if test="priceTypeList != null and priceTypeList.size() > 0 ">
 	       	    AND rel.type IN 
@@ -248,7 +249,6 @@
 				AND sku.`status` = 1
 				AND sku.violation = 0
 				AND sku.activity_type = 0
-				AND sku.type != 5
 				AND sku.online = 1 
 				AND sku.store_id =#{storeId,jdbcType=VARCHAR}
 				<if test="limitSku == 2 and ids != null and ids.size() > 0">
