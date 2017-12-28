@@ -102,7 +102,7 @@
     id, order_id, store_spu_id, store_sku_id, sku_name,properties_indb, main_pic_prl, bar_code,
     spu_type, unit_price, quantity,weight,service_assurance,total_amount,income, actual_amount, preferential_price, 
     status, appraise,compain_status,create_time,income,recharge_mobile,is_complete,activity_type,activity_price,
-    activity_quantity,store_preferential,bind_type,store_activity_item_id
+    activity_quantity,store_preferential,bind_type,store_activity_id,store_activity_item_id,store_activity_type
   </sql>
   
   <sql id="condition" >
