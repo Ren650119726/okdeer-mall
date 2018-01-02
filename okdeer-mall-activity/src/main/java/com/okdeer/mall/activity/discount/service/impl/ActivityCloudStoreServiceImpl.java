@@ -359,6 +359,7 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 		}
 		
 		param.setLimitSku(item.getLimitSku());
+		param.setCategoryInvert(item.getCategoryInvert());
 		//如果是商品限制：0:不限，1：指定导航分类，2：指定商品
 		if(item.getLimitSku() != 0){
 			List<ActivityDiscountItemRel> list = activityDiscountItemRelMapper.
@@ -376,6 +377,8 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 			}
 			param.setIds(ids);
 		}
+		
+		
 		PageHelper.startPage(param.getPageNumber(), param.getPageSize(), true);
 		List<GoodsStoreActivitySkuDto> list  = activityDiscountItemRelMapper.findActivityGoods(param);
 		return new PageUtils<>(list);
