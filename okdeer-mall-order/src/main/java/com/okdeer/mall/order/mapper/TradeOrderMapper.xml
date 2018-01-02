@@ -3355,6 +3355,7 @@
 	</select>
 
 	<!-- zengj:订单详情 -->
+	<!-- V2.7.0 xuzq 20180102 订单详情查询 对于订单项商品 要根据活动类型进行排序 活动商品在非活动商品后面 -->
 	<select id="getOrderDetail" parameterType="java.lang.String"
 		resultMap="TradeOrderVo">
 		SELECT
@@ -4260,9 +4261,21 @@
 		JOIN trade_order tr ON ti.order_id = tr.id
 		WHERE tid.use_time is not
 		null
-		<if test="storeId != null and storeId != ''">
-			AND tr.store_id = #{storeId,jdbcType=VARCHAR}
-		</if>
+		<!-- V2.7.0 add by mengsj begin  -->
+		<choose>
+			<when test="null != storeId and '' != storeId">
+				AND tr.store_id = #{storeId}
+			</when>
+			<when test="storeIds != null and storeIds.size() > 0">
+				AND tr.store_id IN 
+				<foreach item="item" index="index" collection="storeIds" open="(" separator="," close=")">  
+				  	#{item}  
+				</foreach>
+			</when>
+		</choose>
+		<!-- V2.7.0 add by mengsj end -->
+		
+		
 		<if test="consumeCode != null and consumeCode != ''">
 			AND tid.consume_code = #{consumeCode,jdbcType=VARCHAR}
 		</if>
