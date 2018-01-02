@@ -1,8 +1,11 @@
 package com.okdeer.mall.activity.discount.service.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -213,17 +216,17 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 	private List<String> combStoreSku(ActivityDiscountItem item,List<ActivityDiscountItemRel> relList,
 										List<String> skuList,Map<String,List<String>> skuMap){
 		//包含的购物车商品
-		List<String> containList = Lists.newArrayList();
+		Set<String> containList = new HashSet<>();
 		//如果是商品限制：0:不限，1：指定导航分类，2：指定商品
 		if(item.getLimitSku() == 0){
-			return containList;
+			return new ArrayList<>();
 		}
 		if(CollectionUtils.isEmpty(relList)){
-			return containList;
+			return new ArrayList<>();
 		}
 		
 		if(skuMap == null){
-			return containList;
+			return new ArrayList<>();
 		}
 		//导航分类是否包含0包含 1不包
 		List<String> goodsSkuIds = Lists.newLinkedList();
@@ -241,13 +244,16 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 			skuIdMap.get(skuId).add(entry.getKey())	;
 			
 			if(entry.getValue().size() > 1){
-				String cateGory = entry.getValue().get(1);
-				cateGoryIds.add(cateGory);
-				//分类下的 storeSkuId对应
-				if(cateGoryMap.get(cateGory) == null){
-					cateGoryMap.put(cateGory, Lists.newArrayList());
+				//处理多导航对应同一种分类，也就是多对多关系
+				for(int i=1 ;i < entry.getValue().size() ;i++){
+					String cateGory = entry.getValue().get(i);
+					cateGoryIds.add(cateGory);
+					//分类下的 storeSkuId对应
+					if(cateGoryMap.get(cateGory) == null){
+						cateGoryMap.put(cateGory, Lists.newArrayList());
+					}
+					cateGoryMap.get(cateGory).add(entry.getKey());
 				}
-				cateGoryMap.get(cateGory).add(entry.getKey());
 			}
 		}
 		
@@ -275,6 +281,8 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 			}
 		});
 		
+		//被包含 且不能参加的集合
+		Set<String> notConList = new HashSet<>();
 		//处理不包含的情况 提交的商品类型或水库ID不在梯度的包含内，则添加进去
 		if(CollectionUtils.isNotEmpty(itemRelIds)){
 			//如果是商品限制：0:不限，1：指定导航分类，2：指定商品 
@@ -282,6 +290,8 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 				for(String skuId : skuIdMap.keySet()){
 					if(!itemRelIds.contains(skuId)){
 						containList.addAll(skuIdMap.get(skuId));
+					}else{
+						notConList.addAll(skuIdMap.get(skuId));
 					}
 				}
 				
@@ -289,12 +299,15 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 				for(String cateId : cateGoryMap.keySet()){
 					if(!itemRelIds.contains(cateId)){
 						containList.addAll(cateGoryMap.get(cateId));
+					}else{
+						notConList.addAll(cateGoryMap.get(cateId));
 					}
 				}
 			}
 		}
-		
-		return containList;
+		//移除掉不能参加的
+		containList.removeAll(notConList);
+		return new ArrayList<String>(containList);
 	}
 	
 	/**
