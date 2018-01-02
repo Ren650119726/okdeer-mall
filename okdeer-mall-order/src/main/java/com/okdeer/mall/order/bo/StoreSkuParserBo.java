@@ -445,7 +445,7 @@ public class StoreSkuParserBo {
 					//用于排除加价购商品 不计算到优惠金额中
 					item.setPreferentialPrice(itemPrice);
 					BigDecimal perefer =itemPrice.subtract(itemActPrice);
-					skuBo.setPreferentialPrice(perefer);
+					skuBo.setPreferentialPrice(skuBo.getPreferentialPrice().add(perefer));
 					//N件X元 满赠 加价购商品的优惠金额 
 					this.totalStorePereferAmount = totalStorePereferAmount.add(perefer);
 					//需要排除参与享受优惠的金额
@@ -963,30 +963,36 @@ public class StoreSkuParserBo {
 	public List<CurrentStoreSkuBo> splitSkuMap(PlaceOrderParamDto paramDto){
 		Collection<CurrentStoreSkuBo> goodsItemList = getCurrentSkuMap().values();
 		List<CurrentStoreSkuBo> newList = Lists.newArrayList();
-		for(CurrentStoreSkuBo goods :goodsItemList){
-			paramDto.getSkuList().forEach(e -> {
-				if(e.getStoreSkuId().equals(goods.getId())){
-					CurrentStoreSkuBo skuBo = BeanMapper.map(goods, CurrentStoreSkuBo.class);
-					skuBo.setQuantity(e.getQuantity());
-					if(e.getSkuActType() == ActivityTypeEnum.JJG.ordinal() || 
-							e.getSkuActType() == ActivityTypeEnum.MMS.ordinal()){
-						//设置商品活动类型 
-						skuBo.setActivityType(e.getSkuActType());
-						skuBo.setActivityPriceType(e.getActivityPriceType());
-						if(e.getActivityPriceType() !=null && 
-								e.getActivityPriceType() != ActivityDiscountItemRelType.NORMAL_GOODS.ordinal()){
-							//满赠或换购商品记录器活动价格
-							skuBo.setAppActPrice(e.getSkuActPrice());
-							skuBo.setActPrice(e.getSkuActPrice());
-							skuBo.setBindType(e.getActivityPriceType() == ActivityDiscountItemRelType.MMS_GOODS.ordinal() 
-									? SkuBindType.MMS:SkuBindType.JJG);
+		//缓存到后面去
+				List<CurrentStoreSkuBo> actList = Lists.newArrayList();
+				for(CurrentStoreSkuBo goods :goodsItemList){
+					paramDto.getSkuList().forEach(e -> {
+						if(e.getStoreSkuId().equals(goods.getId())){
+							CurrentStoreSkuBo skuBo = BeanMapper.map(goods, CurrentStoreSkuBo.class);
+							skuBo.setQuantity(e.getQuantity());
+							if(e.getSkuActType() == ActivityTypeEnum.JJG.ordinal() || 
+									e.getSkuActType() == ActivityTypeEnum.MMS.ordinal()){
+								//设置商品活动类型 
+								skuBo.setActivityType(e.getSkuActType());
+								skuBo.setActivityPriceType(e.getActivityPriceType());
+								if(e.getActivityPriceType() !=null && 
+										e.getActivityPriceType() != ActivityDiscountItemRelType.NORMAL_GOODS.ordinal()){
+									//满赠或换购商品记录器活动价格
+									skuBo.setAppActPrice(e.getSkuActPrice());
+									skuBo.setActPrice(e.getSkuActPrice());
+									skuBo.setBindType(e.getActivityPriceType() == ActivityDiscountItemRelType.MMS_GOODS.ordinal() 
+											? SkuBindType.MMS:SkuBindType.JJG);
+								}
+								
+								actList.add(skuBo);
+							}else{
+								newList.add(skuBo);
+							}
 						}
-					}
-					newList.add(skuBo);
+					});
 				}
-			});
-		}
-		return newList;
+				newList.addAll(actList);
+				return newList;
 			
 	}
 }

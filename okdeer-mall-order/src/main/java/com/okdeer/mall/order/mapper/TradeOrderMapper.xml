@@ -3384,6 +3384,7 @@
 		LEFT JOIN trade_order_refunds_item tori ON it.id = tori.order_item_id
 		LEFT JOIN trade_order_refunds refunds ON tori.refunds_id = refunds.id
 		WHERE tr.id = #{orderId, jdbcType=VARCHAR}
+		ORDER BY it.bind_type
 	</select>
 
 	<update id="updateOrderStatus" parameterType="com.okdeer.mall.order.entity.TradeOrder">
