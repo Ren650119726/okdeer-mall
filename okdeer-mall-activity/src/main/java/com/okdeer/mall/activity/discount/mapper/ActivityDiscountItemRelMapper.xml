@@ -240,7 +240,6 @@
 				sku.activity_type AS activityType, picture.url,stock.sellable AS sellableStock,
 				stock.locked AS lockedStock,sku.online,sku.unit
 			FROM  goods_store_sku sku 
-				LEFT JOIN activity_discount_item_rel rel ON rel.business_id= sku.sku_id
 				LEFT JOIN goods_store_sku_picture picture ON sku.id = picture.store_sku_id AND picture.type =1
 				LEFT JOIN goods_store_sku_stock stock ON stock.`store_sku_id` = sku.`id`
 				LEFT JOIN goods_navigate_category_association gca ON gca.spu_category_id= sku.spu_category_id
@@ -253,16 +252,12 @@
 				AND sku.online = 1 
 				AND sku.store_id =#{storeId,jdbcType=VARCHAR}
 				<if test="limitSku == 2 and ids != null and ids.size() > 0">
-					AND rel.type = 0
-				    AND rel.activity_item_id = #{activityItemId,jdbcType=VARCHAR}
 				    AND sku.sku_id IN 
 				    <foreach collection="ids" open="(" close=")" separator="," item="id">
 						#{id}
 				    </foreach>
 				</if>
 				<if test="limitSku == 1 and ids != null and ids.size() > 0 ">
-					AND rel.type = 0
-				    AND rel.activity_item_id = #{activityItemId,jdbcType=VARCHAR}
 				    AND gca.navigate_category_id IN 
 				    <foreach collection="ids" open="(" close=")" separator="," item="id">
 						#{id}

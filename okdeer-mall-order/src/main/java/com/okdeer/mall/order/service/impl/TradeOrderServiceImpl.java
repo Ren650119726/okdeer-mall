@@ -64,6 +64,7 @@ import com.okdeer.api.pay.enums.BusinessTypeEnum;
 import com.okdeer.api.pay.service.IPayAccountServiceApi;
 import com.okdeer.api.pay.service.IPayTradeServiceApi;
 import com.okdeer.api.pay.tradeLog.dto.BalancePayTradeDto;
+import com.okdeer.archive.goods.spu.enums.SkuBindType;
 import com.okdeer.archive.goods.spu.enums.SpuTypeEnum;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSku;
 import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
@@ -4389,6 +4390,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 		// 6 订单项详细
 		List<TradeOrderItem> items = orders.getItems();
 		JSONArray array = new JSONArray();
+		JSONArray actArray = new JSONArray();
 		if (items != null && items.size() > 0) {
 			// 订单收货时间
 			Date receivedTime = orders.getReceivedTime();
@@ -4437,9 +4439,16 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				item.put("refundId", refundId);
 				item.put("refundStatus", refundStatus);
 				item.put("refundAmount", refundAmount.toString());
-				array.add(item);
+				//将赠品及加价购商品放后排
+				if(tradeOrderItem.getBindType() == SkuBindType.JJG || tradeOrderItem.getBindType() == SkuBindType.MMS){
+					actArray.add(item);
+				}else{
+					array.add(item);
+				}
 			}
 		}
+		//将赠品及加价购商品放后排
+		array.addAll(actArray);
 		json.put("orderItems", array);
 		json.put("height", 126);
 		json.put("width", 126);
