@@ -964,35 +964,37 @@ public class StoreSkuParserBo {
 		Collection<CurrentStoreSkuBo> goodsItemList = getCurrentSkuMap().values();
 		List<CurrentStoreSkuBo> newList = Lists.newArrayList();
 		//缓存到后面去
-				List<CurrentStoreSkuBo> actList = Lists.newArrayList();
-				for(CurrentStoreSkuBo goods :goodsItemList){
-					paramDto.getSkuList().forEach(e -> {
-						if(e.getStoreSkuId().equals(goods.getId())){
-							CurrentStoreSkuBo skuBo = BeanMapper.map(goods, CurrentStoreSkuBo.class);
-							skuBo.setQuantity(e.getQuantity());
-							if(e.getSkuActType() == ActivityTypeEnum.JJG.ordinal() || 
-									e.getSkuActType() == ActivityTypeEnum.MMS.ordinal()){
-								//设置商品活动类型 
-								skuBo.setActivityType(e.getSkuActType());
-								skuBo.setActivityPriceType(e.getActivityPriceType());
-								if(e.getActivityPriceType() !=null && 
-										e.getActivityPriceType() != ActivityDiscountItemRelType.NORMAL_GOODS.ordinal()){
-									//满赠或换购商品记录器活动价格
-									skuBo.setAppActPrice(e.getSkuActPrice());
-									skuBo.setActPrice(e.getSkuActPrice());
-									skuBo.setBindType(e.getActivityPriceType() == ActivityDiscountItemRelType.MMS_GOODS.ordinal() 
-											? SkuBindType.MMS:SkuBindType.JJG);
-								}
-								
-								actList.add(skuBo);
-							}else{
-								newList.add(skuBo);
-							}
+		List<CurrentStoreSkuBo> actList = Lists.newArrayList();
+		for(CurrentStoreSkuBo goods :goodsItemList){
+			paramDto.getSkuList().forEach(e -> {
+				if(e.getStoreSkuId().equals(goods.getId())){
+					CurrentStoreSkuBo skuBo = BeanMapper.map(goods, CurrentStoreSkuBo.class);
+					skuBo.setQuantity(e.getQuantity());
+					if(e.getSkuActType() == ActivityTypeEnum.JJG.ordinal() || 
+							e.getSkuActType() == ActivityTypeEnum.MMS.ordinal()){
+						//设置商品活动类型 
+						skuBo.setActivityType(e.getSkuActType());
+						skuBo.setActivityPriceType(e.getActivityPriceType());
+						if(e.getActivityPriceType() !=null && 
+								e.getActivityPriceType() != ActivityDiscountItemRelType.NORMAL_GOODS.ordinal()){
+							//满赠或换购商品记录器活动价格
+							skuBo.setAppActPrice(e.getSkuActPrice());
+							skuBo.setActPrice(e.getSkuActPrice());
+							skuBo.setBindType(e.getActivityPriceType() == ActivityDiscountItemRelType.MMS_GOODS.ordinal() 
+									? SkuBindType.MMS:SkuBindType.JJG);
+							
+							actList.add(skuBo);
+						}else{
+							newList.add(skuBo);
 						}
-					});
+					}else{
+						newList.add(skuBo);
+					}
 				}
-				newList.addAll(actList);
-				return newList;
+			});
+		}
+		newList.addAll(actList);
+		return newList;
 			
 	}
 }
