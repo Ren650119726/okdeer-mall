@@ -3355,6 +3355,7 @@
 	</select>
 
 	<!-- zengj:订单详情 -->
+	<!-- V2.7.0 xuzq 20180102 订单详情查询 对于订单项商品 要根据活动类型进行排序 活动商品在非活动商品后面 -->
 	<select id="getOrderDetail" parameterType="java.lang.String"
 		resultMap="TradeOrderVo">
 		SELECT
@@ -3383,6 +3384,7 @@
 		LEFT JOIN trade_order_refunds_item tori ON it.id = tori.order_item_id
 		LEFT JOIN trade_order_refunds refunds ON tori.refunds_id = refunds.id
 		WHERE tr.id = #{orderId, jdbcType=VARCHAR}
+		ORDER BY it.bind_type
 	</select>
 
 	<update id="updateOrderStatus" parameterType="com.okdeer.mall.order.entity.TradeOrder">

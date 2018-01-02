@@ -445,7 +445,7 @@ public class StoreSkuParserBo {
 					//用于排除加价购商品 不计算到优惠金额中
 					item.setPreferentialPrice(itemPrice);
 					BigDecimal perefer =itemPrice.subtract(itemActPrice);
-					skuBo.setPreferentialPrice(perefer);
+					skuBo.setPreferentialPrice(skuBo.getPreferentialPrice().add(perefer));
 					//N件X元 满赠 加价购商品的优惠金额 
 					this.totalStorePereferAmount = totalStorePereferAmount.add(perefer);
 					//需要排除参与享受优惠的金额
