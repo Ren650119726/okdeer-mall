@@ -233,19 +233,22 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 		Map<String,List<String>> cateGoryMap = new HashMap<>();
 		for(Map.Entry<String,List<String>> entry : skuMap.entrySet()){
 			String skuId = entry.getValue().get(0);
-			String cateGory = entry.getValue().get(1);
 			goodsSkuIds.add(skuId);
-			cateGoryIds.add(cateGory);
 			//skuId下的 storeSkuId对应
 			if(skuIdMap.get(skuId) == null){
 				skuIdMap.put(skuId, Lists.newArrayList());
 			}
 			skuIdMap.get(skuId).add(entry.getKey())	;
-			//分类下的 storeSkuId对应
-			if(cateGoryMap.get(cateGory) == null){
-				cateGoryMap.put(cateGory, Lists.newArrayList());
+			
+			if(entry.getValue().size() > 1){
+				String cateGory = entry.getValue().get(1);
+				cateGoryIds.add(cateGory);
+				//分类下的 storeSkuId对应
+				if(cateGoryMap.get(cateGory) == null){
+					cateGoryMap.put(cateGory, Lists.newArrayList());
+				}
+				cateGoryMap.get(cateGory).add(entry.getKey());
 			}
-			cateGoryMap.get(cateGory).add(entry.getKey())	;
 		}
 		
 		//不包含的业务id
