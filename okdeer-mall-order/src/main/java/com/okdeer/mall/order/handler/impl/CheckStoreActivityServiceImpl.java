@@ -3,7 +3,10 @@ package com.okdeer.mall.order.handler.impl;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -15,8 +18,12 @@ import com.google.common.collect.Lists;
 import com.okdeer.archive.store.entity.StoreInfo;
 import com.okdeer.archive.store.enums.ResultCodeEnum;
 import com.okdeer.mall.activity.bo.ActivityJoinRecParamBo;
+import com.okdeer.mall.activity.coupons.entity.ActivitySale;
+import com.okdeer.mall.activity.coupons.entity.ActivitySaleGoods;
 import com.okdeer.mall.activity.coupons.enums.ActivityDiscountItemRelType;
 import com.okdeer.mall.activity.coupons.enums.ActivityTypeEnum;
+import com.okdeer.mall.activity.coupons.mapper.ActivitySaleGoodsMapper;
+import com.okdeer.mall.activity.coupons.mapper.ActivitySaleMapper;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudItemReultDto;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudStoreParamDto;
 import com.okdeer.mall.activity.discount.dto.ActivityCloudStoreResultDto;
@@ -78,6 +85,12 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 	@Resource
 	private ActivityDiscountMultiItemMapper activityDiscountMultiItemMapper;
 	
+	@Resource
+	private ActivitySaleGoodsMapper activitySaleGoodsMapper;
+	
+	@Resource
+	private ActivitySaleMapper activitySaleMapper;
+	
 	/**
 	 * 活动商品用户日限购
 	 */
@@ -135,23 +148,25 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 		param.setStoreInfo((StoreInfo)paramDto.get("storeInfo"));
 		//查询验证活动及店铺是否匹配
 		ActivityCloudStoreResultDto result = activityCloudStoreService.getCloudStoreActivity(param);
+		//商品对应的特惠或低价活动
+		Map<String,Object> skuSaleMap = getSkuSaleMap(paramDto, skuIds);
 		//如果查询到了梯度信息，说明活动与店铺匹配
 		switch (activity.getType()){
 			case MMS:
 				 if(!checkItemInfo(result.getGiveItemList(), paramDto,resp, 
-						 ActivityDiscountItemRelType.MMS_GOODS,ActivityTypeEnum.MMS)){
+						 ActivityDiscountItemRelType.MMS_GOODS,ActivityTypeEnum.MMS,skuSaleMap)){
 					 return;
 				 }
 				break;
 			case JJG:
 				if(!checkItemInfo(result.getPriceItemList(), paramDto,resp, 
-						ActivityDiscountItemRelType.JJG_GOODS,ActivityTypeEnum.JJG)){
+						ActivityDiscountItemRelType.JJG_GOODS,ActivityTypeEnum.JJG,skuSaleMap)){
 					return;
 				}
 				break;
 			case NJXY:
 				//组装N件x元 
-				if(!checkItemInfo(result.getMultiItemList(), paramDto,resp, null,ActivityTypeEnum.NJXY)){
+				if(!checkItemInfo(result.getMultiItemList(), paramDto,resp, null,ActivityTypeEnum.NJXY,skuSaleMap)){
 					return;
 				}
 				break;
@@ -186,6 +201,28 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 	}
 	
 	/**
+	 * @Description: 检查商品是否存在特惠或低价
+	 * @param paramDto
+	 * @param skuIds
+	 * @author tuzhd
+	 * @date 2018年1月3日
+	 */
+	private Map<String,Object> getSkuSaleMap(PlaceOrderParamDto paramDto,List<String> skuIds){
+		Map<String,Object> mp= new HashMap<>();
+		mp.put("storeId", paramDto.getStoreId());
+		mp.put("status", 1);
+		List<ActivitySale> saleList = activitySaleMapper.list(mp);
+		if(CollectionUtils.isNotEmpty(saleList)){
+			List<ActivitySaleGoods> goodsSale= activitySaleGoodsMapper.findBySaleIdsAndSkuIds(
+					saleList.stream().map(e -> e.getId()).collect(Collectors.toSet()), skuIds);
+			if(CollectionUtils.isNotEmpty(goodsSale)){
+				return goodsSale.stream().collect(Collectors.toMap(m -> m.getStoreSkuId(), m -> m));
+			}
+		}
+		return new HashMap<>();
+	}
+	
+	/**
 	 * @Description: 获得对于梯度信息
 	 * @param paramDto 请求参数
 	 * @param resp 返回参数
@@ -194,8 +231,8 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 	 * @author tuzhd
 	 * @date 2017年12月12日
 	 */
-	private boolean checkItemInfo(List<ActivityCloudItemReultDto> list,PlaceOrderParamDto paramDto,
-							Response<PlaceOrderDto> resp,ActivityDiscountItemRelType relType,ActivityTypeEnum type){
+	private boolean checkItemInfo(List<ActivityCloudItemReultDto> list,PlaceOrderParamDto paramDto,Response<PlaceOrderDto> resp,
+			ActivityDiscountItemRelType relType,ActivityTypeEnum type,Map<String,Object> skuSaleMap){
 		if(CollectionUtils.isEmpty(list)){
 			resp.setResult(ResultCodeEnum.ACTIVITY_NOT_EXISTS);
 			return false;
@@ -220,7 +257,7 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 			return false;
 		}
 		//校验活动商品的合法性
-		if(!checkActiviItemRel(paramDto,relType,type)){
+		if(!checkActiviItemRel(paramDto,relType,type,skuSaleMap)){
 			resp.setResult(ResultCodeEnum.ACTIVITY_HAS_CHANGE);
 			return false;
 		}
@@ -236,7 +273,8 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 	 * @author tuzhd
 	 * @date 2017年12月12日
 	 */
-	private boolean checkActiviItemRel(PlaceOrderParamDto paramDto,ActivityDiscountItemRelType relType,ActivityTypeEnum type){
+	private boolean checkActiviItemRel(PlaceOrderParamDto paramDto,ActivityDiscountItemRelType relType,
+			ActivityTypeEnum type,Map<String,Object> skuSaleMap){
 		
 		ActivityCloudItemReultDto item = (ActivityCloudItemReultDto) paramDto.get(ACTIVITY_ITEM_INFO);
 		//订单满足多少金额
@@ -260,6 +298,11 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 			//如果此活动是店铺商品，检查该正常商品是否存在该梯度中
 			if(itemDto.getSkuActType() != type.ordinal()){
 				continue;
+			}
+			//如果这个活动存在低价或特惠
+			if(skuSaleMap != null && skuSaleMap.get(itemDto.getStoreSkuId()) != null){
+				isNormal = false;
+				itemChangeDto.add(itemDto);
 			}
 			//如果为0说是参加了活动的正常商品
 			if(itemDto.getActivityPriceType() == ActivityDiscountItemRelType.NORMAL_GOODS.ordinal()){
