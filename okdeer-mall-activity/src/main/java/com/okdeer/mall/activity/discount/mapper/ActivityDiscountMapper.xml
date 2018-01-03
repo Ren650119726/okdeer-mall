@@ -608,12 +608,20 @@
        AND t.type = #{type,jdbcType=TINYINT}
        AND ( t.limit_range = 0 OR ( t1.business_type IN (0,1,2)
        <if test="limitRangeIds != null and limitRangeIds.size()>0">
-       	   AND ( t1.business_id IN 
+       	   AND ( t1.business_id 
+       	   		<if test="limitRangeType != null and limitRangeType.ordinal()==1">
+       	   		NOT 
+       	   		</if>
+       	   		IN 
        	   <foreach collection="limitRangeIds" item="limitRangeId" separator="," open="(" close=")">
        	   		#{limitRangeId}
        	   </foreach>
        	   <if test="limitRange.name() == 'area'">
-       	   		OR t2.city_id IN 
+       	   		OR t2.city_id 
+       	   		<if test="limitRangeType != null and limitRangeType.ordinal()==1">
+       	   		NOT 
+       	   		</if>
+       	   		IN 
        	   		<foreach collection="limitRangeIds" item="limitRangeId" separator="," open="(" close=")">
        	   			#{limitRangeId}
        	   		</foreach>
