@@ -221,6 +221,8 @@ public class FinanceRefundsPayStatusSubscriber extends AbstractRocketMQSubscribe
 			payTypeDesc = "支付宝";
 		}else if(PayTypeEnum.WXPAY.name().equals(payType)){
 			payTypeDesc = "微信";
+		}else if(PayTypeEnum.BESTPAY.name().equals(payType)){
+			payTypeDesc = "翼支付";
 		}
 		return payTypeDesc;
 	}

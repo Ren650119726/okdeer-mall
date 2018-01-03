@@ -3,6 +3,7 @@ package com.okdeer.mall.activity.bo;
 import java.util.Date;
 import java.util.List;
 
+import com.okdeer.base.common.enums.WhetherEnum;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountStatus;
 import com.okdeer.mall.activity.discount.enums.ActivityDiscountType;
 import com.okdeer.mall.common.enums.AreaType;
@@ -73,6 +74,11 @@ public class ActivityParamBo {
 	 * 参与订单类型 2服务店订单 3便利店订单 4扫码购订单 5会员卡自助订单。不同选项之间用|分隔,便于sql正则匹配
 	 */
 	private String limitOrderType;
+	
+	/**
+	 * 设置区域不可参加 0为否 可以参加、1为是 设置区域不可参加的
+	 */
+	private WhetherEnum limitRangeType;
 
 	public ActivityDiscountStatus getStatus() {
 		return status;
@@ -160,6 +166,16 @@ public class ActivityParamBo {
 
 	public void setLimitOrderType(String limitOrderType) {
 		this.limitOrderType = limitOrderType;
+	}
+
+	
+	public WhetherEnum getLimitRangeType() {
+		return limitRangeType;
+	}
+
+	
+	public void setLimitRangeType(WhetherEnum limitRangeType) {
+		this.limitRangeType = limitRangeType;
 	}
 
 }
