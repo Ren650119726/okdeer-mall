@@ -639,7 +639,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 			this.sendSms(mobile, tradeMessageProperties.smsAgreeRefundPayStyle3, params);
 		} else if (PayWayEnum.PAY_ONLINE == payWay) {
 			PayTypeEnum payType = refunds.getPaymentMethod();
-			if (PayTypeEnum.ALIPAY == payType || PayTypeEnum.WXPAY == payType) {
+			if (PayTypeEnum.ALIPAY == payType || PayTypeEnum.WXPAY == payType || PayTypeEnum.BESTPAY == payType) {
 				this.sendSms(mobile, tradeMessageProperties.smsAgreeRefundPayStyle1, params);
 			} else if (PayTypeEnum.WALLET == payType || PayTypeEnum.JDPAY == payType) {
 				this.sendSms(mobile, tradeMessageProperties.smsAgreeRefundPayStyle2, params);

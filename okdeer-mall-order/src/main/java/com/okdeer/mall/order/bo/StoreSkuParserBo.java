@@ -990,6 +990,8 @@ public class StoreSkuParserBo {
 							newList.add(skuBo);
 						}
 					}else{
+						//如果正常商品 优惠为null,N件X元需要设置其优惠
+						skuBo.setPreferentialPrice(e.getPreferentialPrice());
 						newList.add(skuBo);
 					}
 				}
