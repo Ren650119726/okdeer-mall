@@ -985,6 +985,8 @@ public class StoreSkuParserBo {
 							
 							actList.add(skuBo);
 						}else{
+							//正常商品没有优惠，合并会把优惠合在一起
+							skuBo.setPreferentialPrice(null);
 							newList.add(skuBo);
 						}
 					}else{
