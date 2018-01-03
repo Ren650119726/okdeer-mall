@@ -251,14 +251,26 @@
 				AND sku.type != 5
 				AND sku.online = 1 
 				AND sku.store_id =#{storeId,jdbcType=VARCHAR}
-				<if test="limitSku == 2 and ids != null and ids.size() > 0">
+				<if test="limitSku == 2 and categoryInvert ==0 and ids != null and ids.size() > 0">
 				    AND sku.sku_id IN 
 				    <foreach collection="ids" open="(" close=")" separator="," item="id">
 						#{id}
 				    </foreach>
 				</if>
-				<if test="limitSku == 1 and ids != null and ids.size() > 0 ">
+				<if test="limitSku == 2 and categoryInvert ==1 and ids != null and ids.size() > 0">
+				    AND sku.sku_id NOT IN 
+				    <foreach collection="ids" open="(" close=")" separator="," item="id">
+						#{id}
+				    </foreach>
+				</if>
+				<if test="limitSku == 1 and categoryInvert ==0 and ids != null and ids.size() > 0 ">
 				    AND gca.navigate_category_id IN 
+				    <foreach collection="ids" open="(" close=")" separator="," item="id">
+						#{id}
+				    </foreach>
+				</if>
+				<if test="limitSku == 1 and categoryInvert ==1 and ids != null and ids.size() > 0 ">
+				    AND gca.navigate_category_id NOT IN 
 				    <foreach collection="ids" open="(" close=")" separator="," item="id">
 						#{id}
 				    </foreach>

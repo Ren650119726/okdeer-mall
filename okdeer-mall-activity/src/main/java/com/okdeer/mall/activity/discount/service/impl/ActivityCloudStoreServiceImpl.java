@@ -1,7 +1,11 @@
 package com.okdeer.mall.activity.discount.service.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -212,39 +216,98 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 	private List<String> combStoreSku(ActivityDiscountItem item,List<ActivityDiscountItemRel> relList,
 										List<String> skuList,Map<String,List<String>> skuMap){
 		//包含的购物车商品
-		List<String> containList = Lists.newArrayList();
+		Set<String> containList = new HashSet<>();
 		//如果是商品限制：0:不限，1：指定导航分类，2：指定商品
 		if(item.getLimitSku() == 0){
-			return containList;
+			return new ArrayList<>();
 		}
 		if(CollectionUtils.isEmpty(relList)){
-			return containList;
+			return new ArrayList<>();
 		}
-		//组合商品
+		
+		if(skuMap == null){
+			return new ArrayList<>();
+		}
+		//导航分类是否包含0包含 1不包
+		List<String> goodsSkuIds = Lists.newLinkedList();
+		List<String> cateGoryIds = Lists.newLinkedList();
+		//拆分提交商品的 skuId与分类  对 storeSkuId对应
+		Map<String,List<String>> skuIdMap = new HashMap<>();
+		Map<String,List<String>> cateGoryMap = new HashMap<>();
+		for(Map.Entry<String,List<String>> entry : skuMap.entrySet()){
+			String skuId = entry.getValue().get(0);
+			goodsSkuIds.add(skuId);
+			//skuId下的 storeSkuId对应
+			if(skuIdMap.get(skuId) == null){
+				skuIdMap.put(skuId, Lists.newArrayList());
+			}
+			skuIdMap.get(skuId).add(entry.getKey())	;
+			
+			if(entry.getValue().size() > 1){
+				//处理多导航对应同一种分类，也就是多对多关系
+				for(int i=1 ;i < entry.getValue().size() ;i++){
+					String cateGory = entry.getValue().get(i);
+					cateGoryIds.add(cateGory);
+					//分类下的 storeSkuId对应
+					if(cateGoryMap.get(cateGory) == null){
+						cateGoryMap.put(cateGory, Lists.newArrayList());
+					}
+					cateGoryMap.get(cateGory).add(entry.getKey());
+				}
+			}
+		}
+		
+		//不包含的业务id
+		List<String> itemRelIds = Lists.newArrayList();
 		relList.forEach(rel -> {
 			//符合这个梯度的商品，购物车的skuList包含， categoryInvert为包含，type不为赠品 及加价购商品
 			if(item.getId().equals(rel.getActivityItemId()) && rel.getType() == ActivityDiscountItemRelType.NORMAL_GOODS.ordinal()){
-				//导航分类是否包含0包含 1不包
-				for(Map.Entry<String,List<String>> entry : skuMap.entrySet()){
-					//如果是商品限制：0:不限，1：指定导航分类，2：指定商品
-					if(item.getLimitSku() == 2){
-						if(item.getCategoryInvert() == 0 && rel.getBusinessId().equals(entry.getValue().get(0))){
-							containList.add(entry.getKey());
-						}else if(item.getCategoryInvert() == 1 && !rel.getBusinessId().equals(entry.getValue().get(0))){
-							containList.add(entry.getKey());
-						}
-					}else if(item.getLimitSku() == 1 ){
-						//导航分类是否包含0包含 1不包
-						if(item.getCategoryInvert() == 0 && rel.getBusinessId().equals(entry.getValue().get(1))){
-							containList.add(entry.getKey());
-						}else if(item.getCategoryInvert() == 1 && !rel.getBusinessId().equals(entry.getValue().get(1))){
-							containList.add(entry.getKey());
-						}
+				//不包含 1
+				if(item.getCategoryInvert() == 1){
+					itemRelIds.add(rel.getBusinessId());
+					
+				}else{
+				
+					//如果是商品限制：0:不限，1：指定导航分类，2：指定商品 且包含 0
+					if(item.getLimitSku() == 2
+							&& goodsSkuIds.contains(rel.getBusinessId())){
+						containList.addAll(skuIdMap.get(rel.getBusinessId()));
+						
+					}else if(item.getLimitSku() == 1 
+							&& cateGoryIds.contains(rel.getBusinessId())){
+						containList.addAll(cateGoryMap.get(rel.getBusinessId()));
 					}
 				}
 			}
 		});
-		return containList;
+		
+		//被包含 且不能参加的集合
+		Set<String> notConList = new HashSet<>();
+		//处理不包含的情况 提交的商品类型或水库ID不在梯度的包含内，则添加进去
+		if(CollectionUtils.isNotEmpty(itemRelIds)){
+			//如果是商品限制：0:不限，1：指定导航分类，2：指定商品 
+			if(item.getLimitSku() == 2){
+				for(String skuId : skuIdMap.keySet()){
+					if(!itemRelIds.contains(skuId)){
+						containList.addAll(skuIdMap.get(skuId));
+					}else{
+						notConList.addAll(skuIdMap.get(skuId));
+					}
+				}
+				
+			}else if(item.getLimitSku() == 1 ){
+				for(String cateId : cateGoryMap.keySet()){
+					if(!itemRelIds.contains(cateId)){
+						containList.addAll(cateGoryMap.get(cateId));
+					}else{
+						notConList.addAll(cateGoryMap.get(cateId));
+					}
+				}
+			}
+		}
+		//移除掉不能参加的
+		containList.removeAll(notConList);
+		return new ArrayList<String>(containList);
 	}
 	
 	/**
@@ -296,6 +359,7 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 		}
 		
 		param.setLimitSku(item.getLimitSku());
+		param.setCategoryInvert(item.getCategoryInvert());
 		//如果是商品限制：0:不限，1：指定导航分类，2：指定商品
 		if(item.getLimitSku() != 0){
 			List<ActivityDiscountItemRel> list = activityDiscountItemRelMapper.
@@ -313,6 +377,8 @@ public class ActivityCloudStoreServiceImpl implements ActivityCloudStoreService 
 			}
 			param.setIds(ids);
 		}
+		
+		
 		PageHelper.startPage(param.getPageNumber(), param.getPageSize(), true);
 		List<GoodsStoreActivitySkuDto> list  = activityDiscountItemRelMapper.findActivityGoods(param);
 		return new PageUtils<>(list);
