@@ -970,11 +970,12 @@ public class StoreSkuParserBo {
 				if(e.getStoreSkuId().equals(goods.getId())){
 					CurrentStoreSkuBo skuBo = BeanMapper.map(goods, CurrentStoreSkuBo.class);
 					skuBo.setQuantity(e.getQuantity());
+					//设置商品活动类型 
+					skuBo.setActivityType(e.getSkuActType());
+					skuBo.setActivityPriceType(e.getActivityPriceType());
+					skuBo.setSkuActQuantity(e.getSkuActQuantity());
 					if(e.getSkuActType() == ActivityTypeEnum.JJG.ordinal() || 
 							e.getSkuActType() == ActivityTypeEnum.MMS.ordinal()){
-						//设置商品活动类型 
-						skuBo.setActivityType(e.getSkuActType());
-						skuBo.setActivityPriceType(e.getActivityPriceType());
 						if(e.getActivityPriceType() !=null && 
 								e.getActivityPriceType() != ActivityDiscountItemRelType.NORMAL_GOODS.ordinal()){
 							//满赠或换购商品记录器活动价格
