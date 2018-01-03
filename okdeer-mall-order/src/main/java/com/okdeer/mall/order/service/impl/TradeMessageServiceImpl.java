@@ -997,6 +997,8 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 			payTypeDesc = "微信";
 		}else if(PayTypeEnum.WALLET == payType){
 			return "余额";
+		}else if(PayTypeEnum.BESTPAY == payType){
+			return "翼支付";
 		}
 		return payTypeDesc;
 	}
