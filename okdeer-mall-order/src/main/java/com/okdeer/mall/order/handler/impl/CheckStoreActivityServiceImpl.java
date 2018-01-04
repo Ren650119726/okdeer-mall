@@ -175,7 +175,7 @@ public class CheckStoreActivityServiceImpl implements RequestHandler<PlaceOrderP
 		}
 		// 如果活动类型加入用户限制
 		if(isOutOfLimitUserType(paramDto,activity)){
-			resp.setResult(ResultCodeEnum.GROUP_OPEN_NOT_SUPPORT);
+			resp.setResult(ResultCodeEnum.ACTIVITY_LIMIT_FIRST_ORDER);
 			return;
 		}
 		// 检查用户是否超出日限购
