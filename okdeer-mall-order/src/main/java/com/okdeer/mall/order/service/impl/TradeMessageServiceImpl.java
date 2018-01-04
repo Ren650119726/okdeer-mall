@@ -320,6 +320,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 			// 增加判断下单店铺是否是默认登录店铺
 			// 返回用户登录的默认店铺
 			List<StoreMemberRelation> relation = storeMemberRelationService.findBySysUserId(sysUser.getId());
+			logger.error("用户默认的店铺storeId===="+ relation.get(0).getStoreId() +"userId------"+sysUser.getId());
 			// 账号有默认店铺且默认的店铺是当前订单下单的店铺
 			if(CollectionUtils.isNotEmpty(relation) && relation.get(0).getStoreId().equals(sendMsgParamVo.getStoreId())){
 				// 查看当前登录的设备APP版本
