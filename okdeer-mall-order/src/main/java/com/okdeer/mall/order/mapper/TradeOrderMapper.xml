@@ -5418,7 +5418,8 @@
 		su.login_name,
 		su.user_name,
         CONCAT(tol.area, tol.address) AS pick_up_id,
-        tol.logistics_no, tol.type as logistics_type
+        tol.logistics_no, tol.type as logistics_type,
+        tr.store_name
 		FROM trade_order tr
 		<!-- LEFT JOIN trade_order_item item ON item.order_id = tr.id -->
 		LEFT JOIN trade_order_pay op ON tr.id = op.order_id
