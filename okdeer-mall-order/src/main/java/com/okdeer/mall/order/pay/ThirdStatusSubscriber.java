@@ -9,6 +9,7 @@
 
 package com.okdeer.mall.order.pay;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import com.alibaba.rocketmq.client.producer.SendResult;
 import com.alibaba.rocketmq.client.producer.SendStatus;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.base.Charsets;
+import com.google.common.collect.Maps;
 import com.okdeer.api.pay.luzgorder.dto.PayLuzgOrderDto;
 import com.okdeer.api.pay.pay.dto.PayRefundDto;
 import com.okdeer.api.pay.pay.dto.PayResponseDto;
@@ -218,7 +220,7 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 			SendMsgParamVo sendMsgParamVo = new SendMsgParamVo();
 			// 鹿掌柜的金额
 			sendMsgParamVo.setLzgAmount(respDto.getTradeAmount());
-			// 店老板用户id
+			// 收款人用户id
 			sendMsgParamVo.setUserId(lzgOrderDto.getPayeeUserId());
 			// 订单id
 			sendMsgParamVo.setOrderId(lzgOrderDto.getId());
@@ -226,9 +228,12 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 			sendMsgParamVo.setPayType(PayTypeEnum.enumValueOf(lzgOrderDto.getPayType().ordinal()));
 
 			// 通过userId得到店铺id
-			Map<String, Object> map = new HashMap<String, Object>();
+			Map<String, Object> map = Maps.newHashMap();
 			map.put("sysUserId", sendMsgParamVo.getUserId());
-			map.put("memberType", 0);
+			// 0总账号3店长
+			map.put("memberTypeList", Arrays.asList("0,3".split(",")));
+			// 0否 1 是
+			map.put("isPickUp", 1);
 			List<StoreMemberRelation> smrList = storeMemberRelationApi.findByParams(map);
 			if (CollectionUtils.isNotEmpty(smrList)) {
 				sendMsgParamVo.setStoreId(smrList.get(0).getStoreId());

@@ -322,7 +322,8 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 			List<StoreMemberRelation> relation = storeMemberRelationService.findBySysUserId(sysUser.getId());
 			logger.error("用户默认的店铺storeId===="+ relation.get(0).getStoreId() +"userId------"+sysUser.getId());
 			// 账号有默认店铺且默认的店铺是当前订单下单的店铺
-			if(CollectionUtils.isNotEmpty(relation) && relation.get(0).getStoreId().equals(sendMsgParamVo.getStoreId())){
+			if((sendMsgType == sendMsgType.lzgGathering && sendMsgParamVo.getUserId().equals(sysUser.getId())) 
+					|| (sendMsgType != sendMsgType.lzgGathering && CollectionUtils.isNotEmpty(relation) && relation.get(0).getStoreId().equals(sendMsgParamVo.getStoreId()))){
 				// 查看当前登录的设备APP版本
 				List<SysUserLoginLog> sysUserLoginLogs = this.sysUserLoginLogApi.findAllByUserId(sysUser.getId(), 1, null,
 						null);
