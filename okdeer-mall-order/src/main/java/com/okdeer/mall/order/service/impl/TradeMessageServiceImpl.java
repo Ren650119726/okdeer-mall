@@ -911,6 +911,7 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 		TradeOrder tradeOrder = tradeOrderRefundContext.getTradeOrder();
 		RefundsStatusEnum refundsStatusEnum = tradeOrderRefunds.getRefundsStatus();
 		SendMsgParamVo sendMsgParamVo = new SendMsgParamVo(tradeOrderRefunds);
+		logger.error("订单退款状态改变refundsStatusEnum ==="+refundsStatusEnum);
 		switch (refundsStatusEnum) {
 			case YSC_REFUND:
 			case FORCE_SELLER_REFUND:
