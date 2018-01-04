@@ -32,6 +32,7 @@ import com.okdeer.archive.goods.store.entity.GoodsStoreSkuService;
 import com.okdeer.archive.goods.store.enums.IsAppointment;
 import com.okdeer.archive.goods.store.service.GoodsStoreSkuServiceServiceApi;
 import com.okdeer.archive.store.entity.StoreInfo;
+import com.okdeer.archive.store.entity.StoreMemberRelation;
 import com.okdeer.archive.store.enums.StoreTypeEnum;
 import com.okdeer.archive.store.service.IStoreMemberRelationServiceApi;
 import com.okdeer.archive.store.service.StoreInfoServiceApi;
@@ -315,15 +316,22 @@ public class TradeMessageServiceImpl implements TradeMessageService, TradeMessag
 			if (whetherEnum == WhetherEnum.not) {
 				return;
 			}
-			// 查看当前登录的设备APP版本
-			List<SysUserLoginLog> sysUserLoginLogs = this.sysUserLoginLogApi.findAllByUserId(sysUser.getId(), 1, null,
-					null);
-			if (sysUserLoginLogs != null && !sysUserLoginLogs.isEmpty()) {
-				sysUserLoginLogs.forEach(sysUserLoginLog -> {
-					PushUserVo pushUser = createPushUserVo(sysUser, sendMsgType);
-					// APP跳转原生页面，发送内容消息
-					oriMsgUserList.add(pushUser);
-				});
+			// V2.7.0 xuzq 20170104 由于一个账号可以关联多个店铺 导致一个店铺下单后其他店铺也会接收消息 
+			// 增加判断下单店铺是否是默认登录店铺
+			// 返回用户登录的默认店铺
+			List<StoreMemberRelation> relation = storeMemberRelationService.findBySysUserId(sysUser.getId());
+			// 账号有默认店铺且默认的店铺是当前订单下单的店铺
+			if(CollectionUtils.isNotEmpty(relation) && relation.get(0).getStoreId().equals(sendMsgParamVo.getStoreId())){
+				// 查看当前登录的设备APP版本
+				List<SysUserLoginLog> sysUserLoginLogs = this.sysUserLoginLogApi.findAllByUserId(sysUser.getId(), 1, null,
+						null);
+				if (sysUserLoginLogs != null && !sysUserLoginLogs.isEmpty()) {
+					sysUserLoginLogs.forEach(sysUserLoginLog -> {
+						PushUserVo pushUser = createPushUserVo(sysUser, sendMsgType);
+						// APP跳转原生页面，发送内容消息
+						oriMsgUserList.add(pushUser);
+					});
+				}
 			}
 		});
 
