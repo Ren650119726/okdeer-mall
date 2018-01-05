@@ -399,7 +399,7 @@
 			item.style_code,
 			item.bar_code,
 			skuService.is_unsubscribe as subscribe, 
-			member.sys_user_id AS storeUserId	
+			member.sys_user_id AS storeUserId
 		FROM trade_order_item_detail detail
 		INNER JOIN trade_order_item item on detail.order_item_id = item.id
 		INNER JOIN trade_order trade on item.order_id = trade.id
@@ -407,9 +407,17 @@
 		LEFT JOIN store_member_relation member ON (member.store_id = trade.store_id and
 		member.menber_type = 0)
 		WHERE 1=1
-		<if test="storeId != null and storeId != ''">
-			AND trade.store_id = #{storeId,jdbcType=VARCHAR}
-		</if>
+		<choose>
+			<when test="null != storeId and '' != storeId">
+				AND trade.store_id = #{storeId}
+			</when>
+			<when test="storeIds != null and storeIds.size() > 0">
+				AND trade.store_id IN 
+				<foreach item="item" index="index" collection="storeIds" open="(" separator="," close=")">  
+				  	#{item}  
+				</foreach>
+			</when>
+		</choose>
 		<if test="consumeCode != null">
 		    AND detail.consume_code = #{consumeCode,jdbcType=VARCHAR}
 		</if>

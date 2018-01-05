@@ -6372,7 +6372,7 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 	// Begin V1.1.0 add by wusw 20160924
 	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public Map<String, String> updateServiceStoreOrderConsume(String userId, String storeId, List<String> consumeCodes)
+	public Map<String, String> updateServiceStoreOrderConsume(String userId, List<String> storeIds, List<String> consumeCodes)
 			throws ServiceException, StockException, Exception {
 		// 返回值Map
 		Map<String, String> resultMap = new HashMap<String, String>();
@@ -6392,10 +6392,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 
 			// 查询所有消费码对于的订单相应信息
 			Map<String, Object> params = new HashMap<String, Object>();
-			params.put("storeId", storeId);
+			params.put("storeIds", storeIds);
 			params.put("consumeCodeList", consumeCodes);
-			List<OrderItemDetailConsumeVo> orderDetailList = tradeOrderItemDetailMapper
-					.findOrderInfoByConsumeCode(params);
+			List<OrderItemDetailConsumeVo> orderDetailList = tradeOrderItemDetailMapper.findOrderInfoByConsumeCode(params);
 
 			// 总验证金额
 			BigDecimal totalValiAmount = new BigDecimal("0");
@@ -6443,12 +6442,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						// End 14168 add by wusw 20161011
 						// 如果是同一个订单的消费码，将该订单需要修改库存的数量和调整云钱包金额的价格进行累加（到店消费订单与其订单项是一对一关系）
 						if (successOrderDetailMap.containsKey(detailConsumeVo.getOrderId())) {
-							OrderItemDetailConsumeVo oldConsumeVo = successOrderDetailMap
-									.get(detailConsumeVo.getOrderId());
-							oldConsumeVo.setDetailActualAmount(
-									oldConsumeVo.getDetailActualAmount().add(detailConsumeVo.getDetailActualAmount()));
-							oldConsumeVo.setPreferentialPrice(
-									oldConsumeVo.getPreferentialPrice().add(detailConsumeVo.getPreferentialPrice()));
+							OrderItemDetailConsumeVo oldConsumeVo = successOrderDetailMap.get(detailConsumeVo.getOrderId());
+							oldConsumeVo.setDetailActualAmount(oldConsumeVo.getDetailActualAmount().add(detailConsumeVo.getDetailActualAmount()));
+							oldConsumeVo.setPreferentialPrice(oldConsumeVo.getPreferentialPrice().add(detailConsumeVo.getPreferentialPrice()));
 
 							oldConsumeVo.setNum(oldConsumeVo.getNum().intValue() + 1);
 							successOrderDetailMap.put(detailConsumeVo.getOrderId(), oldConsumeVo);
@@ -6479,18 +6475,10 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 				// End 14168 add by wusw 20161011
 				if (CollectionUtils.isNotEmpty(orderIdList)) {
 
-					String bossId = storeInfoService.getBossIdByStoreId(storeId);
-
-					PayAccountDto payAccount = payAccountApi.findByUserId(bossId);
-
-					if (payAccount == null) {
-						// 云钱包账号不存在
-						throw new ServiceException(USER_NOT_WALLET);
-					}
-
 					TradeOrder order = null;
 					List<BalancePayTradeDto> tradeVoList = Lists.newArrayList();
-
+					
+					List<TradeOrder> tradeList = Lists.newArrayList();
 					// 总收入金额
 					BigDecimal totalCome = new BigDecimal("0");
 
@@ -6504,8 +6492,9 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						// 每个订单的订单项详细优惠金额（当前输入验证码的订单项）
 						BigDecimal prefAmountDetail = detailConsumeVo.getPreferentialPrice();
 
-						BalancePayTradeDto tradeVo = buildBalancePayTrade(order, bossId, totalAmountDetail,
-								prefAmountDetail);
+						String bossId = storeInfoService.getBossIdByStoreId(order.getStoreId());
+						
+						BalancePayTradeDto tradeVo = buildBalancePayTrade(order, bossId, totalAmountDetail,prefAmountDetail);
 						tradeVoList.add(tradeVo);
 
 						if (tradeVo.getAmount() != null) {
@@ -6514,13 +6503,21 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 						if (tradeVo.getPrefeAmount() != null) {
 							totalCome = totalCome.add(tradeVo.getPrefeAmount());
 						}
+						
+						PayAccountDto payAccount = payAccountApi.findByUserId(bossId);
+						
+						if (payAccount == null) {
+							// 云钱包账号不存在
+							throw new ServiceException(USER_NOT_WALLET);
+						}
+						
+						if (payAccount.getTotalAmount().compareTo(totalCome) < 0
+								|| payAccount.getFrozenAmount().compareTo(totalCome) < 0) {
+							// 店铺的云钱包资金异常
+							throw new ServiceException(USER_WALLET_FAIL);
+						}
+						
 						order = null;
-					}
-
-					if (payAccount.getTotalAmount().compareTo(totalCome) < 0
-							|| payAccount.getFrozenAmount().compareTo(totalCome) < 0) {
-						// 店铺的云钱包资金异常
-						throw new ServiceException(USER_WALLET_FAIL);
 					}
 
 					String sendJson = JSON.toJSONString(tradeVoList);
@@ -6537,15 +6534,14 @@ public class TradeOrderServiceImpl implements TradeOrderService, TradeOrderServi
 									try {
 
 										// 更新消费码状态、操作库存
-										for (String orderId : orderIdList) {
+										for (TradeOrder order : tradeList) {
 
-											OrderItemDetailConsumeVo consumeVo = successOrderDetailMap.get(orderId);
+											OrderItemDetailConsumeVo consumeVo = successOrderDetailMap.get(order.getId());
 											// 消费完，增加积分
 											addPoint(consumeVo.getUserId(), consumeVo.getOrderItemDetailId(),
 													consumeVo.getDetailActualAmount());
 											// 修改库存
-											updateServiceStoreStock(consumeVo, rpcIdList,
-													StockOperateEnum.PLACE_ORDER_COMPLETE, userId, storeId);
+											updateServiceStoreStock(consumeVo, rpcIdList,StockOperateEnum.PLACE_ORDER_COMPLETE, userId, order.getStoreId());
 										}
 										Date nowTime = new Date();
 										// 批量修改订单项详细验证码状态为已消费，消费时间和更新时间为当前时间
