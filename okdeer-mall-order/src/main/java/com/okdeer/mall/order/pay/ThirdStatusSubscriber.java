@@ -10,7 +10,6 @@
 package com.okdeer.mall.order.pay;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -188,6 +187,11 @@ public class ThirdStatusSubscriber extends AbstractRocketMQSubscriber
 	 */
 	private boolean checkOrderIsCanceled(TradeOrder tradeOrder) throws Exception {
 		if (tradeOrder.getStatus() == OrderStatusEnum.CANCELED) {
+			TradeOrder updateTradeOrder = new TradeOrder();
+			updateTradeOrder.setId(tradeOrder.getId());
+			updateTradeOrder.setStatus(OrderStatusEnum.CANCELING);
+			tradeOrderMapper.updateOrderStatus(updateTradeOrder);
+			
 			PayRefundDto payRefundDto = tradeOrderPayBuilder.buildPayRefundDto(tradeOrder);
 			MQMessage<PayRefundDto> msg = new MQMessage<>(PayMessageConstant.TOPIC_REFUND, payRefundDto);
 			msg.setKey(tradeOrder.getId());
